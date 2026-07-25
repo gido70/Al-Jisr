@@ -121,7 +121,7 @@ async function callRpc(fn, body){
 }
 
 document.getElementById('loginBtn').addEventListener('click', () => {
-  const val = document.getElementById('adminPass').value;
+  const val = document.getElementById('adminPass').value.trim();
   if(val === ADMIN_PASSWORD){
     document.getElementById('loginCard').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
