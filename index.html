@@ -412,6 +412,40 @@
   }
   .quick-result.placeholder{ color:var(--muted); }
 
+  .type-during-call{
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px dashed var(--line);
+  }
+  .type-during-call h4{
+    font-family:'Amiri',serif;
+    margin:0 0 6px;
+    font-size:16px;
+  }
+  .type-row{
+    display:flex; gap:10px; margin-top:10px;
+  }
+  .type-row input{
+    flex:1;
+    background:var(--bg);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:12px 14px;
+    border-radius:10px;
+    font-family:'Tajawal',sans-serif;
+    font-size:14px;
+  }
+  .phonetic-hint{
+    margin-top:8px;
+    padding:10px 12px;
+    background:rgba(20,71,201,.07);
+    border:1px dashed var(--teal);
+    border-radius:8px;
+    font-size:14px;
+    color:var(--teal);
+  }
+  .phonetic-hint b{ color:var(--ink); }
+
   /* usage guide modal */
   .guide-overlay{
     display:none;
@@ -749,8 +783,8 @@
   <button class="icon-btn" id="backHomeBtn" style="margin-bottom:16px;">→ الرجوع للصفحة الرئيسية</button>
 
   <div class="quick-call">
-    <h3 id="quickCallTitle">⚡ ترجمة سريعة أثناء المكالمة</h3>
-    <p class="call-sub" id="quickCallSub">اضغط الزر المناسب وتكلم، أو قرّب سماعة الجوال من صوت المتصل — الطرف الآخر لا يحتاج أي تطبيق.</p>
+    <h3 id="quickCallTitle">⚡ ترجمة سريعة</h3>
+    <p class="call-sub" id="quickCallSub">مثالية للمحادثة المباشرة وجهاً لوجه. لمكالمة هاتفية حقيقية، استخدم القسم أدناه بدل الميكروفون.</p>
 
     <div class="quick-row">
       <button class="quick-btn" id="quickMicA">
@@ -766,6 +800,17 @@
         <span class="quick-lbl" id="quickLabelB">هو يتكلم</span>
       </button>
       <div class="quick-result placeholder" id="quickResultB">…</div>
+    </div>
+
+    <div class="type-during-call">
+      <h4 id="typeDuringCallTitle">⌨️ أثناء مكالمة حقيقية: اكتب بدل الميكروفون</h4>
+      <p class="call-sub" id="typeDuringCallHint">النظام يقفل الميكروفون وصوت الموقع أثناء أي مكالمة فعلية — هذا قيد من الجوال نفسه. الحل: اكتب جملتك، وبعدها اقرأ الترجمة الظاهرة بصوتك أنت مباشرة للمتصل.</p>
+      <div class="type-row">
+        <input type="text" id="quickTypeInput" placeholder="اكتب جملتك هنا...">
+        <button class="big-btn" id="quickTypeBtn" style="width:auto;padding:12px 20px;">ترجم</button>
+      </div>
+      <div class="quick-result placeholder" id="quickTypeResult" style="margin-top:10px;font-size:19px;font-weight:700;">…</div>
+      <div class="phonetic-hint" id="quickTypePhonetic" style="display:none;"></div>
     </div>
   </div>
 
@@ -954,15 +999,19 @@ const STRINGS = {
     gS2T:'🎤 للتكلم والترجمة العادية', gS2D:'اضغط الميكروفون تحت أي جهة وتكلم — تُترجم وتُنطق تلقائياً للجهة المقابلة. يشتغل بالاتجاهين.',
     gS3T:'🌐 لاختيار اللغتين', gS3D:'من القوائم أعلى الصفحة اختر لغة كل جهة (عربي، تركي، إنجليزي، روسي، فارسي، ألماني) — أي زوج لغتين تحتاجه، ليس فقط العربية.',
     gS4T:'↻ للمحادثة المباشرة وجهاً لوجه', gS4D:'اضغط "تلقائي" ضغطة واحدة فقط — يبدأ يستمع بنفسه ويتبادل الاستماع بينكما بدون أي ضغط إضافي. مرّر الجوال بينكما بحرية.',
-    gS5T:'📞 أثناء مكالمة هاتفية', gS5D:'اضغط "أثناء المكالمة" — أول شي تشوفه زران كبيران "أنا أتكلم" و"هو يتكلم" لترجمة أي حديث حر فوراً، بدون ما يحتاج الطرف الآخر أي تطبيق. الأدوات الإضافية (عنوان، عبارات جاهزة) تحت زر "🧰 أدوات إضافية".',
+    gS5T:'📞 أثناء مكالمة هاتفية', gS5D:'مهم: أثناء مكالمة حقيقية، النظام يقفل الميكروفون وصوت الموقع (حتى قارئ العنوان والعبارات الجاهزة) عن هذا الجهاز — قيد من الجوال نفسه. الحل الوحيد بجهاز واحد: "⌨️ اكتب بدل الميكروفون" — تكتب جملتك، تطلع الترجمة نصاً مع دليل نطق تقريبي بحروف عربية، وتقرأها أنت بصوتك مباشرة للمتصل.',
     gS6T:'🔊 إذا ما سمعت صوت الترجمة', gS6D:'اضغط زر "استمع" الصغير الظاهر تحت النص المترجم — يشغّل الصوت يدوياً، يعمل دائماً حتى لو الصوت التلقائي ما اشتغل على جوالك.',
     gS7T:'📋 لنسخ النص أو إرساله في واتساب', gS7D:'تحت كل نص مترجم زران: "نسخ" يحفظ النص لتلصقه بأي مكان، و"مشاركة" يفتح واتساب مباشرة والنص جاهز — لا يمكن دمج الموقع داخل واتساب نفسه، لكن هذا أسرع طريقة بديلة.',
     guideClose:'فهمت، ابدأ الاستخدام',
     guideBtn:'❓ كيف أستخدمه', callBtnOpen:'📞 أثناء المكالمة', callBtnClose:'⬅ الرئيسية', autoBtn:'↻ تلقائي', textSizeBtn:'Aa', clearBtn:'مسح',
     backHome:'→ الرجوع للصفحة الرئيسية',
-    callReminderB:'تذكير:', callReminder:'العبارات تحت مخصصة للحالات الحرجة فقط. لترجمة أي حديث حر أثناء المكالمة (مو بس هذي العبارات)، استخدم "ترجمة سريعة" بالأعلى.',
-    quickCallTitle:'⚡ ترجمة سريعة أثناء المكالمة', quickCallSub:'اضغط الزر المناسب وتكلم، أو قرّب سماعة الجوال من صوت المتصل — الطرف الآخر لا يحتاج أي تطبيق.',
+    callReminderB:'مهم:', callReminder:'أثناء مكالمة هاتفية حقيقية، النظام يقفل الميكروفون وصوت الموقع (حتى نطق العبارات الجاهزة والعنوان) عن هذا الجهاز — قيد من النظام نفسه ما له حل تقني. استخدم "⌨️ اكتب بدل الميكروفون" بالأعلى: اكتب، خذ الترجمة النصية مع دليل النطق، واقرأها أنت بصوتك مباشرة للمتصل.',
+    quickCallTitle:'⚡ ترجمة سريعة', quickCallSub:'مثالية للمحادثة المباشرة وجهاً لوجه. لمكالمة هاتفية حقيقية: هذا الجهاز لازم يكون منفصلاً عن جهاز المكالمة (جوال ثانٍ أو تابلت) — لأن نظام الجوال يقفل الميكروفون عن أي تطبيق آخر أثناء مكالمة فعلية على نفس الجهاز.',
     quickSpeakLabel:'أنا أتكلم', quickListenLabel:'هو يتكلم', moreToolsBtn:'🧰 أدوات إضافية (عنوان، عبارات جاهزة)',
+    typeDuringCallTitle:'⌨️ أثناء مكالمة حقيقية: اكتب بدل الميكروفون',
+    typeDuringCallHint:'النظام يقفل الميكروفون وصوت الموقع أثناء أي مكالمة فعلية — هذا قيد من الجوال نفسه. الحل: اكتب جملتك، وستظهر الترجمة نصاً مع دليل نطق تقريبي بحروف عربية تحتها، تقرأه أنت بصوتك مباشرة للمتصل.',
+    phoneticLabel:'تُنطق تقريباً:',
+    quickTypePlaceholder:'اكتب جملتك هنا...', quickTypeBtn:'ترجم',
     addrTitle:'🏠 قارئ العنوان', addrDesc:'الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.', addrPh:'مثال: Bağcılar Mah. 15. Sokak No:7 Daire:3', addrBtn:'🔊 اقرأ العنوان',
     phrasesTitle:'💬 عبارات جاهزة', tabSay:'🗣️ أنا أتكلم', tabHear:'👂 قد أسمع منه',
     catDelivery:'توصيل', catAppt:'مواعيد', catGeneral:'عام', repeatBtn:'🔁 كرّر آخر جملة',
@@ -1000,15 +1049,19 @@ const STRINGS = {
     gS2T:'🎤 Normal konuşma ve çeviri', gS2D:'Herhangi bir tarafın altındaki mikrofona basıp konuşun — otomatik olarak çevrilip karşı tarafa seslendirilir. İki yönde de çalışır.',
     gS3T:'🌐 İki dili seçmek için', gS3D:'Sayfanın üstündeki listelerden her tarafın dilini seçin (Arapça, Türkçe, İngilizce, Rusça, Farsça, Almanca) — sadece Arapça değil, ihtiyacınız olan herhangi bir dil çifti.',
     gS4T:'↻ Yüz yüze canlı sohbet için', gS4D:'"Otomatik" butonuna sadece bir kez basın — kendi kendine dinlemeye başlar ve aranızda ek dokunuş olmadan sırayla dinler. Telefonu aranızda özgürce geçirin.',
-    gS5T:'📞 Telefon görüşmesi sırasında', gS5D:'"Arama sırasında" butonuna basın — önce "Ben konuşuyorum" ve "O konuşuyor" adında iki büyük buton görürsünüz, karşı tarafın uygulamaya ihtiyacı olmadan anında serbest konuşmayı çevirir. Diğer araçlar (adres, hazır cümleler) "🧰 Diğer araçlar" altında.',
+    gS5T:'📞 Telefon görüşmesi sırasında', gS5D:'Önemli: Gerçek bir görüşme sırasında sistem, mikrofonu ve site sesini (adres okuyucu ve hazır cümleler dahil) bu cihazda kapatır — telefonun kendi kısıtlaması. Tek cihazla tek çözüm: "⌨️ Mikrofon yerine yazın" — cümlenizi yazın, çeviri yaklaşık Arapça harfli telaffuz rehberiyle metin olarak görünür, kendi sesinizle arayana okursunuz.',
     gS6T:'🔊 Çeviri sesini duymuyorsanız', gS6D:'Çevrilen metnin altındaki küçük "Dinle" butonuna basın — sesi manuel olarak çalar, telefonunuzda otomatik ses çalışmasa bile her zaman çalışır.',
     gS7T:'📋 Metni kopyalamak veya WhatsApp’tan göndermek için', gS7D:'Her çevrilen metnin altında iki buton var: "Kopyala" metni herhangi bir yere yapıştırmanız için kaydeder, "Paylaş" WhatsApp’ı doğrudan açar ve metin hazırdır — site WhatsApp’ın içine entegre edilemez, ama bu en hızlı alternatif yoldur.',
     guideClose:'Anladım, kullanmaya başla',
     guideBtn:'❓ Nasıl kullanılır', callBtnOpen:'📞 Arama sırasında', callBtnClose:'⬅ Ana sayfa', autoBtn:'↻ Otomatik', textSizeBtn:'Aa', clearBtn:'Temizle',
     backHome:'→ Ana sayfaya dön',
-    callReminderB:'Hatırlatma:', callReminder:'Aşağıdaki cümleler yalnızca kritik durumlar içindir. Serbest konuşmayı çevirmek için yukarıdaki "Hızlı çeviri"yi kullanın.',
-    quickCallTitle:'⚡ Görüşme sırasında hızlı çeviri', quickCallSub:'Uygun butona basıp konuşun, ya da telefonu arayanın sesine yaklaştırın — karşı tarafın herhangi bir uygulamaya ihtiyacı yok.',
+    callReminderB:'Önemli:', callReminder:'Gerçek bir telefon görüşmesi sırasında sistem, mikrofonu ve site sesini (hazır cümleler ve adres okuyucu dahil) bu cihazda kapatır — sistemin kendi kısıtlaması, çözümü yoktur. Yukarıdaki "⌨️ Mikrofon yerine yazın"ı kullanın: yazın, telaffuz rehberli çeviriyi alın, kendi sesinizle arayana okuyun.',
+    quickCallTitle:'⚡ Hızlı çeviri', quickCallSub:'Yüz yüze konuşmalar için idealdir. Gerçek bir telefon görüşmesi için: bu cihaz aramayı yapan cihazdan ayrı olmalı (ikinci bir telefon veya tablet) — çünkü telefon işletim sistemi, aynı cihazda gerçek bir arama sırasında mikrofonu diğer uygulamalara kapatır.',
     quickSpeakLabel:'Ben konuşuyorum', quickListenLabel:'O konuşuyor', moreToolsBtn:'🧰 Diğer araçlar (adres, hazır cümleler)',
+    typeDuringCallTitle:'⌨️ Gerçek bir görüşme sırasında: mikrofon yerine yazın',
+    typeDuringCallHint:'Sistem, gerçek bir arama sırasında mikrofonu ve site sesini kapatır — bu telefonun kendi kısıtlamasıdır. Çözüm: cümlenizi yazın, altında yaklaşık Arapça harfli telaffuz rehberiyle çeviri metin olarak görünecek, kendi sesinizle doğrudan arayana okuyun.',
+    phoneticLabel:'Yaklaşık okunuşu:',
+    quickTypePlaceholder:'Cümlenizi buraya yazın...', quickTypeBtn:'Çevir',
     addrTitle:'🏠 Adres okuyucu', addrDesc:'Adresinizi Türkçe olarak yapıştırın (örneğin Google Haritalar’dan) ve site kuryeye net bir sesle okusun — çeviri yapılmaz, çünkü adres zaten Türkçe yazılıdır.', addrPh:'Örnek: Bağcılar Mah. 15. Sokak No:7 Daire:3', addrBtn:'🔊 Adresi oku',
     phrasesTitle:'💬 Hazır cümleler', tabSay:'🗣️ Ben konuşuyorum', tabHear:'👂 Ondan duyabilirim',
     catDelivery:'Teslimat', catAppt:'Randevu', catGeneral:'Genel', repeatBtn:'🔁 Son cümleyi tekrarla',
@@ -1046,15 +1099,19 @@ const STRINGS = {
     gS2T:'🎤 Regular talking and translation', gS2D:'Tap the mic under either side and speak — it is translated and spoken automatically to the other side. Works both ways.',
     gS3T:'🌐 Choosing the two languages', gS3D:'From the dropdowns at the top of the page, pick each side\'s language (Arabic, Turkish, English, Russian, Persian, German) — any pair you need, not just Arabic.',
     gS4T:'↻ For a live face-to-face conversation', gS4D:'Tap "Auto" just once — it starts listening on its own and alternates listening between you both with no extra taps. Pass the phone freely between you.',
-    gS5T:'📞 During a phone call', gS5D:'Tap "During a call" — first you\'ll see two big buttons, "I\'m speaking" and "They\'re speaking", that translate any free conversation instantly, no app needed on the other end. Extra tools (address, ready phrases) are under "🧰 More tools".',
+    gS5T:'📞 During a phone call', gS5D:'Important: during a real call, the system mutes the microphone and site audio (including the address reader and ready phrases) on this device — the phone\'s own restriction. The only single-device fix: "⌨️ Type instead of the microphone" — type your sentence, the translation appears as text with an approximate Arabic-letter pronunciation guide, and you read it aloud yourself to the caller.',
     gS6T:'🔊 If you don\'t hear the translation', gS6D:'Tap the small "Listen" button shown under the translated text — it plays the audio manually, and always works even if auto-play didn\'t on your phone.',
     gS7T:'📋 To copy the text or send it on WhatsApp', gS7D:'Under every translated text there are two buttons: "Copy" saves the text to paste anywhere, and "Share" opens WhatsApp directly with the text ready — the site can\'t be embedded inside WhatsApp itself, but this is the fastest alternative.',
     guideClose:'Got it, start using it',
     guideBtn:'❓ How to use it', callBtnOpen:'📞 During a call', callBtnClose:'⬅ Home', autoBtn:'↻ Auto', textSizeBtn:'Aa', clearBtn:'Clear',
     backHome:'→ Back to home',
-    callReminderB:'Reminder:', callReminder:'The phrases below are only for critical situations. To translate any free conversation, use "Quick translate" above.',
-    quickCallTitle:'⚡ Quick translate during a call', quickCallSub:'Tap the right button and speak, or bring the phone close to the caller\'s voice — the other person doesn\'t need any app.',
+    callReminderB:'Important:', callReminder:'During a real phone call, the system mutes the microphone and site audio (including ready phrases and the address reader) on this device — a system-level restriction with no workaround. Use "⌨️ Type instead of the microphone" above: type, get the translation with a pronunciation guide, and read it aloud yourself to the caller.',
+    quickCallTitle:'⚡ Quick translate', quickCallSub:'Great for face-to-face conversations. For a real phone call: this device must be separate from the one making the call (a second phone or tablet) — phone operating systems lock the microphone away from other apps during an actual call on the same device.',
     quickSpeakLabel:'I\'m speaking', quickListenLabel:'They\'re speaking', moreToolsBtn:'🧰 More tools (address, ready phrases)',
+    typeDuringCallTitle:'⌨️ During a real call: type instead of the microphone',
+    typeDuringCallHint:'The system mutes the microphone and site audio during any real call — this is the phone\'s own restriction. The fix: type your sentence, and the translation will appear as text with an approximate Arabic-letter pronunciation guide beneath it, which you read aloud yourself directly to the caller.',
+    phoneticLabel:'Approximate pronunciation:',
+    quickTypePlaceholder:'Type your sentence here...', quickTypeBtn:'Translate',
     addrTitle:'🏠 Address reader', addrDesc:'Paste your address in Turkish (e.g. from Google Maps) and the site reads it clearly for the courier — no translation needed, since the address is already written in Turkish.', addrPh:'Example: Bağcılar Mah. 15. Sokak No:7 Daire:3', addrBtn:'🔊 Read address',
     phrasesTitle:'💬 Ready phrases', tabSay:'🗣️ I\'m speaking', tabHear:'👂 I might hear',
     catDelivery:'Delivery', catAppt:'Appointments', catGeneral:'General', repeatBtn:'🔁 Repeat last sentence',
@@ -1564,6 +1621,55 @@ document.getElementById('backHomeBtn').addEventListener('click', closeCallMode);
 document.getElementById('quickMicA').addEventListener('click', () => document.getElementById('micA').click());
 document.getElementById('quickMicB').addEventListener('click', () => document.getElementById('micB').click());
 
+// Rough phonetic guide: approximates Turkish pronunciation using Arabic
+// letters, for someone who reads Arabic but doesn't know Turkish sounds.
+// This is a best-effort approximation, not precise linguistic transcription —
+// Turkish has vowels (ö, ü, ı) with no true Arabic equivalent.
+const TR_TO_AR_PHONETIC = {
+  'ç':'تش','ş':'ش','ğ':'','ı':'ا','ö':'و','ü':'يو','İ':'ي','I':'ا',
+  'a':'ا','b':'ب','c':'ج','d':'د','e':'ه','f':'ف','g':'غ','h':'ه',
+  'i':'ي','j':'ج','k':'ك','l':'ل','m':'م','n':'ن','o':'و','p':'پ',
+  'q':'ك','r':'ر','s':'س','t':'ت','u':'و','v':'ف','w':'و','x':'كس',
+  'y':'ي','z':'ز',' ':' ',
+};
+function toTurkishPhonetic(text){
+  let out = '';
+  for(const ch of text){
+    const lower = ch === 'İ' ? 'i' : ch === 'I' ? 'ı' : ch.toLowerCase();
+    if(TR_TO_AR_PHONETIC.hasOwnProperty(ch)) out += TR_TO_AR_PHONETIC[ch];
+    else if(TR_TO_AR_PHONETIC.hasOwnProperty(lower)) out += TR_TO_AR_PHONETIC[lower];
+    else out += ch; // punctuation, digits, etc. — leave as-is
+  }
+  return out.trim();
+}
+
+async function doQuickTypeTranslate(){
+  const input = document.getElementById('quickTypeInput');
+  const text = input.value.trim();
+  if(!text) return;
+  const resultEl = document.getElementById('quickTypeResult');
+  const phoneticEl = document.getElementById('quickTypePhonetic');
+  resultEl.textContent = '…';
+  resultEl.classList.add('placeholder');
+  phoneticEl.style.display = 'none';
+  try{
+    const translated = await translateText(text, langA.code, langB.code);
+    resultEl.textContent = translated;
+    resultEl.classList.remove('placeholder');
+    if(langB.code === 'tr'){
+      const phonetic = toTurkishPhonetic(translated);
+      phoneticEl.innerHTML = '🗣️ <b>' + t('phoneticLabel') + '</b> ' + phonetic;
+      phoneticEl.style.display = 'block';
+    }
+  }catch(err){
+    showBanner(t('translateFail'));
+  }
+}
+document.getElementById('quickTypeBtn').addEventListener('click', doQuickTypeTranslate);
+document.getElementById('quickTypeInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') doQuickTypeTranslate();
+});
+
 document.getElementById('toggleMoreTools').addEventListener('click', (e) => {
   const box = document.getElementById('moreCallTools');
   const isOpen = box.style.display === 'block';
@@ -1812,6 +1918,7 @@ document.getElementById('guideOverlay').addEventListener('click', (e) => {
 /* ---------------- Interface language switcher ---------------- */
 const SIMPLE_I18N_MAP = {
   quickCallTitle:'quickCallTitle', quickCallSub:'quickCallSub', toggleMoreTools:'moreToolsBtn',
+  typeDuringCallTitle:'typeDuringCallTitle', typeDuringCallHint:'typeDuringCallHint', quickTypeBtn:'quickTypeBtn',
   gTitle:'gTitle', gSub:'gSub', gS1T:'gS1T', gS1D:'gS1D', gS2T:'gS2T', gS2D:'gS2D',
   gS3T:'gS3T', gS3D:'gS3D', gS4T:'gS4T', gS4D:'gS4D', gS5T:'gS5T', gS5D:'gS5D',
   gS6T:'gS6T', gS6D:'gS6D', gS7T:'gS7T', gS7D:'gS7D', guideClose:'guideClose',
@@ -1846,6 +1953,7 @@ function applyUILang(lang){
   });
 
   document.getElementById('addrInput').placeholder = t('addrPh');
+  document.getElementById('quickTypeInput').placeholder = t('quickTypePlaceholder');
   document.getElementById('callReminder').innerHTML =
     '💡 <b style="color:var(--ink);" id="callReminderB">' + t('callReminderB') + '</b> ' + t('callReminder');
 
