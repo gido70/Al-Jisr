@@ -94,6 +94,11 @@
     display:grid;
     grid-template-columns:1fr 56px 1fr;
     position:relative;
+    animation:stageIn .4s ease;
+  }
+  @keyframes stageIn{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
   }
   @media (max-width:720px){
     .stage{grid-template-columns:1fr;}
@@ -403,6 +408,117 @@
     font-size:15px;
     cursor:pointer;
   }
+
+  /* ---------- mobile app-like layer ---------- */
+  .bottom-nav{ display:none; }
+  .sheet-overlay{ display:none; }
+
+  @media (max-width:720px){
+    body{ padding-bottom:calc(78px + env(safe-area-inset-bottom)); }
+
+    header{ padding:16px 16px 12px; }
+    .brand h1{ font-size:19px; }
+    /* keep only the status pill + guide button in the top bar; everything else moves to the bottom nav / more sheet */
+    .controls > select,
+    .controls > #callModeToggle,
+    .controls > #convToggle,
+    .controls > #textSize,
+    .controls > #clearBtn{ display:none; }
+
+    .mic-btn{ width:72px; height:72px; }
+    .mic-btn svg{ width:28px; height:28px; }
+    .side{ padding:18px 16px 16px; }
+    .side h2{ font-size:23px; }
+    .transcript{ font-size:16.5px; }
+
+    /* call panel becomes a slide-up sheet on mobile */
+    .call-panel{
+      position:fixed; inset:auto 0 0 0;
+      max-height:82vh; overflow-y:auto;
+      border-radius:20px 20px 0 0;
+      z-index:40;
+      transform:translateY(100%);
+      transition:transform .28s cubic-bezier(.32,.72,0,1);
+      padding-bottom:calc(24px + env(safe-area-inset-bottom));
+      box-shadow:0 -8px 30px rgba(0,0,0,.4);
+    }
+    .call-panel.show{ transform:translateY(0); display:block; }
+    .call-panel::before{
+      content:'';
+      display:block;
+      width:40px;height:4px;
+      background:var(--line);
+      border-radius:4px;
+      margin:0 auto 16px;
+    }
+
+    .guide-overlay{ align-items:flex-end; padding:0; }
+    .guide-card{
+      border-radius:20px 20px 0 0;
+      max-height:88vh;
+      animation:sheetUp .28s cubic-bezier(.32,.72,0,1);
+    }
+    @keyframes sheetUp{ from{ transform:translateY(30px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+
+    /* bottom nav bar */
+    .bottom-nav{
+      display:flex;
+      position:fixed; left:0; right:0; bottom:0;
+      z-index:45;
+      background:var(--bg2);
+      border-top:1px solid var(--line);
+      padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+      justify-content:space-around;
+      align-items:center;
+    }
+    .nav-btn{
+      background:none; border:none; color:var(--muted);
+      display:flex; flex-direction:column; align-items:center; gap:3px;
+      font-family:'Tajawal',sans-serif;
+      font-size:10.5px;
+      padding:6px 10px;
+      border-radius:12px;
+      flex:1;
+      transition:color .15s ease, background .15s ease;
+    }
+    .nav-btn .nav-ic{ font-size:21px; line-height:1; }
+    .nav-btn.active{ color:var(--gold); background:rgba(201,162,39,.12); }
+    .nav-btn:active{ transform:scale(.93); }
+
+    /* more sheet */
+    .sheet-overlay{
+      position:fixed; inset:0; z-index:46;
+      background:rgba(6,10,16,.72);
+      align-items:flex-end; justify-content:center;
+      padding:0;
+    }
+    .sheet-overlay.show{ display:flex; }
+    .more-sheet{
+      background:var(--bg2);
+      border:1px solid var(--line);
+      border-radius:20px 20px 0 0;
+      width:100%;
+      max-width:620px;
+      padding:18px 20px calc(22px + env(safe-area-inset-bottom));
+      animation:sheetUp .28s cubic-bezier(.32,.72,0,1);
+    }
+    .more-sheet::before{
+      content:'';
+      display:block;
+      width:40px;height:4px;
+      background:var(--line);
+      border-radius:4px;
+      margin:0 auto 16px;
+    }
+    .more-row{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 4px;
+      border-bottom:1px dashed var(--line);
+    }
+    .more-row:last-child{ border-bottom:none; }
+    .more-row label{ font-size:14.5px; }
+    .more-row select{ min-width:140px; }
+  }
 </style>
 </head>
 <body>
@@ -416,36 +532,42 @@
 
     <div class="guide-step">
       <div class="num">1</div>
+      <div><h4>📱 شريط التنقل بالأسفل (على الجوال)</h4>
+      <p>خمس أزرار كبيرة وواضحة بأسفل الشاشة: الرئيسية، مكالمة، تلقائي، مساعدة، والمزيد (فيه اللغة وحجم الخط والمسح). كل شي بلمسة وحدة، بدون تصفح قوائم.</p></div>
+    </div>
+
+    <div class="guide-step">
+      <div class="num">2</div>
       <div><h4>🎤 للتكلم والترجمة العادية</h4>
       <p>اضغط الميكروفون تحت "أنت" وتكلم بالعربي — تُترجم وتُنطق تلقائياً للطرف الآخر. نفس الشي بالعكس من الجهة المقابلة.</p></div>
     </div>
 
     <div class="guide-step">
-      <div class="num">2</div>
+      <div class="num">3</div>
       <div><h4>🌐 لتغيير اللغة المقابلة</h4>
       <p>من القائمة أعلى يمين الصفحة (Türkçe) اختر أي لغة ثانية تحتاجها: تركي، إنجليزي، روسي، فارسي، ألماني.</p></div>
     </div>
 
     <div class="guide-step">
-      <div class="num">3</div>
+      <div class="num">4</div>
       <div><h4>↻ للمحادثة المباشرة وجهاً لوجه</h4>
       <p>اضغط "تلقائي" ضغطة واحدة فقط — يبدأ يستمع بنفسه ويتبادل الاستماع بينك وبين الطرف الآخر بدون أي ضغط إضافي. مرّر الجوال بينكما بحرية.</p></div>
     </div>
 
     <div class="guide-step">
-      <div class="num">4</div>
+      <div class="num">5</div>
       <div><h4>📞 أثناء مكالمة هاتفية</h4>
       <p>اضغط "أثناء المكالمة" — تجد قارئ عنوان (يقرأ عنوانك بصوت واضح)، وعبارات جاهزة تنطق فوراً بضغطة، وتبويب "قد أسمع منه" يشرح لك جمل شائعة قد يقولها المتصل.</p></div>
     </div>
 
     <div class="guide-step">
-      <div class="num">5</div>
+      <div class="num">6</div>
       <div><h4>🔊 إذا ما سمعت صوت الترجمة</h4>
       <p>اضغط زر "استمع" الصغير الظاهر تحت النص المترجم — يشغّل الصوت يدوياً، يعمل دائماً حتى لو الصوت التلقائي ما اشتغل على جوالك.</p></div>
     </div>
 
     <div class="guide-step">
-      <div class="num">6</div>
+      <div class="num">7</div>
       <div><h4>📋 لنسخ النص أو إرساله في واتساب</h4>
       <p>تحت كل نص مترجم زران: "نسخ" يحفظ النص لتلصقه بأي مكان، و"مشاركة" يفتح واتساب مباشرة والنص جاهز — لا يمكن دمج الموقع داخل واتساب نفسه، لكن هذا أسرع طريقة بديلة.</p></div>
     </div>
@@ -555,6 +677,35 @@
   <span>سماعات = بدون صدى · جمل قصيرة = ترجمة أدق</span>
   <button class="icon-btn" id="copyBtn">نسخ المحادثة</button>
 </footer>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-btn active" id="navHome"><span class="nav-ic">🎤</span><span>الرئيسية</span></button>
+  <button class="nav-btn" id="navCall"><span class="nav-ic">📞</span><span>مكالمة</span></button>
+  <button class="nav-btn" id="navAuto"><span class="nav-ic">↻</span><span>تلقائي</span></button>
+  <button class="nav-btn" id="navGuide"><span class="nav-ic">❓</span><span>مساعدة</span></button>
+  <button class="nav-btn" id="navMore"><span class="nav-ic">⋯</span><span>المزيد</span></button>
+</nav>
+
+<div class="sheet-overlay" id="moreSheetOverlay">
+  <div class="more-sheet">
+    <div class="more-row">
+      <label>🌐 اللغة المقابلة</label>
+      <select id="langSelectMobile"></select>
+    </div>
+    <div class="more-row">
+      <label>Aa حجم الخط</label>
+      <button class="icon-btn" id="textSizeMobile">تكبير</button>
+    </div>
+    <div class="more-row">
+      <label>📋 نسخ كل المحادثة</label>
+      <button class="icon-btn" id="copyBtnMobile">نسخ</button>
+    </div>
+    <div class="more-row">
+      <label>🗑️ مسح المحادثة</label>
+      <button class="icon-btn" id="clearBtnMobile">مسح</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -934,21 +1085,22 @@ document.getElementById('phraseTabs').addEventListener('click', (e) => {
   renderPhrases();
 });
 
-document.getElementById('callModeToggle').addEventListener('click', (e) => {
-  const panel = document.getElementById('callPanel');
-  panel.classList.toggle('show');
-  const isOpen = panel.classList.contains('show');
-  e.currentTarget.classList.toggle('active', isOpen);
-  e.currentTarget.textContent = isOpen ? '⬅ الرئيسية' : '📞 أثناء المكالمة';
+function openCallMode(){
+  document.getElementById('callPanel').classList.add('show');
+  document.getElementById('callModeToggle').classList.add('active');
+  document.getElementById('callModeToggle').textContent = '⬅ الرئيسية';
+  document.getElementById('navCall')?.classList.add('active');
+}
+function closeCallMode(){
+  document.getElementById('callPanel').classList.remove('show');
+  document.getElementById('callModeToggle').classList.remove('active');
+  document.getElementById('callModeToggle').textContent = '📞 أثناء المكالمة';
+  document.getElementById('navCall')?.classList.remove('active');
+}
+document.getElementById('callModeToggle').addEventListener('click', () => {
+  document.getElementById('callPanel').classList.contains('show') ? closeCallMode() : openCallMode();
 });
-
-document.getElementById('backHomeBtn').addEventListener('click', () => {
-  const panel = document.getElementById('callPanel');
-  panel.classList.remove('show');
-  const toggleBtn = document.getElementById('callModeToggle');
-  toggleBtn.classList.remove('active');
-  toggleBtn.textContent = '📞 أثناء المكالمة';
-});
+document.getElementById('backHomeBtn').addEventListener('click', closeCallMode);
 
 document.getElementById('addrSpeak').addEventListener('click', () => {
   const val = document.getElementById('addrInput').value.trim();
@@ -1003,42 +1155,46 @@ langSelect.addEventListener('change', () => {
   sideB._rebuild();
 });
 
-document.getElementById('convToggle').addEventListener('click', (e) => {
+function toggleAutoMode(){
   convMode = !convMode;
-  e.currentTarget.classList.toggle('active', convMode);
+  document.getElementById('convToggle').classList.toggle('active', convMode);
+  document.getElementById('navAuto')?.classList.toggle('active', convMode);
   if(!convMode){
     stopAll();
   } else if(!sideA.listening && !sideB.listening){
     unlockSpeechOnce();
     startSide(sideA); // starts listening on the Arabic side right away — no mic tap needed
   }
-});
+}
+document.getElementById('convToggle').addEventListener('click', toggleAutoMode);
 
-document.getElementById('textSize').addEventListener('click', () => {
+function cycleTextSize(){
   const b = document.body;
   if(b.classList.contains('text-xl')){ b.classList.remove('text-xl'); }
   else if(b.classList.contains('text-lg')){ b.classList.remove('text-lg'); b.classList.add('text-xl'); }
   else { b.classList.add('text-lg'); }
-});
+}
+document.getElementById('textSize').addEventListener('click', cycleTextSize);
 
-document.getElementById('clearBtn').addEventListener('click', () => {
+function clearConversation(){
   log = []; renderLog();
   ['transcriptA','transcriptB'].forEach(id=>{
     const el = document.getElementById(id);
     el.textContent = id==='transcriptA' ? 'اضغط الميكروفون وتكلم…' : '…';
     el.classList.add('placeholder');
   });
-});
+}
+document.getElementById('clearBtn').addEventListener('click', clearConversation);
 
-document.getElementById('copyBtn').addEventListener('click', () => {
+function copyConversation(btn){
   const text = log.map(i => `[${i.t}] ${i.speakerLabel}: ${i.original}\n→ ${i.translated}`).join('\n\n');
   navigator.clipboard.writeText(text || 'لا يوجد محادثة بعد.').then(() => {
-    const btn = document.getElementById('copyBtn');
     const old = btn.textContent;
     btn.textContent = 'تم النسخ ✓';
     setTimeout(()=>btn.textContent = old, 1500);
   });
-});
+}
+document.getElementById('copyBtn').addEventListener('click', (e) => copyConversation(e.currentTarget));
 
 /* ---------------- Usage guide modal ---------------- */
 function openGuide(){ document.getElementById('guideOverlay').classList.add('show'); }
@@ -1052,6 +1208,60 @@ document.getElementById('guideOverlay').addEventListener('click', (e) => {
 
 // show the guide automatically as soon as the page opens
 openGuide();
+
+/* ---------------- Mobile bottom nav + more sheet ---------------- */
+function setActiveNav(id){
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+}
+
+document.getElementById('navHome').addEventListener('click', () => {
+  closeCallMode();
+  closeMoreSheet();
+  setActiveNav('navHome');
+  window.scrollTo({ top:0, behavior:'smooth' });
+});
+
+document.getElementById('navCall').addEventListener('click', () => {
+  closeMoreSheet();
+  if(document.getElementById('callPanel').classList.contains('show')){
+    closeCallMode(); setActiveNav('navHome');
+  } else {
+    openCallMode(); setActiveNav('navCall');
+  }
+});
+
+document.getElementById('navAuto').addEventListener('click', () => {
+  closeMoreSheet();
+  toggleAutoMode();
+});
+
+document.getElementById('navGuide').addEventListener('click', () => {
+  closeMoreSheet();
+  openGuide();
+});
+
+function openMoreSheet(){ document.getElementById('moreSheetOverlay').classList.add('show'); }
+function closeMoreSheet(){ document.getElementById('moreSheetOverlay').classList.remove('show'); }
+document.getElementById('navMore').addEventListener('click', openMoreSheet);
+document.getElementById('moreSheetOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'moreSheetOverlay') closeMoreSheet();
+});
+
+// keep the mobile language dropdown in sync with the main one
+LANGS.forEach((l,i) => {
+  const opt = document.createElement('option');
+  opt.value = i; opt.textContent = l.label;
+  document.getElementById('langSelectMobile').appendChild(opt);
+});
+document.getElementById('langSelectMobile').addEventListener('change', (e) => {
+  langSelect.value = e.target.value;
+  langSelect.dispatchEvent(new Event('change'));
+});
+
+document.getElementById('textSizeMobile').addEventListener('click', cycleTextSize);
+document.getElementById('clearBtnMobile').addEventListener('click', () => { clearConversation(); closeMoreSheet(); });
+document.getElementById('copyBtnMobile').addEventListener('click', (e) => copyConversation(e.currentTarget));
 </script>
 
 </body>
