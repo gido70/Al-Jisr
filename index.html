@@ -730,6 +730,14 @@
     </div>
     <button class="icon-btn" id="callModeToggle" title="أدوات المكالمات الهاتفية">📞 أثناء المكالمة</button>
     <button class="icon-btn" id="convToggle" title="محادثة تلقائية متتابعة">↻ تلقائي</button>
+    <div class="ctrl-group">
+      <span class="ctrl-label" id="voiceLblDesktop">🎙️ الصوت</span>
+      <select id="voiceGenderSelectDesktop">
+        <option value="auto" id="voiceOptAutoD">تلقائي</option>
+        <option value="female" id="voiceOptFemaleD">أنثوي</option>
+        <option value="male" id="voiceOptMaleD">ذكوري</option>
+      </select>
+    </div>
     <button class="icon-btn" id="textSize" title="حجم الخط">Aa</button>
     <button class="icon-btn" id="clearBtn" title="مسح المحادثة">مسح</button>
   </div>
@@ -1785,6 +1793,7 @@ const SIMPLE_I18N_MAP = {
   moreCopyAllLbl:'moreCopyAll', copyBtnMobile:'moreCopyBtn',
   moreClearLbl:'moreClear', clearBtnMobile:'moreClearBtn',
   moreVoiceLbl:'moreVoice', voiceOptAuto:'voiceAuto', voiceOptFemale:'voiceFemale', voiceOptMale:'voiceMale',
+  voiceLblDesktop:'moreVoice', voiceOptAutoD:'voiceAuto', voiceOptFemaleD:'voiceFemale', voiceOptMaleD:'voiceMale',
   displayLangLbl:'displayLangLbl', translateLangLbl:'translateLangLbl',
   sideAHeading:'you', sideBHeading:'otherParty', hintA:'hint', hintB:'hint',
   replayA:'listenLabel', replayB:'listenLabel', editA:'editLabel', editB:'editLabel',
@@ -1878,7 +1887,14 @@ document.getElementById('moreSheetOverlay').addEventListener('click', (e) => {
 
 document.getElementById('textSizeMobile').addEventListener('click', cycleTextSize);
 document.getElementById('clearBtnMobile').addEventListener('click', () => { clearConversation(); closeMoreSheet(); });
-document.getElementById('voiceGenderSelect').addEventListener('change', (e) => { voiceGenderPref = e.target.value; });
+document.getElementById('voiceGenderSelect').addEventListener('change', (e) => {
+  voiceGenderPref = e.target.value;
+  document.getElementById('voiceGenderSelectDesktop').value = e.target.value;
+});
+document.getElementById('voiceGenderSelectDesktop').addEventListener('change', (e) => {
+  voiceGenderPref = e.target.value;
+  document.getElementById('voiceGenderSelect').value = e.target.value;
+});
 document.getElementById('copyBtnMobile').addEventListener('click', (e) => copyConversation(e.currentTarget));
 </script>
 
