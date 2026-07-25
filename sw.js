@@ -1,4 +1,4 @@
-const CACHE = 'aljisr-v21';
+const CACHE = 'aljisr-v22';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
