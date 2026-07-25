@@ -368,6 +368,49 @@
     display:flex;align-items:center;gap:10px;
   }
 
+  /* quick call translation */
+  .quick-call h3{
+    font-family:'Amiri',serif; margin:0 0 4px; font-size:19px;
+  }
+  .quick-row{
+    display:flex; align-items:center; gap:14px;
+    margin-top:14px;
+  }
+  .quick-btn{
+    flex-shrink:0;
+    width:110px; height:64px;
+    border-radius:14px;
+    border:2px solid var(--gold);
+    background:transparent;
+    color:var(--gold);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease, box-shadow .2s ease;
+  }
+  .quick-btn.teal{ border-color:var(--teal); color:var(--teal); }
+  .quick-btn .quick-ic{ font-size:22px; line-height:1; }
+  .quick-btn .quick-lbl{ font-size:11px; font-weight:700; }
+  .quick-btn.listening{
+    background:var(--gold); color:var(--bg);
+    box-shadow:0 0 0 8px rgba(201,162,39,.14);
+    animation:pulse 1.4s ease-in-out infinite;
+  }
+  .quick-btn.teal.listening{
+    background:var(--teal); color:var(--bg);
+    box-shadow:0 0 0 8px rgba(46,168,160,.14);
+  }
+  .quick-result{
+    flex:1;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:15px;
+    line-height:1.6;
+    min-height:24px;
+  }
+  .quick-result.placeholder{ color:var(--muted); }
+
   /* usage guide modal */
   .guide-overlay{
     display:none;
@@ -498,6 +541,10 @@
     .side{ padding:18px 16px 16px; }
     .side h2{ font-size:23px; }
     .transcript{ font-size:16.5px; }
+
+    .quick-row{ flex-direction:column; align-items:stretch; }
+    .quick-btn{ width:100%; flex-direction:row; height:56px; gap:10px; }
+    .quick-btn .quick-lbl{ font-size:14px; }
 
     /* call panel becomes a slide-up sheet on mobile */
     .call-panel{
@@ -690,31 +737,57 @@
 
 <div class="call-panel" id="callPanel">
   <button class="icon-btn" id="backHomeBtn" style="margin-bottom:16px;">→ الرجوع للصفحة الرئيسية</button>
-  <p class="call-sub" id="callReminder" style="background:var(--bg);border:1px solid var(--line);padding:12px 14px;border-radius:10px;margin-bottom:20px;">
-    💡 <b style="color:var(--ink);" id="callReminderB">تذكير:</b> العبارات تحت مخصصة للحالات الحرجة فقط. لترجمة أي حديث حر أثناء المكالمة (مو بس هذي العبارات)، أغلق هذي اللوحة واستخدم الميكروفون العادي أو زر "تلقائي" بالأعلى — فعّل السماعة الخارجية بالمكالمة وقرّب الجوال منها، ويترجم أي كلام يقال بنفس طريقة المحادثة المباشرة.
-  </p>
-  <h3 id="addrTitle">🏠 قارئ العنوان</h3>
-  <p class="call-sub" id="addrDesc">الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.</p>
-  <div class="addr-box">
-    <input type="text" id="addrInput" placeholder="مثال: Bağcılar Mah. 15. Sokak No:7 Daire:3">
-    <button class="big-btn" id="addrSpeak">🔊 اقرأ العنوان</button>
+
+  <div class="quick-call">
+    <h3 id="quickCallTitle">⚡ ترجمة سريعة أثناء المكالمة</h3>
+    <p class="call-sub" id="quickCallSub">اضغط الزر المناسب وتكلم، أو قرّب سماعة الجوال من صوت المتصل — الطرف الآخر لا يحتاج أي تطبيق.</p>
+
+    <div class="quick-row">
+      <button class="quick-btn" id="quickMicA">
+        <span class="quick-ic">🎙️</span>
+        <span class="quick-lbl" id="quickLabelA">أنا أتكلم</span>
+      </button>
+      <div class="quick-result placeholder" id="quickResultA">…</div>
+    </div>
+
+    <div class="quick-row">
+      <button class="quick-btn teal" id="quickMicB">
+        <span class="quick-ic">👂</span>
+        <span class="quick-lbl" id="quickLabelB">هو يتكلم</span>
+      </button>
+      <div class="quick-result placeholder" id="quickResultB">…</div>
+    </div>
   </div>
 
-  <h3 id="phrasesTitle">💬 عبارات جاهزة</h3>
-  <p class="call-sub" id="phraseHint">اضغط أي عبارة لتُنطق فوراً بالتركية — بدون انتظار أو مخاطرة سوء فهم من الميكروفون وسط ضجيج المكالمة.</p>
-  <div class="phrase-tabs" id="directionTabs">
-    <button class="phrase-tab active" data-dir="say" id="tabSay">🗣️ أنا أتكلم</button>
-    <button class="phrase-tab" data-dir="hear" id="tabHear">👂 قد أسمع منه</button>
-  </div>
-  <div class="phrase-tabs" id="phraseTabs">
-    <button class="phrase-tab active" data-cat="delivery" id="catDelivery">توصيل</button>
-    <button class="phrase-tab" data-cat="appt" id="catAppt">مواعيد</button>
-    <button class="phrase-tab" data-cat="general" id="catGeneral">عام</button>
-  </div>
-  <div class="phrase-grid" id="phraseGrid"></div>
+  <button class="icon-btn" id="toggleMoreTools" style="width:100%;justify-content:center;margin:18px 0 4px;">🧰 أدوات إضافية (عنوان، عبارات جاهزة)</button>
 
-  <div class="repeat-row">
-    <button class="icon-btn" id="repeatBtn">🔁 كرّر آخر جملة</button>
+  <div id="moreCallTools" style="display:none;">
+    <p class="call-sub" id="callReminder" style="background:var(--bg);border:1px solid var(--line);padding:12px 14px;border-radius:10px;margin:16px 0 20px;">
+      💡 <b style="color:var(--ink);" id="callReminderB">تذكير:</b> العبارات تحت مخصصة للحالات الحرجة فقط. لترجمة أي حديث حر أثناء المكالمة (مو بس هذي العبارات)، استخدم "ترجمة سريعة" بالأعلى.
+    </p>
+    <h3 id="addrTitle">🏠 قارئ العنوان</h3>
+    <p class="call-sub" id="addrDesc">الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.</p>
+    <div class="addr-box">
+      <input type="text" id="addrInput" placeholder="مثال: Bağcılar Mah. 15. Sokak No:7 Daire:3">
+      <button class="big-btn" id="addrSpeak">🔊 اقرأ العنوان</button>
+    </div>
+
+    <h3 id="phrasesTitle">💬 عبارات جاهزة</h3>
+    <p class="call-sub" id="phraseHint">اضغط أي عبارة لتُنطق فوراً بالتركية — بدون انتظار أو مخاطرة سوء فهم من الميكروفون وسط ضجيج المكالمة.</p>
+    <div class="phrase-tabs" id="directionTabs">
+      <button class="phrase-tab active" data-dir="say" id="tabSay">🗣️ أنا أتكلم</button>
+      <button class="phrase-tab" data-dir="hear" id="tabHear">👂 قد أسمع منه</button>
+    </div>
+    <div class="phrase-tabs" id="phraseTabs">
+      <button class="phrase-tab active" data-cat="delivery" id="catDelivery">توصيل</button>
+      <button class="phrase-tab" data-cat="appt" id="catAppt">مواعيد</button>
+      <button class="phrase-tab" data-cat="general" id="catGeneral">عام</button>
+    </div>
+    <div class="phrase-grid" id="phraseGrid"></div>
+
+    <div class="repeat-row">
+      <button class="icon-btn" id="repeatBtn">🔁 كرّر آخر جملة</button>
+    </div>
   </div>
 </div>
 
@@ -855,13 +928,15 @@ const STRINGS = {
     gS2T:'🎤 للتكلم والترجمة العادية', gS2D:'اضغط الميكروفون تحت أي جهة وتكلم — تُترجم وتُنطق تلقائياً للجهة المقابلة. يشتغل بالاتجاهين.',
     gS3T:'🌐 لاختيار اللغتين', gS3D:'من القوائم أعلى الصفحة اختر لغة كل جهة (عربي، تركي، إنجليزي، روسي، فارسي، ألماني) — أي زوج لغتين تحتاجه، ليس فقط العربية.',
     gS4T:'↻ للمحادثة المباشرة وجهاً لوجه', gS4D:'اضغط "تلقائي" ضغطة واحدة فقط — يبدأ يستمع بنفسه ويتبادل الاستماع بينكما بدون أي ضغط إضافي. مرّر الجوال بينكما بحرية.',
-    gS5T:'📞 أثناء مكالمة هاتفية', gS5D:'اضغط "أثناء المكالمة" — تجد قارئ عنوان (يقرأ عنوانك بصوت واضح)، وعبارات جاهزة تنطق فوراً بضغطة، وتبويب "قد أسمع منه" يشرح لك جمل شائعة قد يقولها المتصل.',
+    gS5T:'📞 أثناء مكالمة هاتفية', gS5D:'اضغط "أثناء المكالمة" — أول شي تشوفه زران كبيران "أنا أتكلم" و"هو يتكلم" لترجمة أي حديث حر فوراً، بدون ما يحتاج الطرف الآخر أي تطبيق. الأدوات الإضافية (عنوان، عبارات جاهزة) تحت زر "🧰 أدوات إضافية".',
     gS6T:'🔊 إذا ما سمعت صوت الترجمة', gS6D:'اضغط زر "استمع" الصغير الظاهر تحت النص المترجم — يشغّل الصوت يدوياً، يعمل دائماً حتى لو الصوت التلقائي ما اشتغل على جوالك.',
     gS7T:'📋 لنسخ النص أو إرساله في واتساب', gS7D:'تحت كل نص مترجم زران: "نسخ" يحفظ النص لتلصقه بأي مكان، و"مشاركة" يفتح واتساب مباشرة والنص جاهز — لا يمكن دمج الموقع داخل واتساب نفسه، لكن هذا أسرع طريقة بديلة.',
     guideClose:'فهمت، ابدأ الاستخدام',
     guideBtn:'❓ كيف أستخدمه', callBtnOpen:'📞 أثناء المكالمة', callBtnClose:'⬅ الرئيسية', autoBtn:'↻ تلقائي', textSizeBtn:'Aa', clearBtn:'مسح',
     backHome:'→ الرجوع للصفحة الرئيسية',
-    callReminderB:'تذكير:', callReminder:'العبارات تحت مخصصة للحالات الحرجة فقط. لترجمة أي حديث حر أثناء المكالمة (مو بس هذي العبارات)، أغلق هذي اللوحة واستخدم الميكروفون العادي أو زر "تلقائي" بالأعلى — فعّل السماعة الخارجية بالمكالمة وقرّب الجوال منها، ويترجم أي كلام يقال بنفس طريقة المحادثة المباشرة.',
+    callReminderB:'تذكير:', callReminder:'العبارات تحت مخصصة للحالات الحرجة فقط. لترجمة أي حديث حر أثناء المكالمة (مو بس هذي العبارات)، استخدم "ترجمة سريعة" بالأعلى.',
+    quickCallTitle:'⚡ ترجمة سريعة أثناء المكالمة', quickCallSub:'اضغط الزر المناسب وتكلم، أو قرّب سماعة الجوال من صوت المتصل — الطرف الآخر لا يحتاج أي تطبيق.',
+    quickSpeakLabel:'أنا أتكلم', quickListenLabel:'هو يتكلم', moreToolsBtn:'🧰 أدوات إضافية (عنوان، عبارات جاهزة)',
     addrTitle:'🏠 قارئ العنوان', addrDesc:'الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.', addrPh:'مثال: Bağcılar Mah. 15. Sokak No:7 Daire:3', addrBtn:'🔊 اقرأ العنوان',
     phrasesTitle:'💬 عبارات جاهزة', tabSay:'🗣️ أنا أتكلم', tabHear:'👂 قد أسمع منه',
     catDelivery:'توصيل', catAppt:'مواعيد', catGeneral:'عام', repeatBtn:'🔁 كرّر آخر جملة',
@@ -893,13 +968,15 @@ const STRINGS = {
     gS2T:'🎤 Normal konuşma ve çeviri', gS2D:'Herhangi bir tarafın altındaki mikrofona basıp konuşun — otomatik olarak çevrilip karşı tarafa seslendirilir. İki yönde de çalışır.',
     gS3T:'🌐 İki dili seçmek için', gS3D:'Sayfanın üstündeki listelerden her tarafın dilini seçin (Arapça, Türkçe, İngilizce, Rusça, Farsça, Almanca) — sadece Arapça değil, ihtiyacınız olan herhangi bir dil çifti.',
     gS4T:'↻ Yüz yüze canlı sohbet için', gS4D:'"Otomatik" butonuna sadece bir kez basın — kendi kendine dinlemeye başlar ve aranızda ek dokunuş olmadan sırayla dinler. Telefonu aranızda özgürce geçirin.',
-    gS5T:'📞 Telefon görüşmesi sırasında', gS5D:'"Arama sırasında" butonuna basın — adres okuyucu (adresinizi net sesle okur), tek dokunuşla anında seslenen hazır cümleler, ve karşınızdakinin söyleyebileceği yaygın cümleleri açıklayan bir sekme bulacaksınız.',
+    gS5T:'📞 Telefon görüşmesi sırasında', gS5D:'"Arama sırasında" butonuna basın — önce "Ben konuşuyorum" ve "O konuşuyor" adında iki büyük buton görürsünüz, karşı tarafın uygulamaya ihtiyacı olmadan anında serbest konuşmayı çevirir. Diğer araçlar (adres, hazır cümleler) "🧰 Diğer araçlar" altında.',
     gS6T:'🔊 Çeviri sesini duymuyorsanız', gS6D:'Çevrilen metnin altındaki küçük "Dinle" butonuna basın — sesi manuel olarak çalar, telefonunuzda otomatik ses çalışmasa bile her zaman çalışır.',
     gS7T:'📋 Metni kopyalamak veya WhatsApp’tan göndermek için', gS7D:'Her çevrilen metnin altında iki buton var: "Kopyala" metni herhangi bir yere yapıştırmanız için kaydeder, "Paylaş" WhatsApp’ı doğrudan açar ve metin hazırdır — site WhatsApp’ın içine entegre edilemez, ama bu en hızlı alternatif yoldur.',
     guideClose:'Anladım, kullanmaya başla',
     guideBtn:'❓ Nasıl kullanılır', callBtnOpen:'📞 Arama sırasında', callBtnClose:'⬅ Ana sayfa', autoBtn:'↻ Otomatik', textSizeBtn:'Aa', clearBtn:'Temizle',
     backHome:'→ Ana sayfaya dön',
-    callReminderB:'Hatırlatma:', callReminder:'Aşağıdaki cümleler yalnızca kritik durumlar içindir. Görüşme sırasında serbest konuşmayı çevirmek için (sadece bu cümleleri değil) bu paneli kapatın ve normal mikrofonu veya yukarıdaki "Otomatik" butonunu kullanın — görüşmede hoparlörü açın ve telefonu ona yaklaştırın, söylenen her şey canlı sohbetle aynı şekilde çevrilir.',
+    callReminderB:'Hatırlatma:', callReminder:'Aşağıdaki cümleler yalnızca kritik durumlar içindir. Serbest konuşmayı çevirmek için yukarıdaki "Hızlı çeviri"yi kullanın.',
+    quickCallTitle:'⚡ Görüşme sırasında hızlı çeviri', quickCallSub:'Uygun butona basıp konuşun, ya da telefonu arayanın sesine yaklaştırın — karşı tarafın herhangi bir uygulamaya ihtiyacı yok.',
+    quickSpeakLabel:'Ben konuşuyorum', quickListenLabel:'O konuşuyor', moreToolsBtn:'🧰 Diğer araçlar (adres, hazır cümleler)',
     addrTitle:'🏠 Adres okuyucu', addrDesc:'Adresinizi Türkçe olarak yapıştırın (örneğin Google Haritalar’dan) ve site kuryeye net bir sesle okusun — çeviri yapılmaz, çünkü adres zaten Türkçe yazılıdır.', addrPh:'Örnek: Bağcılar Mah. 15. Sokak No:7 Daire:3', addrBtn:'🔊 Adresi oku',
     phrasesTitle:'💬 Hazır cümleler', tabSay:'🗣️ Ben konuşuyorum', tabHear:'👂 Ondan duyabilirim',
     catDelivery:'Teslimat', catAppt:'Randevu', catGeneral:'Genel', repeatBtn:'🔁 Son cümleyi tekrarla',
@@ -931,13 +1008,15 @@ const STRINGS = {
     gS2T:'🎤 Regular talking and translation', gS2D:'Tap the mic under either side and speak — it is translated and spoken automatically to the other side. Works both ways.',
     gS3T:'🌐 Choosing the two languages', gS3D:'From the dropdowns at the top of the page, pick each side\'s language (Arabic, Turkish, English, Russian, Persian, German) — any pair you need, not just Arabic.',
     gS4T:'↻ For a live face-to-face conversation', gS4D:'Tap "Auto" just once — it starts listening on its own and alternates listening between you both with no extra taps. Pass the phone freely between you.',
-    gS5T:'📞 During a phone call', gS5D:'Tap "During a call" — you\'ll find an address reader (reads your address clearly), ready phrases that speak instantly on tap, and a "I might hear" tab explaining common lines the caller might say.',
+    gS5T:'📞 During a phone call', gS5D:'Tap "During a call" — first you\'ll see two big buttons, "I\'m speaking" and "They\'re speaking", that translate any free conversation instantly, no app needed on the other end. Extra tools (address, ready phrases) are under "🧰 More tools".',
     gS6T:'🔊 If you don\'t hear the translation', gS6D:'Tap the small "Listen" button shown under the translated text — it plays the audio manually, and always works even if auto-play didn\'t on your phone.',
     gS7T:'📋 To copy the text or send it on WhatsApp', gS7D:'Under every translated text there are two buttons: "Copy" saves the text to paste anywhere, and "Share" opens WhatsApp directly with the text ready — the site can\'t be embedded inside WhatsApp itself, but this is the fastest alternative.',
     guideClose:'Got it, start using it',
     guideBtn:'❓ How to use it', callBtnOpen:'📞 During a call', callBtnClose:'⬅ Home', autoBtn:'↻ Auto', textSizeBtn:'Aa', clearBtn:'Clear',
     backHome:'→ Back to home',
-    callReminderB:'Reminder:', callReminder:'The phrases below are only for critical situations. To translate any free conversation during the call (not just these phrases), close this panel and use the regular mic or the "Auto" button above — turn on speakerphone during the call and bring the phone close to it; anything said is translated the same way as a live conversation.',
+    callReminderB:'Reminder:', callReminder:'The phrases below are only for critical situations. To translate any free conversation, use "Quick translate" above.',
+    quickCallTitle:'⚡ Quick translate during a call', quickCallSub:'Tap the right button and speak, or bring the phone close to the caller\'s voice — the other person doesn\'t need any app.',
+    quickSpeakLabel:'I\'m speaking', quickListenLabel:'They\'re speaking', moreToolsBtn:'🧰 More tools (address, ready phrases)',
     addrTitle:'🏠 Address reader', addrDesc:'Paste your address in Turkish (e.g. from Google Maps) and the site reads it clearly for the courier — no translation needed, since the address is already written in Turkish.', addrPh:'Example: Bağcılar Mah. 15. Sokak No:7 Daire:3', addrBtn:'🔊 Read address',
     phrasesTitle:'💬 Ready phrases', tabSay:'🗣️ I\'m speaking', tabHear:'👂 I might hear',
     catDelivery:'Delivery', catAppt:'Appointments', catGeneral:'General', repeatBtn:'🔁 Repeat last sentence',
@@ -1182,15 +1261,18 @@ function makeSide(key){
     side.rec.onstart = () => {
       side.listening = true; side.resultReceived = false;
       micBtn.classList.add('listening');
+      document.getElementById('quickMic' + key)?.classList.add('listening');
       setStatus(t('listeningIn').replace('%s', curLang().label));
     };
     side.rec.onerror = (e) => {
       side.listening = false; micBtn.classList.remove('listening');
+      document.getElementById('quickMic' + key)?.classList.remove('listening');
       if(e.error === 'not-allowed') showBanner(t('micDenied'));
       setStatus(t('ready'));
     };
     side.rec.onend = () => {
       side.listening = false; micBtn.classList.remove('listening'); setStatus(t('ready'));
+      document.getElementById('quickMic' + key)?.classList.remove('listening');
       // In auto conversation mode, silence just means nobody has spoken yet on
       // this side — keep re-arming the mic instead of stopping.
       if(convMode && !side.resultReceived && !otherSide().listening){
@@ -1207,6 +1289,7 @@ function makeSide(key){
       replayAudio[key] = { text: said, lang: curLang().bcp47 };
       document.getElementById('replay' + key).style.display = 'inline-flex';
       document.getElementById('actions' + key).style.display = 'flex';
+      mirrorQuickResult(key, said);
       setStatus(t('translating'));
       try{
         const translated = await translateText(said, curLang().code, otherLang().code);
@@ -1220,6 +1303,7 @@ function makeSide(key){
         replayAudio[otherKey] = { text: translated, lang: otherLang().bcp47 };
         document.getElementById('replay' + otherKey).style.display = 'inline-flex';
         document.getElementById('actions' + otherKey).style.display = 'flex';
+        mirrorQuickResult(otherKey, translated);
         speak(translated, otherLang().bcp47, () => {
           setStatus(t('ready'));
           if(convMode) startSide(otherSide());
@@ -1371,6 +1455,15 @@ document.getElementById('callModeToggle').addEventListener('click', () => {
 });
 document.getElementById('backHomeBtn').addEventListener('click', closeCallMode);
 
+document.getElementById('quickMicA').addEventListener('click', () => document.getElementById('micA').click());
+document.getElementById('quickMicB').addEventListener('click', () => document.getElementById('micB').click());
+
+document.getElementById('toggleMoreTools').addEventListener('click', (e) => {
+  const box = document.getElementById('moreCallTools');
+  const isOpen = box.style.display === 'block';
+  box.style.display = isOpen ? 'none' : 'block';
+});
+
 document.getElementById('addrSpeak').addEventListener('click', () => {
   const val = document.getElementById('addrInput').value.trim();
   if(!val){ showBanner(t('noAddress')); return; }
@@ -1492,8 +1585,19 @@ function syncLangSelectUI(){
   langSelectB.value = idxB; langSelectBMobile.value = idxB;
   document.getElementById('langATagLabel').textContent = langA.label;
   document.getElementById('langBTagLabel').textContent = langB.label;
+  const qA = document.getElementById('quickLabelA');
+  const qB = document.getElementById('quickLabelB');
+  if(qA) qA.textContent = t('quickSpeakLabel') + ' (' + langA.label + ')';
+  if(qB) qB.textContent = t('quickListenLabel') + ' (' + langB.label + ')';
 }
 syncLangSelectUI();
+
+function mirrorQuickResult(key, text){
+  const el = document.getElementById('quickResult' + key);
+  if(!el) return;
+  el.textContent = text;
+  el.classList.remove('placeholder');
+}
 
 function resetSideTranscript(key){
   const el = document.getElementById('transcript' + key);
@@ -1501,6 +1605,8 @@ function resetSideTranscript(key){
   el.classList.add('placeholder');
   document.getElementById('replay' + key).style.display = 'none';
   document.getElementById('actions' + key).style.display = 'none';
+  const qEl = document.getElementById('quickResult' + key);
+  if(qEl){ qEl.textContent = '…'; qEl.classList.add('placeholder'); }
 }
 
 function onLangAChange(newIdx){
@@ -1599,6 +1705,7 @@ document.getElementById('guideOverlay').addEventListener('click', (e) => {
 
 /* ---------------- Interface language switcher ---------------- */
 const SIMPLE_I18N_MAP = {
+  quickCallTitle:'quickCallTitle', quickCallSub:'quickCallSub', toggleMoreTools:'moreToolsBtn',
   gTitle:'gTitle', gSub:'gSub', gS1T:'gS1T', gS1D:'gS1D', gS2T:'gS2T', gS2D:'gS2D',
   gS3T:'gS3T', gS3D:'gS3D', gS4T:'gS4T', gS4D:'gS4D', gS5T:'gS5T', gS5D:'gS5D',
   gS6T:'gS6T', gS6D:'gS6D', gS7T:'gS7T', gS7D:'gS7D', guideClose:'guideClose',
