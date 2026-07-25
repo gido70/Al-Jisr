@@ -444,6 +444,12 @@
       <p>اضغط زر "استمع" الصغير الظاهر تحت النص المترجم — يشغّل الصوت يدوياً، يعمل دائماً حتى لو الصوت التلقائي ما اشتغل على جوالك.</p></div>
     </div>
 
+    <div class="guide-step">
+      <div class="num">6</div>
+      <div><h4>📋 لنسخ النص أو إرساله في واتساب</h4>
+      <p>تحت كل نص مترجم زران: "نسخ" يحفظ النص لتلصقه بأي مكان، و"مشاركة" يفتح واتساب مباشرة والنص جاهز — لا يمكن دمج الموقع داخل واتساب نفسه، لكن هذا أسرع طريقة بديلة.</p></div>
+    </div>
+
     <button class="guide-close" id="guideClose">فهمت، ابدأ الاستخدام</button>
   </div>
 </div>
@@ -499,6 +505,10 @@
     <h2>أنت</h2>
     <div class="transcript placeholder" id="transcriptA">اضغط الميكروفون وتكلم…</div>
     <button class="icon-btn" id="replayA" style="display:none;align-self:flex-start;margin-top:8px;">🔊 استمع</button>
+    <div class="btn-row" id="actionsA" style="display:none;gap:8px;margin-top:8px;">
+      <button class="icon-btn" id="copyA">📋 نسخ</button>
+      <button class="icon-btn" id="shareA">📤 مشاركة</button>
+    </div>
     <div class="mic-row">
       <button class="mic-btn" id="micA" title="تحدث بالعربية">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
@@ -521,6 +531,10 @@
     <h2 id="targetLangHeading">الطرف الآخر</h2>
     <div class="transcript placeholder" id="transcriptB">…</div>
     <button class="icon-btn" id="replayB" style="display:none;align-self:flex-start;margin-top:8px;">🔊 استمع</button>
+    <div class="btn-row" id="actionsB" style="display:none;gap:8px;margin-top:8px;">
+      <button class="icon-btn" id="copyB">📋 نسخ</button>
+      <button class="icon-btn" id="shareB">📤 مشاركة</button>
+    </div>
     <div class="mic-row">
       <button class="mic-btn" id="micB" title="تحدث باللغة المقابلة">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
@@ -714,6 +728,7 @@ function initSideA(){
       setStatus('ينطق…');
       replayAudio.B = { text: translated, lang: target.bcp47 };
       document.getElementById('replayB').style.display = 'inline-flex';
+      document.getElementById('actionsB').style.display = 'flex';
       speak(translated, target.bcp47, () => {
         setStatus('جاهز');
         if(convMode) startSide(sideB);
@@ -769,6 +784,7 @@ function initSideB(){
         setStatus('ينطق…');
         replayAudio.A = { text: translated, lang: 'ar-SA' };
         document.getElementById('replayA').style.display = 'inline-flex';
+        document.getElementById('actionsA').style.display = 'flex';
         speak(translated, 'ar-SA', () => {
           setStatus('جاهز');
           if(convMode) startSide(sideA);
@@ -948,6 +964,31 @@ document.getElementById('replayA').addEventListener('click', () => {
 document.getElementById('replayB').addEventListener('click', () => {
   if(replayAudio.B) speak(replayAudio.B.text, replayAudio.B.lang);
 });
+
+function copyText(text, btn){
+  if(!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const old = btn.textContent;
+    btn.textContent = 'تم النسخ ✓';
+    setTimeout(() => btn.textContent = old, 1400);
+  });
+}
+
+async function shareText(text){
+  if(!text) return;
+  if(navigator.share){
+    try{ await navigator.share({ text }); }catch(e){ /* user cancelled, ignore */ }
+  } else {
+    // no native share available (mostly desktop) — fall back to copy
+    navigator.clipboard.writeText(text);
+    showBanner('تم نسخ النص (المشاركة المباشرة غير مدعومة على هذا الجهاز/المتصفح).');
+  }
+}
+
+document.getElementById('copyA').addEventListener('click', (e) => copyText(replayAudio.A?.text, e.currentTarget));
+document.getElementById('copyB').addEventListener('click', (e) => copyText(replayAudio.B?.text, e.currentTarget));
+document.getElementById('shareA').addEventListener('click', () => shareText(replayAudio.A?.text));
+document.getElementById('shareB').addEventListener('click', () => shareText(replayAudio.B?.text));
 
 langSelect.addEventListener('change', () => {
   target = LANGS[langSelect.value];
