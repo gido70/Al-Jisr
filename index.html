@@ -528,7 +528,7 @@
   .sheet-overlay{ display:none; }
 
   @media (max-width:720px){
-    body{ padding-bottom:calc(78px + env(safe-area-inset-bottom)); }
+    body{ padding-bottom:calc(100px + env(safe-area-inset-bottom)); }
 
     header{ padding:16px 16px 12px; }
     .brand h1{ font-size:19px; }
@@ -923,6 +923,7 @@ const STRINGS = {
     micBusy:'تعذر الوصول للميكروفون — قد يكون مستخدماً من تطبيق آخر (مثل المكالمة نفسها). جرّب مرة أخرى.',
     noSpeechHeard:'لم يُسمع أي كلام. تأكد السماعة الخارجية مفعّلة وحاول مرة أخرى.',
     micGenericError:'حدث خطأ أثناء الاستماع. حاول مرة أخرى.',
+    micStartTimeout:'تعذر بدء الاستماع. تحقق من اتصال الإنترنت وأعد المحاولة، أو أغلق الصفحة وافتحها من جديد.',
     you:'أنت', otherParty:'الجهة المقابلة', noSpeechYet:'لا توجد جملة سابقة بعد.', noAddress:'اكتب أو الصق العنوان أولاً.',
     copied:'تم النسخ ✓', copyLabel:'📋 نسخ', shareLabel:'📤 مشاركة', listenLabel:'🔊 استمع',
     editLabel:'✏️ تعديل', editConfirmLabel:'✔️ ترجم بعد التعديل', clearOneLabel:'🗑️ مسح',
@@ -967,6 +968,7 @@ const STRINGS = {
     micBusy:'Mikrofona erişilemedi — başka bir uygulama (örneğin aramanın kendisi) kullanıyor olabilir. Tekrar deneyin.',
     noSpeechHeard:'Hiçbir konuşma duyulmadı. Hoparlörün açık olduğundan emin olup tekrar deneyin.',
     micGenericError:'Dinlerken bir hata oluştu. Tekrar deneyin.',
+    micStartTimeout:'Dinleme başlatılamadı. İnterneti kontrol edip tekrar deneyin, ya da sayfayı kapatıp yeniden açın.',
     you:'Sen', otherParty:'Karşı taraf', noSpeechYet:'Henüz önceki bir cümle yok.', noAddress:'Önce adresi yazın veya yapıştırın.',
     copied:'Kopyalandı ✓', copyLabel:'📋 Kopyala', shareLabel:'📤 Paylaş', listenLabel:'🔊 Dinle',
     editLabel:'✏️ Düzenle', editConfirmLabel:'✔️ Düzenledikten sonra çevir', clearOneLabel:'🗑️ Sil',
@@ -1011,6 +1013,7 @@ const STRINGS = {
     micBusy:'Could not access the microphone — it may be in use by another app (like the call itself). Try again.',
     noSpeechHeard:'No speech was heard. Make sure speakerphone is on and try again.',
     micGenericError:'Something went wrong while listening. Try again.',
+    micStartTimeout:'Could not start listening. Check your internet and try again, or close and reopen the page.',
     you:'You', otherParty:'Other side', noSpeechYet:'No previous sentence yet.', noAddress:'Type or paste the address first.',
     copied:'Copied ✓', copyLabel:'📋 Copy', shareLabel:'📤 Share', listenLabel:'🔊 Listen',
     editLabel:'✏️ Edit', editConfirmLabel:'✔️ Translate after editing', clearOneLabel:'🗑️ Clear',
@@ -1275,8 +1278,28 @@ function stopAll(){
   if(sideB.rec && sideB.listening) sideB.rec.stop();
 }
 function startSide(side){
+  safeStartRecognition(side);
+}
+
+// Wraps rec.start() with two safety nets: catches a synchronous throw, and —
+// more importantly — detects when the recognizer never actually starts at all
+// (no onstart, no onerror; happens on flaky networks/devices) and tells the
+// user instead of leaving the mic looking "stuck" with zero feedback.
+function safeStartRecognition(side){
   window.speechSynthesis.cancel();
-  try{ side.rec.start(); }catch(e){}
+  try{
+    side.rec.start();
+  }catch(e){
+    showBanner(t('micGenericError'));
+    return;
+  }
+  clearTimeout(side._startTimeout);
+  side._startTimeout = setTimeout(() => {
+    if(!side.listening){
+      showBanner(t('micStartTimeout'));
+      try{ side.rec.abort(); }catch(e){}
+    }
+  }, 4000);
 }
 
 // One factory drives both sides — 'A' and 'B' are symmetric, each reads its
@@ -1295,12 +1318,14 @@ function makeSide(key){
     if(!side.rec){ micBtn.disabled = true; return; }
 
     side.rec.onstart = () => {
+      clearTimeout(side._startTimeout);
       side.listening = true; side.resultReceived = false;
       micBtn.classList.add('listening');
       document.getElementById('quickMic' + key)?.classList.add('listening');
       setStatus(t('listeningIn').replace('%s', curLang().label));
     };
     side.rec.onerror = (e) => {
+      clearTimeout(side._startTimeout);
       side.listening = false; micBtn.classList.remove('listening');
       document.getElementById('quickMic' + key)?.classList.remove('listening');
       if(e.error === 'not-allowed'){ showBanner(t('micDenied')); }
@@ -1311,6 +1336,7 @@ function makeSide(key){
       setStatus(t('ready'));
     };
     side.rec.onend = () => {
+      clearTimeout(side._startTimeout);
       side.listening = false; micBtn.classList.remove('listening'); setStatus(t('ready'));
       document.getElementById('quickMic' + key)?.classList.remove('listening');
       // In auto conversation mode, silence just means nobody has spoken yet on
@@ -1362,8 +1388,7 @@ function makeSide(key){
     document.getElementById('convToggle').classList.remove('active');
     document.getElementById('navAuto')?.classList.remove('active');
     if(side.listening){ side.rec.stop(); return; }
-    window.speechSynthesis.cancel();
-    try{ side.rec.start(); }catch(e){}
+    safeStartRecognition(side);
   });
 }
 
