@@ -397,6 +397,7 @@
     <div class="lang-tag"><span class="dot"></span> العربية</div>
     <h2>أنت</h2>
     <div class="transcript placeholder" id="transcriptA">اضغط الميكروفون وتكلم…</div>
+    <button class="icon-btn" id="replayA" style="display:none;align-self:flex-start;margin-top:8px;">🔊 استمع</button>
     <div class="mic-row">
       <button class="mic-btn" id="micA" title="تحدث بالعربية">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
@@ -418,6 +419,7 @@
     <div class="lang-tag"><span class="dot"></span> <span id="targetLangLabel">Türkçe</span></div>
     <h2 id="targetLangHeading">الطرف الآخر</h2>
     <div class="transcript placeholder" id="transcriptB">…</div>
+    <button class="icon-btn" id="replayB" style="display:none;align-self:flex-start;margin-top:8px;">🔊 استمع</button>
     <div class="mic-row">
       <button class="mic-btn" id="micB" title="تحدث باللغة المقابلة">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
@@ -510,6 +512,25 @@ async function translateText(text, from, to){
 }
 
 let lastSpokenGlobal = { text:'', lang:'tr-TR' };
+const replayAudio = { A: null, B: null };
+
+// Mobile browsers (esp. Safari/Chrome on phones) block speechSynthesis.speak()
+// unless it happens inside a direct tap — an async translation call breaks that
+// link. This "unlocks" the speech engine on the very first tap anywhere, which
+// keeps later programmatic speak() calls working for the rest of the session.
+let speechUnlocked = false;
+function unlockSpeechOnce(){
+  if(speechUnlocked) return;
+  speechUnlocked = true;
+  try{
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+document.addEventListener('click', unlockSpeechOnce, { once:true });
+document.addEventListener('touchend', unlockSpeechOnce, { once:true });
+
 function speak(text, lang, onDone){
   lastSpokenGlobal.text = text;
   lastSpokenGlobal.lang = lang;
@@ -567,6 +588,8 @@ function initSideA(){
       addLog('أنت', said, translated);
       animateCross(true);
       setStatus('ينطق…');
+      replayAudio.B = { text: translated, lang: target.bcp47 };
+      document.getElementById('replayB').style.display = 'inline-flex';
       speak(translated, target.bcp47, () => {
         setStatus('جاهز');
         if(convMode) startSide(sideB);
@@ -614,6 +637,8 @@ function initSideB(){
         addLog(target.label, said, translated);
         animateCross(false);
         setStatus('ينطق…');
+        replayAudio.A = { text: translated, lang: 'ar-SA' };
+        document.getElementById('replayA').style.display = 'inline-flex';
         speak(translated, 'ar-SA', () => {
           setStatus('جاهز');
           if(convMode) startSide(sideA);
@@ -785,6 +810,13 @@ document.getElementById('addrSpeak').addEventListener('click', () => {
 document.getElementById('repeatBtn').addEventListener('click', () => {
   if(!lastSpokenGlobal.text){ showBanner('لا توجد جملة سابقة بعد.'); return; }
   speak(lastSpokenGlobal.text, lastSpokenGlobal.lang);
+});
+
+document.getElementById('replayA').addEventListener('click', () => {
+  if(replayAudio.A) speak(replayAudio.A.text, replayAudio.A.lang);
+});
+document.getElementById('replayB').addEventListener('click', () => {
+  if(replayAudio.B) speak(replayAudio.B.text, replayAudio.B.lang);
 });
 
 langSelect.addEventListener('change', () => {
