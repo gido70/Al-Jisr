@@ -887,6 +887,14 @@
       <label id="moreClearLbl">🗑️ مسح المحادثة</label>
       <button class="icon-btn" id="clearBtnMobile">مسح</button>
     </div>
+    <div class="more-row">
+      <label id="moreVoiceLbl">🎙️ صوت الترجمة</label>
+      <select id="voiceGenderSelect">
+        <option value="auto" id="voiceOptAuto">تلقائي</option>
+        <option value="female" id="voiceOptFemale">أنثوي</option>
+        <option value="male" id="voiceOptMale">ذكوري</option>
+      </select>
+    </div>
   </div>
 </div>
 
@@ -912,6 +920,9 @@ const STRINGS = {
   ar: {
     ready:'جاهز', translating:'يترجم…', speaking:'ينطق…', listeningIn:'يستمع بـ%s…',
     micDenied:'الرجاء السماح باستخدام الميكروفون.', translateFail:'تعذر الاتصال بخدمة الترجمة. تحقق من الإنترنت.',
+    micBusy:'تعذر الوصول للميكروفون — قد يكون مستخدماً من تطبيق آخر (مثل المكالمة نفسها). جرّب مرة أخرى.',
+    noSpeechHeard:'لم يُسمع أي كلام. تأكد السماعة الخارجية مفعّلة وحاول مرة أخرى.',
+    micGenericError:'حدث خطأ أثناء الاستماع. حاول مرة أخرى.',
     you:'أنت', otherParty:'الجهة المقابلة', noSpeechYet:'لا توجد جملة سابقة بعد.', noAddress:'اكتب أو الصق العنوان أولاً.',
     copied:'تم النسخ ✓', copyLabel:'📋 نسخ', shareLabel:'📤 مشاركة', listenLabel:'🔊 استمع',
     editLabel:'✏️ تعديل', editConfirmLabel:'✔️ ترجم بعد التعديل', clearOneLabel:'🗑️ مسح',
@@ -948,10 +959,14 @@ const STRINGS = {
     displayLangLbl:'🖥️ لغة العرض', translateLangLbl:'🌐 لغتا الترجمة',
     moreTextSize:'Aa حجم الخط', moreTextSizeBtn:'تكبير', moreCopyAll:'📋 نسخ كل المحادثة', moreCopyBtn:'نسخ',
     moreClear:'🗑️ مسح المحادثة', moreClearBtn:'مسح',
+    moreVoice:'🎙️ صوت الترجمة', voiceAuto:'تلقائي', voiceFemale:'أنثوي', voiceMale:'ذكوري',
   },
   tr: {
     ready:'Hazır', translating:'Çevriliyor…', speaking:'Sesli okunuyor…', listeningIn:'%s dinleniyor…',
     micDenied:'Lütfen mikrofon kullanımına izin verin.', translateFail:'Çeviri servisine bağlanılamadı. İnterneti kontrol edin.',
+    micBusy:'Mikrofona erişilemedi — başka bir uygulama (örneğin aramanın kendisi) kullanıyor olabilir. Tekrar deneyin.',
+    noSpeechHeard:'Hiçbir konuşma duyulmadı. Hoparlörün açık olduğundan emin olup tekrar deneyin.',
+    micGenericError:'Dinlerken bir hata oluştu. Tekrar deneyin.',
     you:'Sen', otherParty:'Karşı taraf', noSpeechYet:'Henüz önceki bir cümle yok.', noAddress:'Önce adresi yazın veya yapıştırın.',
     copied:'Kopyalandı ✓', copyLabel:'📋 Kopyala', shareLabel:'📤 Paylaş', listenLabel:'🔊 Dinle',
     editLabel:'✏️ Düzenle', editConfirmLabel:'✔️ Düzenledikten sonra çevir', clearOneLabel:'🗑️ Sil',
@@ -988,10 +1003,14 @@ const STRINGS = {
     displayLangLbl:'🖥️ Arayüz dili', translateLangLbl:'🌐 Çeviri dilleri',
     moreTextSize:'Aa Yazı boyutu', moreTextSizeBtn:'Büyüt', moreCopyAll:'📋 Tüm konuşmayı kopyala', moreCopyBtn:'Kopyala',
     moreClear:'🗑️ Konuşmayı temizle', moreClearBtn:'Temizle',
+    moreVoice:'🎙️ Çeviri sesi', voiceAuto:'Otomatik', voiceFemale:'Kadın', voiceMale:'Erkek',
   },
   en: {
     ready:'Ready', translating:'Translating…', speaking:'Speaking…', listeningIn:'Listening in %s…',
     micDenied:'Please allow microphone access.', translateFail:'Could not reach the translation service. Check your internet.',
+    micBusy:'Could not access the microphone — it may be in use by another app (like the call itself). Try again.',
+    noSpeechHeard:'No speech was heard. Make sure speakerphone is on and try again.',
+    micGenericError:'Something went wrong while listening. Try again.',
     you:'You', otherParty:'Other side', noSpeechYet:'No previous sentence yet.', noAddress:'Type or paste the address first.',
     copied:'Copied ✓', copyLabel:'📋 Copy', shareLabel:'📤 Share', listenLabel:'🔊 Listen',
     editLabel:'✏️ Edit', editConfirmLabel:'✔️ Translate after editing', clearOneLabel:'🗑️ Clear',
@@ -1028,6 +1047,7 @@ const STRINGS = {
     displayLangLbl:'🖥️ Display language', translateLangLbl:'🌐 Translation languages',
     moreTextSize:'Aa Text size', moreTextSizeBtn:'Larger', moreCopyAll:'📋 Copy whole conversation', moreCopyBtn:'Copy',
     moreClear:'🗑️ Clear conversation', moreClearBtn:'Clear',
+    moreVoice:'🎙️ Translation voice', voiceAuto:'Automatic', voiceFemale:'Female', voiceMale:'Male',
   },
 };
 function t(key){ return (STRINGS[UI_LANG] && STRINGS[UI_LANG][key]) || STRINGS.ar[key] || key; }
@@ -1208,6 +1228,20 @@ function warnIfVoiceMissing(langCode){
   }
 }
 
+let voiceGenderPref = 'auto'; // 'auto' | 'female' | 'male'
+
+function pickVoiceFor(langCode){
+  if(voiceGenderPref === 'auto') return null;
+  const voices = window.speechSynthesis.getVoices();
+  const candidates = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(langCode.toLowerCase()));
+  if(candidates.length === 0) return null;
+  const femaleHints = ['female','samantha','karen','moira','tessa','fiona','yelda','zira','susan','victoria'];
+  const maleHints = ['male','alex','daniel','fred','thomas','yusuf','david','mark'];
+  const hints = voiceGenderPref === 'female' ? femaleHints : maleHints;
+  const match = candidates.find(v => hints.some(h => v.name.toLowerCase().includes(h)));
+  return match || candidates[0];
+}
+
 function speak(text, lang, onDone){
   lastSpokenGlobal.text = text;
   lastSpokenGlobal.lang = lang;
@@ -1216,6 +1250,8 @@ function speak(text, lang, onDone){
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = lang;
   utter.rate = 0.95;
+  const preferred = pickVoiceFor(lang.split('-')[0]);
+  if(preferred) utter.voice = preferred;
   utter.onend = () => { if(onDone) onDone(); };
   utter.onerror = () => { if(onDone) onDone(); };
   window.speechSynthesis.speak(utter);
@@ -1267,7 +1303,11 @@ function makeSide(key){
     side.rec.onerror = (e) => {
       side.listening = false; micBtn.classList.remove('listening');
       document.getElementById('quickMic' + key)?.classList.remove('listening');
-      if(e.error === 'not-allowed') showBanner(t('micDenied'));
+      if(e.error === 'not-allowed'){ showBanner(t('micDenied')); }
+      else if(e.error === 'audio-capture'){ showBanner(t('micBusy')); }
+      else if(e.error === 'network'){ showBanner(t('translateFail')); }
+      else if(e.error === 'no-speech'){ showBanner(t('noSpeechHeard')); }
+      else { showBanner(t('micGenericError')); }
       setStatus(t('ready'));
     };
     side.rec.onend = () => {
@@ -1719,6 +1759,7 @@ const SIMPLE_I18N_MAP = {
   moreTextSizeLbl:'moreTextSize', textSizeMobile:'moreTextSizeBtn',
   moreCopyAllLbl:'moreCopyAll', copyBtnMobile:'moreCopyBtn',
   moreClearLbl:'moreClear', clearBtnMobile:'moreClearBtn',
+  moreVoiceLbl:'moreVoice', voiceOptAuto:'voiceAuto', voiceOptFemale:'voiceFemale', voiceOptMale:'voiceMale',
   displayLangLbl:'displayLangLbl', translateLangLbl:'translateLangLbl',
   sideAHeading:'you', sideBHeading:'otherParty', hintA:'hint', hintB:'hint',
   replayA:'listenLabel', replayB:'listenLabel', editA:'editLabel', editB:'editLabel',
@@ -1812,6 +1853,7 @@ document.getElementById('moreSheetOverlay').addEventListener('click', (e) => {
 
 document.getElementById('textSizeMobile').addEventListener('click', cycleTextSize);
 document.getElementById('clearBtnMobile').addEventListener('click', () => { clearConversation(); closeMoreSheet(); });
+document.getElementById('voiceGenderSelect').addEventListener('change', (e) => { voiceGenderPref = e.target.value; });
 document.getElementById('copyBtnMobile').addEventListener('click', (e) => copyConversation(e.currentTarget));
 </script>
 
