@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>الجسر — لوحة الأدمن</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{
+    --ink:#eef1f5; --bg:#0e1620; --bg2:#121d2b; --line:#26364a;
+    --gold:#c9a227; --teal:#2ea8a0; --muted:#7d8ba0; --danger:#b5442e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:'Tajawal',sans-serif; padding:24px;
+  }
+  h1{ font-family:'Amiri',serif; font-size:24px; margin:0 0 6px; }
+  .sub{ color:var(--muted); font-size:13px; margin:0 0 26px; }
+
+  .card{
+    background:var(--bg2); border:1px solid var(--line); border-radius:14px;
+    padding:20px; max-width:640px; margin:0 auto 20px;
+  }
+
+  #loginCard input{
+    width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink);
+    padding:13px; border-radius:10px; font-family:'JetBrains Mono',monospace; font-size:15px;
+    text-align:center; margin-bottom:12px;
+  }
+  button{
+    width:100%; background:var(--gold); color:var(--bg); border:none;
+    padding:13px; border-radius:10px; font-family:'Tajawal',sans-serif;
+    font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  button:disabled{ opacity:.6; }
+  .err{ color:var(--danger); font-size:13px; margin-top:10px; min-height:16px; text-align:center; }
+
+  #dashboard{ display:none; }
+  .row{ display:flex; gap:10px; margin-bottom:14px; }
+  .row input{
+    flex:1; background:var(--bg); border:1px solid var(--line); color:var(--ink);
+    padding:12px 14px; border-radius:10px; font-family:'Tajawal',sans-serif; font-size:14px;
+  }
+  .row button{ width:auto; padding:12px 22px; white-space:nowrap; }
+
+  .generated{
+    display:none; background:var(--bg); border:1px solid var(--gold); border-radius:10px;
+    padding:16px; margin-bottom:20px; text-align:center;
+  }
+  .generated .code{
+    font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:600; color:var(--gold);
+    letter-spacing:1px; margin-bottom:12px; direction:ltr;
+  }
+  .generated .actions{ display:flex; gap:8px; }
+  .generated .actions button{ background:var(--bg2); color:var(--ink); border:1px solid var(--line); font-weight:500; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th,td{ padding:9px 8px; text-align:right; border-bottom:1px solid var(--line); }
+  th{ color:var(--muted); font-weight:500; font-size:11.5px; }
+  .pill{ display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; }
+  .pill.used{ background:rgba(181,68,46,.15); color:#e08469; }
+  .pill.free{ background:rgba(46,168,160,.15); color:var(--teal); }
+  .code-cell{ font-family:'JetBrains Mono',monospace; direction:ltr; text-align:right; }
+  #refreshBtn{ width:auto; padding:9px 16px; font-size:13px; margin-bottom:14px; background:transparent; color:var(--muted); border:1px solid var(--line); }
+  .empty-note{ color:var(--muted); font-size:13px; text-align:center; padding:20px 0; }
+</style>
+</head>
+<body>
+
+<h1>🌉 لوحة أدمن الجسر</h1>
+<p class="sub">توليد ومتابعة رموز الدخول — بدون الحاجة تفتح Supabase مباشرة.</p>
+
+<div class="card" id="loginCard">
+  <input type="password" id="adminPass" placeholder="كلمة مرور الأدمن" autocomplete="off">
+  <button id="loginBtn">دخول</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<div id="dashboard">
+  <div class="card">
+    <div class="row">
+      <input type="text" id="labelInput" placeholder="اسم الصديق (اختياري) — مثال: أحمد">
+      <button id="genBtn">➕ أنشئ رمز جديد</button>
+    </div>
+    <div class="generated" id="generatedBox">
+      <div class="code" id="generatedCode"></div>
+      <div class="actions">
+        <button id="copyGenBtn">📋 نسخ</button>
+        <button id="shareGenBtn">📤 مشاركة عبر واتساب</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <button id="refreshBtn">↻ تحديث القائمة</button>
+    <div id="tableWrap"></div>
+  </div>
+</div>
+
+<script>
+// غيّر كلمة المرور هذه لأي شيء تحفظه بسهولة — هذا حماية بسيطة فقط
+// (نفس مستوى الحماية المتفق عليه من البداية: يمنع الانتشار العرضي)
+const ADMIN_PASSWORD = 'aljisr-admin-2026';
+
+const SUPABASE_URL = 'https://nmbbahzzogspuuvpsxud.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tYmJhaHp6b2dzcHV1dnBzeHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MTY1MTYsImV4cCI6MjA5MzA5MjUxNn0.6yZNxZ_2ONQ-wyQSJtdvYpdJAxZfB-7C00ezEepUiqY';
+
+async function callRpc(fn, body){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(body || {}),
+  });
+  if(!res.ok) throw new Error('request failed');
+  return res.json();
+}
+
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const val = document.getElementById('adminPass').value;
+  if(val === ADMIN_PASSWORD){
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadTable();
+  } else {
+    document.getElementById('loginErr').textContent = 'كلمة المرور غير صحيحة.';
+  }
+});
+document.getElementById('adminPass').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+let lastGeneratedCode = '';
+
+document.getElementById('genBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('genBtn');
+  const label = document.getElementById('labelInput').value.trim();
+  btn.disabled = true;
+  try{
+    const code = await callRpc('create_aljisr_code', { p_label: label || null });
+    lastGeneratedCode = code;
+    document.getElementById('generatedCode').textContent = code;
+    document.getElementById('generatedBox').style.display = 'block';
+    document.getElementById('labelInput').value = '';
+    loadTable();
+  }catch(e){
+    alert('تعذر إنشاء الرمز، تحقق من الاتصال.');
+  }
+  btn.disabled = false;
+});
+
+document.getElementById('copyGenBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(lastGeneratedCode);
+});
+document.getElementById('shareGenBtn').addEventListener('click', () => {
+  const text = `رمز دخولك لتطبيق الجسر (مترجم صوتي): ${lastGeneratedCode}\nافتح الرابط وأدخل الرمز:`;
+  if(navigator.share){
+    navigator.share({ text }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(text);
+    alert('تم نسخ النص (المشاركة المباشرة غير مدعومة على هذا الجهاز).');
+  }
+});
+
+async function loadTable(){
+  const wrap = document.getElementById('tableWrap');
+  wrap.innerHTML = '<p class="empty-note">جارٍ التحميل…</p>';
+  try{
+    const rows = await callRpc('list_aljisr_codes');
+    if(!rows || rows.length === 0){
+      wrap.innerHTML = '<p class="empty-note">لا توجد رموز بعد.</p>';
+      return;
+    }
+    let html = '<table><thead><tr><th>الرمز</th><th>الاسم</th><th>الحالة</th><th>الاستخدام</th></tr></thead><tbody>';
+    rows.forEach(r => {
+      const used = r.used
+        ? `<span class="pill used">مُستخدم</span>`
+        : `<span class="pill free">متاح</span>`;
+      const usedAt = r.used_at ? new Date(r.used_at).toLocaleString('ar-EG') : '—';
+      html += `<tr><td class="code-cell">${r.code}</td><td>${r.label || '—'}</td><td>${used}</td><td>${usedAt}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  }catch(e){
+    wrap.innerHTML = '<p class="empty-note">تعذر تحميل القائمة.</p>';
+  }
+}
+document.getElementById('refreshBtn').addEventListener('click', loadTable);
+</script>
+
+</body>
+</html>
