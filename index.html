@@ -366,6 +366,7 @@
 </header>
 
 <div class="call-panel" id="callPanel">
+  <button class="icon-btn" id="backHomeBtn" style="margin-bottom:16px;">→ الرجوع للصفحة الرئيسية</button>
   <h3>🏠 قارئ العنوان</h3>
   <p class="call-sub">الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.</p>
   <div class="addr-box">
@@ -762,7 +763,17 @@ document.getElementById('phraseTabs').addEventListener('click', (e) => {
 document.getElementById('callModeToggle').addEventListener('click', (e) => {
   const panel = document.getElementById('callPanel');
   panel.classList.toggle('show');
-  e.currentTarget.classList.toggle('active', panel.classList.contains('show'));
+  const isOpen = panel.classList.contains('show');
+  e.currentTarget.classList.toggle('active', isOpen);
+  e.currentTarget.textContent = isOpen ? '⬅ الرئيسية' : '📞 أثناء المكالمة';
+});
+
+document.getElementById('backHomeBtn').addEventListener('click', () => {
+  const panel = document.getElementById('callPanel');
+  panel.classList.remove('show');
+  const toggleBtn = document.getElementById('callModeToggle');
+  toggleBtn.classList.remove('active');
+  toggleBtn.textContent = '📞 أثناء المكالمة';
 });
 
 document.getElementById('addrSpeak').addEventListener('click', () => {
