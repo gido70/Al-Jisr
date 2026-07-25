@@ -537,7 +537,8 @@
     .controls > #callModeToggle,
     .controls > #convToggle,
     .controls > #textSize,
-    .controls > #clearBtn{ display:none; }
+    .controls > #clearBtn,
+    .controls > #forceRefreshBtnDesktop{ display:none; }
 
     .mic-btn{ width:72px; height:72px; }
     .mic-btn svg{ width:28px; height:28px; }
@@ -740,6 +741,7 @@
     </div>
     <button class="icon-btn" id="textSize" title="حجم الخط">Aa</button>
     <button class="icon-btn" id="clearBtn" title="مسح المحادثة">مسح</button>
+    <button class="icon-btn" id="forceRefreshBtnDesktop" title="تحديث التطبيق">🔄 تحديث</button>
   </div>
 </header>
 
@@ -903,6 +905,10 @@
         <option value="male" id="voiceOptMale">ذكوري</option>
       </select>
     </div>
+    <div class="more-row">
+      <label id="moreRefreshLbl">🔄 تحديث التطبيق (سحب آخر نسخة)</label>
+      <button class="icon-btn" id="forceRefreshBtn">تحديث</button>
+    </div>
   </div>
 </div>
 
@@ -969,6 +975,7 @@ const STRINGS = {
     moreTextSize:'Aa حجم الخط', moreTextSizeBtn:'تكبير', moreCopyAll:'📋 نسخ كل المحادثة', moreCopyBtn:'نسخ',
     moreClear:'🗑️ مسح المحادثة', moreClearBtn:'مسح',
     moreVoice:'🎙️ صوت الترجمة', voiceAuto:'تلقائي', voiceFemale:'أنثوي', voiceMale:'ذكوري',
+    moreRefresh:'🔄 تحديث التطبيق (سحب آخر نسخة)', refreshBtn:'تحديث', refreshBtnDesktop:'🔄 تحديث',
   },
   tr: {
     ready:'Hazır', translating:'Çevriliyor…', speaking:'Sesli okunuyor…', listeningIn:'%s dinleniyor…',
@@ -1014,6 +1021,7 @@ const STRINGS = {
     moreTextSize:'Aa Yazı boyutu', moreTextSizeBtn:'Büyüt', moreCopyAll:'📋 Tüm konuşmayı kopyala', moreCopyBtn:'Kopyala',
     moreClear:'🗑️ Konuşmayı temizle', moreClearBtn:'Temizle',
     moreVoice:'🎙️ Çeviri sesi', voiceAuto:'Otomatik', voiceFemale:'Kadın', voiceMale:'Erkek',
+    moreRefresh:'🔄 Uygulamayı güncelle (son sürümü al)', refreshBtn:'Güncelle', refreshBtnDesktop:'🔄 Güncelle',
   },
   en: {
     ready:'Ready', translating:'Translating…', speaking:'Speaking…', listeningIn:'Listening in %s…',
@@ -1059,6 +1067,7 @@ const STRINGS = {
     moreTextSize:'Aa Text size', moreTextSizeBtn:'Larger', moreCopyAll:'📋 Copy whole conversation', moreCopyBtn:'Copy',
     moreClear:'🗑️ Clear conversation', moreClearBtn:'Clear',
     moreVoice:'🎙️ Translation voice', voiceAuto:'Automatic', voiceFemale:'Female', voiceMale:'Male',
+    moreRefresh:'🔄 Refresh app (pull latest version)', refreshBtn:'Refresh', refreshBtnDesktop:'🔄 Refresh',
   },
 };
 function t(key){ return (STRINGS[UI_LANG] && STRINGS[UI_LANG][key]) || STRINGS.ar[key] || key; }
@@ -1409,9 +1418,33 @@ if(!SR){
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      reg.update().catch(() => {}); // actively ask GitHub Pages for a newer sw.js right away
+    }).catch(() => {});
+  });
+  // once a new service worker takes over, the page is stale — reload automatically
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
   });
 }
+
+// Manual "force refresh" — for when there's no keyboard shortcut (mobile/PWA):
+// unregisters the old service worker, wipes every cache, then hard-reloads.
+async function forceRefreshApp(){
+  try{
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    if('caches' in window){
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  }catch(e){}
+  window.location.reload();
+}
+document.getElementById('forceRefreshBtn').addEventListener('click', forceRefreshApp);
+document.getElementById('forceRefreshBtnDesktop').addEventListener('click', forceRefreshApp);
 
 /* ---------------- Call Mode ---------------- */
 // One canonical English phrase list, translated on the fly into whichever two
@@ -1794,6 +1827,7 @@ const SIMPLE_I18N_MAP = {
   moreClearLbl:'moreClear', clearBtnMobile:'moreClearBtn',
   moreVoiceLbl:'moreVoice', voiceOptAuto:'voiceAuto', voiceOptFemale:'voiceFemale', voiceOptMale:'voiceMale',
   voiceLblDesktop:'moreVoice', voiceOptAutoD:'voiceAuto', voiceOptFemaleD:'voiceFemale', voiceOptMaleD:'voiceMale',
+  moreRefreshLbl:'moreRefresh', forceRefreshBtn:'refreshBtn', forceRefreshBtnDesktop:'refreshBtnDesktop',
   displayLangLbl:'displayLangLbl', translateLangLbl:'translateLangLbl',
   sideAHeading:'you', sideBHeading:'otherParty', hintA:'hint', hintB:'hint',
   replayA:'listenLabel', replayB:'listenLabel', editA:'editLabel', editB:'editLabel',
