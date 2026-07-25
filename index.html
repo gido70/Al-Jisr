@@ -531,9 +531,24 @@ function unlockSpeechOnce(){
 document.addEventListener('click', unlockSpeechOnce, { once:true });
 document.addEventListener('touchend', unlockSpeechOnce, { once:true });
 
+// Some Android devices (notably Samsung's own TTS engine) ship without voices
+// for languages like Turkish, so speak() silently does nothing. Warn once.
+let voiceWarned = {};
+function warnIfVoiceMissing(langCode){
+  if(voiceWarned[langCode]) return;
+  const voices = window.speechSynthesis.getVoices();
+  if(voices.length === 0) return; // not loaded yet, check again next call
+  const has = voices.some(v => v.lang && v.lang.toLowerCase().startsWith(langCode.toLowerCase()));
+  if(!has){
+    voiceWarned[langCode] = true;
+    showBanner('صوت النطق للغة "' + langCode + '" غير مثبّت على هذا الجهاز. من الإعدادات → تحويل النص إلى كلام → غيّر المحرك إلى Google ونزّل حزمة اللغة.');
+  }
+}
+
 function speak(text, lang, onDone){
   lastSpokenGlobal.text = text;
   lastSpokenGlobal.lang = lang;
+  warnIfVoiceMissing(lang.split('-')[0]);
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = lang;
