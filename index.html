@@ -374,7 +374,11 @@
   </div>
 
   <h3>💬 عبارات جاهزة</h3>
-  <p class="call-sub">اضغط أي عبارة لتُنطق فوراً بالتركية — بدون انتظار أو مخاطرة سوء فهم من الميكروفون وسط ضجيج المكالمة.</p>
+  <p class="call-sub" id="phraseHint">اضغط أي عبارة لتُنطق فوراً بالتركية — بدون انتظار أو مخاطرة سوء فهم من الميكروفون وسط ضجيج المكالمة.</p>
+  <div class="phrase-tabs" id="directionTabs">
+    <button class="phrase-tab active" data-dir="say">🗣️ أنا أتكلم</button>
+    <button class="phrase-tab" data-dir="hear">👂 قد أسمع منه</button>
+  </div>
   <div class="phrase-tabs" id="phraseTabs">
     <button class="phrase-tab active" data-cat="delivery">توصيل</button>
     <button class="phrase-tab" data-cat="appt">مواعيد</button>
@@ -649,7 +653,7 @@ if('serviceWorker' in navigator){
 }
 
 /* ---------------- Call Mode ---------------- */
-const PHRASES = {
+const PHRASES_SAY = {
   delivery: [
     { ar:'مرحباً', tr:'Merhaba' },
     { ar:'أنا في المنزل، تفضل بالصعود', tr:'Evdeyim, buyurun yukarı çıkabilirsiniz' },
@@ -676,25 +680,83 @@ const PHRASES = {
   ],
 };
 
-function renderPhrases(cat){
+// The reverse direction: common lines a Turkish courier/official might say TO you,
+// shown Turkish-first (what you'll hear) with the Arabic meaning beneath —
+// this is what actually solves "understanding them", since the app has no access
+// to the real call audio to translate it live.
+const PHRASES_HEAR = {
+  delivery: [
+    { tr:'Merhaba', ar:'مرحباً' },
+    { tr:'Neredesiniz?', ar:'أين أنت؟' },
+    { tr:'Kapıdayım', ar:'أنا عند الباب' },
+    { tr:'Adresi tekrar söyler misiniz?', ar:'هل يمكن إعادة العنوان؟' },
+    { tr:'Kaç numara?', ar:'أي رقم (شقة/منزل)؟' },
+    { tr:'Beş dakikaya geliyorum', ar:'سأصل خلال خمس دقائق' },
+    { tr:'Ödeme nakit mi kart mı?', ar:'الدفع نقدي أم بالبطاقة؟' },
+    { tr:'Teşekkürler, iyi günler', ar:'شكراً، نهارك سعيد' },
+  ],
+  appt: [
+    { tr:'Randevunuz onaylandı', ar:'تم تأكيد موعدك' },
+    { tr:'Hangi gün uygun?', ar:'أي يوم يناسبك؟' },
+    { tr:'Belgelerinizi getirin', ar:'أحضر مستنداتك' },
+    { tr:'Saat kaçta gelebilirsiniz?', ar:'أي ساعة يمكنك الحضور؟' },
+    { tr:'Randevunuz iptal edildi', ar:'تم إلغاء موعدك' },
+    { tr:'Lütfen bekleyin', ar:'من فضلك انتظر' },
+  ],
+  general: [
+    { tr:'Alo, kimsiniz?', ar:'ألو، من المتصل؟' },
+    { tr:'Bir saniye lütfen', ar:'لحظة من فضلك' },
+    { tr:'Anlıyor musunuz?', ar:'هل تفهم؟' },
+    { tr:'Tercüman ister misiniz?', ar:'هل تريد مترجماً؟' },
+  ],
+};
+
+let phraseDirection = 'say';
+let phraseCat = 'delivery';
+
+function renderPhrases(){
   const grid = document.getElementById('phraseGrid');
+  const hint = document.getElementById('phraseHint');
   grid.innerHTML = '';
-  PHRASES[cat].forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'phrase-card';
-    card.innerHTML = `<div class="ar">${p.ar}</div><div class="tr">${p.tr}</div>`;
-    card.addEventListener('click', () => speak(p.tr, 'tr-TR'));
-    grid.appendChild(card);
-  });
+
+  if(phraseDirection === 'say'){
+    hint.textContent = 'اضغط أي عبارة لتُنطق فوراً بالتركية — يفهمك الطرف الآخر مباشرة.';
+    PHRASES_SAY[phraseCat].forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'phrase-card';
+      card.innerHTML = `<div class="ar">${p.ar}</div><div class="tr">${p.tr}</div>`;
+      card.addEventListener('click', () => speak(p.tr, 'tr-TR'));
+      grid.appendChild(card);
+    });
+  } else {
+    hint.textContent = 'هذا ما قد يقوله لك بالتركية — اقرأ المعنى بالعربي تحته، أو اضغط لتسمع نطقه.';
+    PHRASES_HEAR[phraseCat].forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'phrase-card';
+      card.innerHTML = `<div class="tr" style="color:var(--gold);font-size:14.5px;margin-bottom:4px;">${p.tr}</div><div class="ar" style="color:var(--muted);">= ${p.ar}</div>`;
+      card.addEventListener('click', () => speak(p.tr, 'tr-TR'));
+      grid.appendChild(card);
+    });
+  }
 }
-renderPhrases('delivery');
+renderPhrases();
+
+document.getElementById('directionTabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.phrase-tab');
+  if(!btn) return;
+  document.querySelectorAll('#directionTabs .phrase-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  phraseDirection = btn.dataset.dir;
+  renderPhrases();
+});
 
 document.getElementById('phraseTabs').addEventListener('click', (e) => {
   const btn = e.target.closest('.phrase-tab');
   if(!btn) return;
-  document.querySelectorAll('.phrase-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#phraseTabs .phrase-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  renderPhrases(btn.dataset.cat);
+  phraseCat = btn.dataset.cat;
+  renderPhrases();
 });
 
 document.getElementById('callModeToggle').addEventListener('click', (e) => {
