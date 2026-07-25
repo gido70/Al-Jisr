@@ -813,73 +813,18 @@ const SUPABASE_URL = 'https://nmbbahzzogspuuvpsxud.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tYmJhaHp6b2dzcHV1dnBzeHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MTY1MTYsImV4cCI6MjA5MzA5MjUxNn0.6yZNxZ_2ONQ-wyQSJtdvYpdJAxZfB-7C00ezEepUiqY';
 const GATE_STORAGE_KEY = 'aljisr_unlocked_v1';
 
-function hideGate(){ document.getElementById('gateOverlay').classList.remove('show'); }
-function showGateError(msg){ document.getElementById('gateError').textContent = msg; }
-
-async function tryRedeemCode(code){
-  const btn = document.getElementById('gateSubmit');
-  btn.disabled = true; showGateError('');
-  try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/redeem_aljisr_code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ p_code: code.trim() }),
-    });
-    const ok = await res.json();
-    if(ok === true){
-      try{ localStorage.setItem(GATE_STORAGE_KEY, '1'); }catch(e){}
-      hideGate();
-    } else {
-      showGateError('الرمز غير صحيح أو مُستخدم من قبل على جهاز آخر.');
-    }
-  }catch(err){
-    showGateError('تعذر التحقق من الرمز. تحقق من اتصال الإنترنت وحاول مجدداً.');
-  }
-  btn.disabled = false;
-}
-
-(function initGate(){
-  let alreadyUnlocked = false;
-  try{ alreadyUnlocked = localStorage.getItem(GATE_STORAGE_KEY) === '1'; }catch(e){}
-  if(alreadyUnlocked){ hideGate(); return; }
-
-  document.getElementById('gateSubmit').addEventListener('click', () => {
-    const val = document.getElementById('gateInput').value;
-    if(!val.trim()){ showGateError('اكتب الرمز أولاً.'); return; }
-    tryRedeemCode(val);
-  });
-  document.getElementById('gateInput').addEventListener('keydown', (e) => {
-    if(e.key === 'Enter') document.getElementById('gateSubmit').click();
-  });
-})();
-
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-const banner = document.getElementById('banner');
-const statusLine = document.getElementById('statusLine');
-const logWrap = document.getElementById('logWrap');
-const logEmpty = document.getElementById('logEmpty');
-const crossDot = document.getElementById('crossDot');
-
-const LANGS = [
-  { code:'ar', bcp47:'ar-SA', label:'العربية' },
-  { code:'tr', bcp47:'tr-TR', label:'Türkçe' },
-  { code:'en', bcp47:'en-US', label:'English' },
-  { code:'ru', bcp47:'ru-RU', label:'Русский' },
-  { code:'fa', bcp47:'fa-IR', label:'فارسی' },
-  { code:'de', bcp47:'de-DE', label:'Deutsch' },
-];
-
-let langA = LANGS[0]; // Arabic by default
-let langB = LANGS[1]; // Turkish by default
-let convMode = false;
-let log = [];
-
 /* ---------------- UI language (interface text) ---------------- */
-let UI_LANG = 'ar';
+function detectBrowserLang(){
+  const langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
+  for(const l of langs){
+    const code = (l || '').toLowerCase().slice(0,2);
+    if(code === 'ar') return 'ar';
+    if(code === 'tr') return 'tr';
+    if(code === 'en') return 'en';
+  }
+  return 'en'; // safest broad fallback for languages we don't have text for yet
+}
+let UI_LANG = detectBrowserLang();
 const STRINGS = {
   ar: {
     ready:'جاهز', translating:'يترجم…', speaking:'ينطق…', listeningIn:'يستمع بـ%s…',
@@ -888,6 +833,9 @@ const STRINGS = {
     copied:'تم النسخ ✓', copyLabel:'📋 نسخ', shareLabel:'📤 مشاركة', listenLabel:'🔊 استمع',
     shareFallback:'تم نسخ النص (المشاركة المباشرة غير مدعومة على هذا الجهاز/المتصفح).',
     noSTT:'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Google Chrome على كمبيوتر أو أندرويد.',
+    gateSub:'هذا الموقع خاص — أدخل رمز الدخول اللي أُعطيته لك.', gatePlaceholder:'ادخل الرمز', gateBtn:'دخول',
+    gateErrWrong:'الرمز غير صحيح أو مُستخدم من قبل على جهاز آخر.', gateErrEmpty:'اكتب الرمز أولاً.',
+    gateErrNetwork:'تعذر التحقق من الرمز. تحقق من اتصال الإنترنت وحاول مجدداً.',
     hint:'تُترجم وتُنطق للجهة المقابلة',
     voiceMissing:'صوت النطق للغة "%s" غير مثبّت على هذا الجهاز. من الإعدادات → تحويل النص إلى كلام → غيّر المحرك إلى Google ونزّل حزمة اللغة.',
     transcriptAPh:'اضغط الميكروفون وتكلم…', transcriptBPh:'…', noConvo:'لا يوجد محادثة بعد.',
@@ -922,6 +870,9 @@ const STRINGS = {
     copied:'Kopyalandı ✓', copyLabel:'📋 Kopyala', shareLabel:'📤 Paylaş', listenLabel:'🔊 Dinle',
     shareFallback:'Metin kopyalandı (bu cihazda doğrudan paylaşım desteklenmiyor).',
     noSTT:'Bu tarayıcı sesli tanımayı desteklemiyor. Bilgisayar veya Android’de Google Chrome kullanın.',
+    gateSub:'Bu site özeldir — size verilen giriş kodunu girin.', gatePlaceholder:'Kodu girin', gateBtn:'Giriş',
+    gateErrWrong:'Kod yanlış veya başka bir cihazda zaten kullanılmış.', gateErrEmpty:'Önce kodu yazın.',
+    gateErrNetwork:'Kod doğrulanamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.',
     hint:'Karşı tarafa çevrilip seslendirilir',
     voiceMissing:'"%s" dili için ses paketi bu cihazda kurulu değil. Ayarlar → Metinden sese → Google motoruna geçin ve dili indirin.',
     transcriptAPh:'Mikrofona basın ve konuşun…', transcriptBPh:'…', noConvo:'Henüz konuşma yok.',
@@ -956,6 +907,9 @@ const STRINGS = {
     copied:'Copied ✓', copyLabel:'📋 Copy', shareLabel:'📤 Share', listenLabel:'🔊 Listen',
     shareFallback:'Text copied (direct sharing is not supported on this device/browser).',
     noSTT:'This browser does not support speech recognition. Use Google Chrome on a computer or Android.',
+    gateSub:'This site is private — enter the access code you were given.', gatePlaceholder:'Enter the code', gateBtn:'Enter',
+    gateErrWrong:'The code is wrong or already used on another device.', gateErrEmpty:'Type the code first.',
+    gateErrNetwork:'Could not verify the code. Check your internet connection and try again.',
     hint:'Translated and spoken to the other side',
     voiceMissing:'A "%s" voice is not installed on this device. Go to Settings → Text-to-speech → switch engine to Google and download the language.',
     transcriptAPh:'Tap the mic and speak…', transcriptBPh:'…', noConvo:'No conversation yet.',
@@ -985,6 +939,83 @@ const STRINGS = {
   },
 };
 function t(key){ return (STRINGS[UI_LANG] && STRINGS[UI_LANG][key]) || STRINGS.ar[key] || key; }
+
+
+function hideGate(){ document.getElementById('gateOverlay').classList.remove('show'); }
+function showGateError(msg){ document.getElementById('gateError').textContent = msg; }
+
+function applyGateLang(){
+  document.documentElement.lang = UI_LANG;
+  document.documentElement.dir = UI_LANG === 'ar' ? 'rtl' : 'ltr';
+  document.body.classList.toggle('latin-ui', UI_LANG !== 'ar');
+  document.getElementById('gateSub').textContent = t('gateSub');
+  document.getElementById('gateInput').placeholder = t('gatePlaceholder');
+  document.getElementById('gateSubmit').textContent = t('gateBtn');
+}
+
+async function tryRedeemCode(code){
+  const btn = document.getElementById('gateSubmit');
+  btn.disabled = true; showGateError('');
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/redeem_aljisr_code', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ p_code: code.trim() }),
+    });
+    const ok = await res.json();
+    if(ok === true){
+      try{ localStorage.setItem(GATE_STORAGE_KEY, '1'); }catch(e){}
+      hideGate();
+    } else {
+      showGateError(t('gateErrWrong'));
+    }
+  }catch(err){
+    showGateError(t('gateErrNetwork'));
+  }
+  btn.disabled = false;
+}
+
+(function initGate(){
+  applyGateLang(); // show the gate itself in the device's own language right away
+  let alreadyUnlocked = false;
+  try{ alreadyUnlocked = localStorage.getItem(GATE_STORAGE_KEY) === '1'; }catch(e){}
+  if(alreadyUnlocked){ hideGate(); return; }
+
+  document.getElementById('gateSubmit').addEventListener('click', () => {
+    const val = document.getElementById('gateInput').value;
+    if(!val.trim()){ showGateError(t('gateErrEmpty')); return; }
+    tryRedeemCode(val);
+  });
+  document.getElementById('gateInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') document.getElementById('gateSubmit').click();
+  });
+})();
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const banner = document.getElementById('banner');
+const statusLine = document.getElementById('statusLine');
+const logWrap = document.getElementById('logWrap');
+const logEmpty = document.getElementById('logEmpty');
+const crossDot = document.getElementById('crossDot');
+
+const LANGS = [
+  { code:'ar', bcp47:'ar-SA', label:'العربية' },
+  { code:'tr', bcp47:'tr-TR', label:'Türkçe' },
+  { code:'en', bcp47:'en-US', label:'English' },
+  { code:'ru', bcp47:'ru-RU', label:'Русский' },
+  { code:'fa', bcp47:'fa-IR', label:'فارسی' },
+  { code:'de', bcp47:'de-DE', label:'Deutsch' },
+];
+
+let langA = LANGS[0]; // Arabic by default
+let langB = LANGS[1]; // Turkish by default
+let convMode = false;
+let log = [];
+
 
 function showBanner(msg){ banner.textContent = msg; banner.classList.add('show'); }
 function setStatus(msg){ statusLine.textContent = msg; }
@@ -1531,7 +1562,7 @@ function applyUILang(lang){
 document.getElementById('uiLangSelect').addEventListener('change', (e) => applyUILang(e.target.value));
 document.getElementById('uiLangSelectMobile').addEventListener('change', (e) => applyUILang(e.target.value));
 
-applyUILang('ar');
+applyUILang(UI_LANG); // matches the language already detected for the gate screen
 // show the guide automatically as soon as the page opens
 openGuide();
 
