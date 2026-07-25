@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>الجسر — مترجم صوتي فوري</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e1620">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="الجسر">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#eef1f5;
+    --bg:#0e1620;
+    --bg2:#121d2b;
+    --line:#26364a;
+    --gold:#c9a227;
+    --teal:#2ea8a0;
+    --muted:#7d8ba0;
+    --danger:#b5442e;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Tajawal',sans-serif;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+  body.text-lg .transcript{font-size:19px;}
+  body.text-xl .transcript{font-size:23px;}
+
+  /* header */
+  header{
+    padding:20px 22px 16px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+    background:var(--bg2);
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:34px;height:34px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--gold);
+  }
+  .brand h1{
+    font-family:'Amiri',serif;
+    font-size:22px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:.3px;
+  }
+  .controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  select, .icon-btn{
+    background:var(--bg);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-family:'Tajawal',sans-serif;
+    font-size:13px;
+    padding:8px 12px;
+    border-radius:10px;
+    cursor:pointer;
+  }
+  .icon-btn{
+    display:flex;align-items:center;gap:6px;
+    color:var(--muted);
+  }
+  .icon-btn:hover{color:var(--ink);border-color:var(--muted);}
+  .icon-btn.active{color:var(--teal);border-color:var(--teal);}
+
+  /* bridge stage */
+  .stage{
+    flex:1;
+    display:grid;
+    grid-template-columns:1fr 56px 1fr;
+    position:relative;
+  }
+  @media (max-width:720px){
+    .stage{grid-template-columns:1fr;}
+    .bridge-col{
+      grid-row:2;
+      height:44px;
+      flex-direction:row !important;
+    }
+  }
+  .side{
+    display:flex;
+    flex-direction:column;
+    padding:22px;
+    min-height:260px;
+  }
+  .side.right{border-inline-start:none;}
+  .lang-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);}
+  .side.right .dot{background:var(--teal);}
+  .side h2{
+    font-family:'Amiri',serif;
+    margin:0 0 18px;
+    font-size:28px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .transcript{
+    flex:1;
+    font-size:16px;
+    line-height:1.8;
+    min-height:70px;
+    color:var(--ink);
+    white-space:pre-wrap;
+  }
+  .transcript.placeholder{color:var(--muted);}
+
+  .mic-row{
+    margin-top:20px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .mic-btn{
+    width:60px;height:60px;
+    border-radius:50%;
+    border:2px solid var(--gold);
+    background:transparent;
+    color:var(--gold);
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .12s ease, background .12s ease, box-shadow .2s ease;
+    flex-shrink:0;
+  }
+  .side.right .mic-btn{border-color:var(--teal);color:var(--teal);}
+  .mic-btn:active{transform:scale(.93);}
+  .mic-btn.listening{
+    background:var(--gold);
+    color:var(--bg);
+    box-shadow:0 0 0 10px rgba(201,162,39,.14);
+    animation:pulse 1.4s ease-in-out infinite;
+  }
+  .side.right .mic-btn.listening{
+    background:var(--teal);
+    box-shadow:0 0 0 10px rgba(46,168,160,.14);
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 8px rgba(201,162,39,.14);}
+    50%{box-shadow:0 0 0 14px rgba(201,162,39,.06);}
+  }
+  .mic-btn svg{width:24px;height:24px;stroke:currentColor;}
+  .hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+
+  /* the bridge divider — signature element */
+  .bridge-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    background:linear-gradient(180deg, transparent, var(--bg2), transparent);
+  }
+  .bridge-col svg{width:36px;height:120px;}
+  .arch{stroke:var(--line);stroke-width:1.5;fill:none;}
+  .crossing{
+    fill:var(--gold);
+    opacity:0;
+  }
+  .crossing.go{animation:cross 1.1s ease forwards;}
+  .crossing.back{fill:var(--teal);}
+  @keyframes cross{
+    0%{opacity:0;transform:translateY(-50px);}
+    15%{opacity:1;}
+    85%{opacity:1;}
+    100%{opacity:0;transform:translateY(50px);}
+  }
+
+  /* log */
+  .log-wrap{
+    border-top:1px solid var(--line);
+    background:var(--bg2);
+    max-height:26vh;
+    overflow-y:auto;
+    padding:12px 22px;
+  }
+  .log-empty{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .log-item{
+    display:flex;
+    gap:10px;
+    padding:9px 0;
+    border-bottom:1px dashed var(--line);
+    font-size:13.5px;
+  }
+  .log-item:last-child{border-bottom:none;}
+  .log-item .tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+    flex-shrink:0;
+    padding-top:2px;
+    min-width:34px;
+  }
+  .log-item .txt b{display:block;color:var(--ink);font-weight:500;}
+  .log-item .txt span{color:var(--muted);}
+
+  footer{
+    padding:12px 22px 16px;
+    border-top:1px solid var(--line);
+    background:var(--bg2);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .banner{
+    display:none;
+    padding:11px 22px;
+    background:var(--danger);
+    color:#fff;
+    font-size:13px;
+    text-align:center;
+  }
+  .banner.show{display:block;}
+
+  .status-pill{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+    border:1px solid var(--line);
+    padding:6px 10px;
+    border-radius:20px;
+  }
+
+  /* call mode panel */
+  .call-panel{
+    display:none;
+    background:var(--bg2);
+    border-bottom:1px solid var(--line);
+    padding:20px 22px 24px;
+  }
+  .call-panel.show{display:block;}
+  .call-panel h3{
+    font-family:'Amiri',serif;
+    font-size:20px;
+    margin:0 0 4px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .call-sub{color:var(--muted);font-size:12.5px;margin:0 0 16px;}
+
+  .addr-box{
+    display:flex;gap:10px;flex-wrap:wrap;
+    margin-bottom:22px;
+  }
+  .addr-box input{
+    flex:1;min-width:220px;
+    background:var(--bg);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:12px 14px;
+    border-radius:10px;
+    font-family:'Tajawal',sans-serif;
+    font-size:14px;
+  }
+  .addr-box input::placeholder{color:var(--muted);}
+  .big-btn{
+    background:var(--gold);
+    color:var(--bg);
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    font-family:'Tajawal',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    white-space:nowrap;
+  }
+  .big-btn:active{transform:scale(.97);}
+
+  .phrase-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .phrase-tab{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--muted);
+    padding:7px 14px;
+    border-radius:20px;
+    font-size:12.5px;
+    cursor:pointer;
+    font-family:'Tajawal',sans-serif;
+  }
+  .phrase-tab.active{border-color:var(--teal);color:var(--teal);}
+
+  .phrase-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+    gap:10px;
+  }
+  .phrase-card{
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:13px 14px;
+    cursor:pointer;
+    text-align:right;
+    transition:border-color .12s ease, transform .1s ease;
+  }
+  .phrase-card:hover{border-color:var(--gold);}
+  .phrase-card:active{transform:scale(.97);}
+  .phrase-card .ar{font-size:14.5px;margin-bottom:4px;}
+  .phrase-card .tr{font-size:12.5px;color:var(--teal);direction:ltr;text-align:right;}
+
+  .repeat-row{
+    margin-top:16px;
+    display:flex;align-items:center;gap:10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="banner" id="banner"></div>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 18c2-4 5-6 10-6s8 2 10 6"/><path d="M2 18h20"/><path d="M6 12V6M18 12V6"/><path d="M4 6h4M16 6h4"/></svg>
+    </div>
+    <h1>الجسر</h1>
+  </div>
+  <div class="controls">
+    <span class="status-pill" id="statusLine">جاهز</span>
+    <select id="langSelect" title="اللغة المقابلة"></select>
+    <button class="icon-btn" id="callModeToggle" title="أدوات المكالمات الهاتفية">📞 أثناء المكالمة</button>
+    <button class="icon-btn" id="convToggle" title="محادثة تلقائية متتابعة">↻ تلقائي</button>
+    <button class="icon-btn" id="textSize" title="حجم الخط">Aa</button>
+    <button class="icon-btn" id="clearBtn" title="مسح المحادثة">مسح</button>
+  </div>
+</header>
+
+<div class="call-panel" id="callPanel">
+  <h3>🏠 قارئ العنوان</h3>
+  <p class="call-sub">الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.</p>
+  <div class="addr-box">
+    <input type="text" id="addrInput" placeholder="مثال: Bağcılar Mah. 15. Sokak No:7 Daire:3">
+    <button class="big-btn" id="addrSpeak">🔊 اقرأ العنوان</button>
+  </div>
+
+  <h3>💬 عبارات جاهزة</h3>
+  <p class="call-sub">اضغط أي عبارة لتُنطق فوراً بالتركية — بدون انتظار أو مخاطرة سوء فهم من الميكروفون وسط ضجيج المكالمة.</p>
+  <div class="phrase-tabs" id="phraseTabs">
+    <button class="phrase-tab active" data-cat="delivery">توصيل</button>
+    <button class="phrase-tab" data-cat="appt">مواعيد</button>
+    <button class="phrase-tab" data-cat="general">عام</button>
+  </div>
+  <div class="phrase-grid" id="phraseGrid"></div>
+
+  <div class="repeat-row">
+    <button class="icon-btn" id="repeatBtn">🔁 كرّر آخر جملة</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="side left">
+    <div class="lang-tag"><span class="dot"></span> العربية</div>
+    <h2>أنت</h2>
+    <div class="transcript placeholder" id="transcriptA">اضغط الميكروفون وتكلم…</div>
+    <div class="mic-row">
+      <button class="mic-btn" id="micA" title="تحدث بالعربية">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+      <span class="hint">تُترجم وتُنطق للطرف الآخر</span>
+    </div>
+  </div>
+
+  <div class="bridge-col">
+    <svg viewBox="0 0 36 120">
+      <path class="arch" d="M4 20 Q18 0 32 20 M4 100 Q18 120 32 100"/>
+      <line class="arch" x1="4" y1="20" x2="4" y2="100"/>
+      <line class="arch" x1="32" y1="20" x2="32" y2="100"/>
+      <circle class="crossing" id="crossDot" cx="18" cy="10" r="4"/>
+    </svg>
+  </div>
+
+  <div class="side right">
+    <div class="lang-tag"><span class="dot"></span> <span id="targetLangLabel">Türkçe</span></div>
+    <h2 id="targetLangHeading">الطرف الآخر</h2>
+    <div class="transcript placeholder" id="transcriptB">…</div>
+    <div class="mic-row">
+      <button class="mic-btn" id="micB" title="تحدث باللغة المقابلة">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+      <span class="hint" id="hintB">تُترجم وتُنطق بالعربية</span>
+    </div>
+  </div>
+</div>
+
+<div class="log-wrap" id="logWrap">
+  <div class="log-empty" id="logEmpty">سجل المحادثة يظهر هنا…</div>
+</div>
+
+<footer>
+  <span>سماعات = بدون صدى · جمل قصيرة = ترجمة أدق</span>
+  <button class="icon-btn" id="copyBtn">نسخ المحادثة</button>
+</footer>
+
+<script>
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const banner = document.getElementById('banner');
+const statusLine = document.getElementById('statusLine');
+const logWrap = document.getElementById('logWrap');
+const logEmpty = document.getElementById('logEmpty');
+const crossDot = document.getElementById('crossDot');
+
+const LANGS = [
+  { code:'tr', bcp47:'tr-TR', label:'Türkçe' },
+  { code:'en', bcp47:'en-US', label:'English' },
+  { code:'ru', bcp47:'ru-RU', label:'Русский' },
+  { code:'fa', bcp47:'fa-IR', label:'فارسی' },
+  { code:'de', bcp47:'de-DE', label:'Deutsch' },
+];
+
+const langSelect = document.getElementById('langSelect');
+LANGS.forEach((l,i) => {
+  const opt = document.createElement('option');
+  opt.value = i; opt.textContent = l.label;
+  langSelect.appendChild(opt);
+});
+
+let target = LANGS[0];
+let convMode = false;
+let log = [];
+
+function showBanner(msg){ banner.textContent = msg; banner.classList.add('show'); }
+function setStatus(t){ statusLine.textContent = t; }
+
+function animateCross(fromGold){
+  crossDot.classList.remove('go','back');
+  void crossDot.offsetWidth;
+  crossDot.classList.add('go');
+  if(!fromGold) crossDot.classList.add('back');
+}
+
+function addLog(speakerLabel, original, translated){
+  log.push({ speakerLabel, original, translated, t: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) });
+  renderLog();
+}
+function renderLog(){
+  if(log.length === 0){ logEmpty.style.display='block'; return; }
+  logEmpty.style.display='none';
+  logWrap.querySelectorAll('.log-item').forEach(n=>n.remove());
+  log.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'log-item';
+    div.innerHTML = `<span class="tag">${item.t}</span><div class="txt"><b>${item.speakerLabel}: ${item.original}</b><span>→ ${item.translated}</span></div>`;
+    logWrap.appendChild(div);
+  });
+  logWrap.scrollTop = logWrap.scrollHeight;
+}
+
+async function translateViaGoogle(text, from, to){
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('google failed');
+  const data = await res.json();
+  return data[0].map(chunk => chunk[0]).join('');
+}
+async function translateViaMyMemory(text, from, to){
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if(data?.responseData?.translatedText) return data.responseData.translatedText;
+  throw new Error('mymemory failed');
+}
+async function translateText(text, from, to){
+  try{ return await translateViaGoogle(text, from, to); }
+  catch(e){ return await translateViaMyMemory(text, from, to); }
+}
+
+let lastSpokenGlobal = { text:'', lang:'tr-TR' };
+function speak(text, lang, onDone){
+  lastSpokenGlobal.text = text;
+  lastSpokenGlobal.lang = lang;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = lang;
+  utter.rate = 0.95;
+  utter.onend = () => { if(onDone) onDone(); };
+  utter.onerror = () => { if(onDone) onDone(); };
+  window.speechSynthesis.speak(utter);
+}
+
+function buildRecognizer(lang){
+  if(!SR) return null;
+  const rec = new SR();
+  rec.lang = lang;
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  return rec;
+}
+
+const sideA = { micId:'micA', transcriptId:'transcriptA', rec:null, listening:false };
+const sideB = { micId:'micB', transcriptId:'transcriptB', rec:null, listening:false };
+
+function stopAll(){
+  if(sideA.rec && sideA.listening) sideA.rec.stop();
+  if(sideB.rec && sideB.listening) sideB.rec.stop();
+}
+
+function initSideA(){
+  sideA.rec = buildRecognizer('ar-SA');
+  const micBtn = document.getElementById('micA');
+  const transcriptEl = document.getElementById('transcriptA');
+  if(!sideA.rec){ micBtn.disabled = true; return; }
+
+  sideA.rec.onstart = () => { sideA.listening = true; micBtn.classList.add('listening'); setStatus('يستمع بالعربية…'); };
+  sideA.rec.onerror = (e) => {
+    sideA.listening = false; micBtn.classList.remove('listening');
+    if(e.error === 'not-allowed') showBanner('الرجاء السماح باستخدام الميكروفون.');
+    setStatus('جاهز');
+  };
+  sideA.rec.onend = () => { sideA.listening = false; micBtn.classList.remove('listening'); setStatus('جاهز'); };
+
+  sideA.rec.onresult = async (event) => {
+    const said = event.results[0][0].transcript;
+    transcriptEl.textContent = said;
+    transcriptEl.classList.remove('placeholder');
+    setStatus('يترجم…');
+    try{
+      const translated = await translateText(said, 'ar', target.code);
+      const elB = document.getElementById('transcriptB');
+      elB.textContent = translated;
+      elB.classList.remove('placeholder');
+      addLog('أنت', said, translated);
+      animateCross(true);
+      setStatus('ينطق…');
+      speak(translated, target.bcp47, () => {
+        setStatus('جاهز');
+        if(convMode) startSide(sideB);
+      });
+    }catch(err){
+      showBanner('تعذر الاتصال بخدمة الترجمة. تحقق من الإنترنت.');
+      setStatus('جاهز');
+    }
+  };
+
+  micBtn.addEventListener('click', () => {
+    convMode = false; document.getElementById('convToggle').classList.remove('active');
+    if(sideA.listening){ sideA.rec.stop(); return; }
+    window.speechSynthesis.cancel();
+    try{ sideA.rec.start(); }catch(e){}
+  });
+}
+
+function initSideB(){
+  const micBtn = document.getElementById('micB');
+  const transcriptEl = document.getElementById('transcriptB');
+
+  function build(){
+    sideB.rec = buildRecognizer(target.bcp47);
+    if(!sideB.rec){ micBtn.disabled = true; return; }
+
+    sideB.rec.onstart = () => { sideB.listening = true; micBtn.classList.add('listening'); setStatus('يستمع بـ' + target.label + '…'); };
+    sideB.rec.onerror = (e) => {
+      sideB.listening = false; micBtn.classList.remove('listening');
+      if(e.error === 'not-allowed') showBanner('الرجاء السماح باستخدام الميكروفون.');
+      setStatus('جاهز');
+    };
+    sideB.rec.onend = () => { sideB.listening = false; micBtn.classList.remove('listening'); setStatus('جاهز'); };
+
+    sideB.rec.onresult = async (event) => {
+      const said = event.results[0][0].transcript;
+      transcriptEl.textContent = said;
+      transcriptEl.classList.remove('placeholder');
+      setStatus('يترجم…');
+      try{
+        const translated = await translateText(said, target.code, 'ar');
+        const elA = document.getElementById('transcriptA');
+        elA.textContent = translated;
+        elA.classList.remove('placeholder');
+        addLog(target.label, said, translated);
+        animateCross(false);
+        setStatus('ينطق…');
+        speak(translated, 'ar-SA', () => {
+          setStatus('جاهز');
+          if(convMode) startSide(sideA);
+        });
+      }catch(err){
+        showBanner('تعذر الاتصال بخدمة الترجمة. تحقق من الإنترنت.');
+        setStatus('جاهز');
+      }
+    };
+  }
+  build();
+  sideB._rebuild = build;
+
+  micBtn.addEventListener('click', () => {
+    convMode = false; document.getElementById('convToggle').classList.remove('active');
+    if(sideB.listening){ sideB.rec.stop(); return; }
+    window.speechSynthesis.cancel();
+    try{ sideB.rec.start(); }catch(e){}
+  });
+}
+
+function startSide(side){
+  window.speechSynthesis.cancel();
+  try{ side.rec.start(); }catch(e){}
+}
+
+if(!SR){
+  showBanner('هذا المتصفح لا يدعم التعرف على الصوت. استخدم Google Chrome على كمبيوتر أو أندرويد.');
+} else {
+  initSideA();
+  initSideB();
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+/* ---------------- Call Mode ---------------- */
+const PHRASES = {
+  delivery: [
+    { ar:'مرحباً', tr:'Merhaba' },
+    { ar:'أنا في المنزل، تفضل بالصعود', tr:'Evdeyim, buyurun yukarı çıkabilirsiniz' },
+    { ar:'من فضلك انتظر خمس دقائق', tr:'Lütfen beş dakika bekleyin' },
+    { ar:'أنا بالأسفل عند المدخل', tr:'Aşağıdayım, girişteyim' },
+    { ar:'الرجاء الاتصال عند الوصول', tr:'Lütfen vardığınızda arayın' },
+    { ar:'كم تبقى من الوقت للوصول؟', tr:'Varmanıza ne kadar kaldı?' },
+    { ar:'الطابق الثالث، رقم الشقة كذا', tr:'Üçüncü kat, daire numarası bu' },
+    { ar:'لا أتحدث التركية جيداً، شكراً لصبرك', tr:'Türkçeyi iyi konuşamıyorum, sabrınız için teşekkürler' },
+  ],
+  appt: [
+    { ar:'أريد تأكيد الموعد', tr:'Randevumu onaylamak istiyorum' },
+    { ar:'أريد تأجيل الموعد لوقت آخر', tr:'Randevumu başka bir zamana ertelemek istiyorum' },
+    { ar:'متى موعدي القادم؟', tr:'Bir sonraki randevum ne zaman?' },
+    { ar:'هل يمكن الحضور اليوم؟', tr:'Bugün gelebilir miyim?' },
+    { ar:'أحتاج مترجماً من فضلكم', tr:'Lütfen bir tercümana ihtiyacım var' },
+    { ar:'شكراً جزيلاً، إلى اللقاء', tr:'Çok teşekkür ederim, görüşürüz' },
+  ],
+  general: [
+    { ar:'لحظة من فضلك', tr:'Bir dakika lütfen' },
+    { ar:'هل يمكنك التحدث ببطء؟', tr:'Daha yavaş konuşabilir misiniz?' },
+    { ar:'لم أفهم، هل يمكن التكرار؟', tr:'Anlamadım, tekrar edebilir misiniz?' },
+    { ar:'شكراً لك', tr:'Teşekkür ederim' },
+  ],
+};
+
+function renderPhrases(cat){
+  const grid = document.getElementById('phraseGrid');
+  grid.innerHTML = '';
+  PHRASES[cat].forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'phrase-card';
+    card.innerHTML = `<div class="ar">${p.ar}</div><div class="tr">${p.tr}</div>`;
+    card.addEventListener('click', () => speak(p.tr, 'tr-TR'));
+    grid.appendChild(card);
+  });
+}
+renderPhrases('delivery');
+
+document.getElementById('phraseTabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.phrase-tab');
+  if(!btn) return;
+  document.querySelectorAll('.phrase-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPhrases(btn.dataset.cat);
+});
+
+document.getElementById('callModeToggle').addEventListener('click', (e) => {
+  const panel = document.getElementById('callPanel');
+  panel.classList.toggle('show');
+  e.currentTarget.classList.toggle('active', panel.classList.contains('show'));
+});
+
+document.getElementById('addrSpeak').addEventListener('click', () => {
+  const val = document.getElementById('addrInput').value.trim();
+  if(!val){ showBanner('اكتب أو الصق العنوان أولاً.'); return; }
+  speak(val, 'tr-TR');
+});
+
+document.getElementById('repeatBtn').addEventListener('click', () => {
+  if(!lastSpokenGlobal.text){ showBanner('لا توجد جملة سابقة بعد.'); return; }
+  speak(lastSpokenGlobal.text, lastSpokenGlobal.lang);
+});
+
+langSelect.addEventListener('change', () => {
+  target = LANGS[langSelect.value];
+  document.getElementById('targetLangLabel').textContent = target.label;
+  document.getElementById('hintB').textContent = 'تُترجم وتُنطق بالعربية';
+  document.getElementById('transcriptB').textContent = '…';
+  document.getElementById('transcriptB').classList.add('placeholder');
+  if(sideB.rec && sideB.listening) sideB.rec.stop();
+  sideB._rebuild();
+});
+
+document.getElementById('convToggle').addEventListener('click', (e) => {
+  convMode = !convMode;
+  e.currentTarget.classList.toggle('active', convMode);
+  if(!convMode) stopAll();
+});
+
+document.getElementById('textSize').addEventListener('click', () => {
+  const b = document.body;
+  if(b.classList.contains('text-xl')){ b.classList.remove('text-xl'); }
+  else if(b.classList.contains('text-lg')){ b.classList.remove('text-lg'); b.classList.add('text-xl'); }
+  else { b.classList.add('text-lg'); }
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  log = []; renderLog();
+  ['transcriptA','transcriptB'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.textContent = id==='transcriptA' ? 'اضغط الميكروفون وتكلم…' : '…';
+    el.classList.add('placeholder');
+  });
+});
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const text = log.map(i => `[${i.t}] ${i.speakerLabel}: ${i.original}\n→ ${i.translated}`).join('\n\n');
+  navigator.clipboard.writeText(text || 'لا يوجد محادثة بعد.').then(() => {
+    const btn = document.getElementById('copyBtn');
+    const old = btn.textContent;
+    btn.textContent = 'تم النسخ ✓';
+    setTimeout(()=>btn.textContent = old, 1500);
+  });
+});
+</script>
+
+</body>
+</html>
