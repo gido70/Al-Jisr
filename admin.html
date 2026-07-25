@@ -61,7 +61,14 @@
   .pill{ display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; }
   .pill.used{ background:rgba(181,68,46,.15); color:#e08469; }
   .pill.free{ background:rgba(46,168,160,.15); color:var(--teal); }
-  .code-cell{ font-family:'JetBrains Mono',monospace; direction:ltr; text-align:right; }
+  .code-cell{ font-family:'JetBrains Mono',monospace; direction:ltr; text-align:right; font-size:15px; letter-spacing:1px; }
+  .actions-cell{ white-space:nowrap; }
+  .mini-btn{
+    width:auto; display:inline-flex; background:transparent; border:1px solid var(--line);
+    color:var(--ink); padding:5px 8px; border-radius:8px; font-size:13px; margin-inline-start:4px;
+  }
+  .mini-btn.danger{ border-color:rgba(181,68,46,.4); }
+  .mini-btn.danger:hover{ background:rgba(181,68,46,.15); }
   #refreshBtn{ width:auto; padding:9px 16px; font-size:13px; margin-bottom:14px; background:transparent; color:var(--muted); border:1px solid var(--line); }
   .empty-note{ color:var(--muted); font-size:13px; text-align:center; padding:20px 0; }
 </style>
@@ -175,13 +182,23 @@ async function loadTable(){
       wrap.innerHTML = '<p class="empty-note">لا توجد رموز بعد.</p>';
       return;
     }
-    let html = '<table><thead><tr><th>الرمز</th><th>الاسم</th><th>الحالة</th><th>الاستخدام</th></tr></thead><tbody>';
+    let html = '<table><thead><tr><th>الرمز</th><th>الاسم</th><th>الحالة</th><th>الاستخدام</th><th>إجراءات</th></tr></thead><tbody>';
     rows.forEach(r => {
       const used = r.used
         ? `<span class="pill used">مُستخدم</span>`
         : `<span class="pill free">متاح</span>`;
       const usedAt = r.used_at ? new Date(r.used_at).toLocaleString('ar-EG') : '—';
-      html += `<tr><td class="code-cell">${r.code}</td><td>${r.label || '—'}</td><td>${used}</td><td>${usedAt}</td></tr>`;
+      html += `<tr>
+        <td class="code-cell">${r.code}</td>
+        <td>${r.label || '—'}</td>
+        <td>${used}</td>
+        <td>${usedAt}</td>
+        <td class="actions-cell">
+          <button class="mini-btn" data-act="edit" data-code="${r.code}" data-label="${r.label || ''}" title="تعديل الاسم">✏️</button>
+          <button class="mini-btn" data-act="reset" data-code="${r.code}" title="إعادة تعيين (متاح من جديد)">↺</button>
+          <button class="mini-btn danger" data-act="delete" data-code="${r.code}" title="حذف نهائياً">🗑️</button>
+        </td>
+      </tr>`;
     });
     html += '</tbody></table>';
     wrap.innerHTML = html;
@@ -190,6 +207,31 @@ async function loadTable(){
   }
 }
 document.getElementById('refreshBtn').addEventListener('click', loadTable);
+
+document.getElementById('tableWrap').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.mini-btn');
+  if(!btn) return;
+  const act = btn.dataset.act;
+  const code = btn.dataset.code;
+
+  if(act === 'delete'){
+    if(!confirm(`حذف الرمز ${code} نهائياً؟`)) return;
+    await callRpc('delete_aljisr_code', { p_code: code });
+    loadTable();
+  }
+  else if(act === 'reset'){
+    if(!confirm(`إعادة تعيين ${code} ليصير "متاح" من جديد؟`)) return;
+    await callRpc('reset_aljisr_code', { p_code: code });
+    loadTable();
+  }
+  else if(act === 'edit'){
+    const current = btn.dataset.label || '';
+    const newLabel = prompt('الاسم الجديد لصاحب هذا الرمز:', current);
+    if(newLabel === null) return; // cancelled
+    await callRpc('update_aljisr_code_label', { p_code: code, p_label: newLabel });
+    loadTable();
+  }
+});
 </script>
 
 </body>
