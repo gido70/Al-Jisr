@@ -811,7 +811,7 @@
 /* ---------------- Access gate (one-time invite codes via Supabase) ---------------- */
 const SUPABASE_URL = 'https://nmbbahzzogspuuvpsxud.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tYmJhaHp6b2dzcHV1dnBzeHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MTY1MTYsImV4cCI6MjA5MzA5MjUxNn0.6yZNxZ_2ONQ-wyQSJtdvYpdJAxZfB-7C00ezEepUiqY';
-const GATE_STORAGE_KEY = 'aljisr_unlocked_v1';
+const GATE_STORAGE_KEY = 'aljisr_unlocked_code_v2';
 
 /* ---------------- UI language (interface text) ---------------- */
 function detectBrowserLang(){
@@ -953,22 +953,26 @@ function applyGateLang(){
   document.getElementById('gateSubmit').textContent = t('gateBtn');
 }
 
+async function callSupabaseFn(fn, body){
+  const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + fn, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(body || {}),
+  });
+  return res.json();
+}
+
 async function tryRedeemCode(code){
   const btn = document.getElementById('gateSubmit');
   btn.disabled = true; showGateError('');
   try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/redeem_aljisr_code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ p_code: code.trim() }),
-    });
-    const ok = await res.json();
+    const ok = await callSupabaseFn('redeem_aljisr_code', { p_code: code.trim() });
     if(ok === true){
-      try{ localStorage.setItem(GATE_STORAGE_KEY, '1'); }catch(e){}
+      try{ localStorage.setItem(GATE_STORAGE_KEY, code.trim()); }catch(e){}
       hideGate();
     } else {
       showGateError(t('gateErrWrong'));
@@ -981,9 +985,24 @@ async function tryRedeemCode(code){
 
 (function initGate(){
   applyGateLang(); // show the gate itself in the device's own language right away
-  let alreadyUnlocked = false;
-  try{ alreadyUnlocked = localStorage.getItem(GATE_STORAGE_KEY) === '1'; }catch(e){}
-  if(alreadyUnlocked){ hideGate(); return; }
+  let storedCode = '';
+  try{ storedCode = localStorage.getItem(GATE_STORAGE_KEY) || ''; }catch(e){}
+
+  if(storedCode){
+    // Re-check with the server every time — if the code was deleted from the
+    // admin panel meanwhile, this device loses access too, not just new devices.
+    callSupabaseFn('check_aljisr_code_valid', { p_code: storedCode }).then(stillValid => {
+      if(stillValid === true){
+        hideGate();
+      } else {
+        try{ localStorage.removeItem(GATE_STORAGE_KEY); }catch(e){}
+        // gate stays visible, asking for a fresh code
+      }
+    }).catch(() => {
+      // network hiccup — fail safe by trusting the last known local state
+      hideGate();
+    });
+  }
 
   document.getElementById('gateSubmit').addEventListener('click', () => {
     const val = document.getElementById('gateInput').value;
