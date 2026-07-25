@@ -409,6 +409,10 @@
     cursor:pointer;
   }
 
+  .latin-ui .brand h1,
+  .latin-ui .guide-card h2,
+  .latin-ui .side h2{ font-family:Georgia,'Times New Roman',serif; }
+
   /* ---------- mobile app-like layer ---------- */
   .bottom-nav{ display:none; }
   .sheet-overlay{ display:none; }
@@ -420,6 +424,7 @@
     .brand h1{ font-size:19px; }
     /* keep only the status pill + guide button in the top bar; everything else moves to the bottom nav / more sheet */
     .controls > select,
+    .controls > #swapLangs,
     .controls > #callModeToggle,
     .controls > #convToggle,
     .controls > #textSize,
@@ -527,49 +532,49 @@
 
 <div class="guide-overlay" id="guideOverlay">
   <div class="guide-card">
-    <h2>🌉 دليل استخدام الجسر</h2>
-    <p class="guide-sub">خمس خطوات بسيطة، اقرأها مرة واحدة وتصير سهلة للأبد.</p>
+    <h2 id="gTitle">🌉 دليل استخدام الجسر</h2>
+    <p class="guide-sub" id="gSub">سبع خطوات بسيطة، اقرأها مرة واحدة وتصير سهلة للأبد.</p>
 
     <div class="guide-step">
       <div class="num">1</div>
-      <div><h4>📱 شريط التنقل بالأسفل (على الجوال)</h4>
-      <p>خمس أزرار كبيرة وواضحة بأسفل الشاشة: الرئيسية، مكالمة، تلقائي، مساعدة، والمزيد (فيه اللغة وحجم الخط والمسح). كل شي بلمسة وحدة، بدون تصفح قوائم.</p></div>
+      <div><h4 id="gS1T">📱 شريط التنقل بالأسفل (على الجوال)</h4>
+      <p id="gS1D">خمس أزرار كبيرة وواضحة بأسفل الشاشة: الرئيسية، مكالمة، تلقائي، مساعدة، والمزيد (فيه اللغة وحجم الخط والمسح). كل شي بلمسة وحدة، بدون تصفح قوائم.</p></div>
     </div>
 
     <div class="guide-step">
       <div class="num">2</div>
-      <div><h4>🎤 للتكلم والترجمة العادية</h4>
-      <p>اضغط الميكروفون تحت "أنت" وتكلم بالعربي — تُترجم وتُنطق تلقائياً للطرف الآخر. نفس الشي بالعكس من الجهة المقابلة.</p></div>
+      <div><h4 id="gS2T">🎤 للتكلم والترجمة العادية</h4>
+      <p id="gS2D">اضغط الميكروفون تحت أي جهة وتكلم — تُترجم وتُنطق تلقائياً للجهة المقابلة. يشتغل بالاتجاهين.</p></div>
     </div>
 
     <div class="guide-step">
       <div class="num">3</div>
-      <div><h4>🌐 لتغيير اللغة المقابلة</h4>
-      <p>من القائمة أعلى يمين الصفحة (Türkçe) اختر أي لغة ثانية تحتاجها: تركي، إنجليزي، روسي، فارسي، ألماني.</p></div>
+      <div><h4 id="gS3T">🌐 لاختيار اللغتين</h4>
+      <p id="gS3D">من القوائم أعلى الصفحة اختر لغة كل جهة (عربي، تركي، إنجليزي، روسي، فارسي، ألماني) — أي زوج لغتين تحتاجه، ليس فقط العربية.</p></div>
     </div>
 
     <div class="guide-step">
       <div class="num">4</div>
-      <div><h4>↻ للمحادثة المباشرة وجهاً لوجه</h4>
-      <p>اضغط "تلقائي" ضغطة واحدة فقط — يبدأ يستمع بنفسه ويتبادل الاستماع بينك وبين الطرف الآخر بدون أي ضغط إضافي. مرّر الجوال بينكما بحرية.</p></div>
+      <div><h4 id="gS4T">↻ للمحادثة المباشرة وجهاً لوجه</h4>
+      <p id="gS4D">اضغط "تلقائي" ضغطة واحدة فقط — يبدأ يستمع بنفسه ويتبادل الاستماع بينكما بدون أي ضغط إضافي. مرّر الجوال بينكما بحرية.</p></div>
     </div>
 
     <div class="guide-step">
       <div class="num">5</div>
-      <div><h4>📞 أثناء مكالمة هاتفية</h4>
-      <p>اضغط "أثناء المكالمة" — تجد قارئ عنوان (يقرأ عنوانك بصوت واضح)، وعبارات جاهزة تنطق فوراً بضغطة، وتبويب "قد أسمع منه" يشرح لك جمل شائعة قد يقولها المتصل.</p></div>
+      <div><h4 id="gS5T">📞 أثناء مكالمة هاتفية</h4>
+      <p id="gS5D">اضغط "أثناء المكالمة" — تجد قارئ عنوان (يقرأ عنوانك بصوت واضح)، وعبارات جاهزة تنطق فوراً بضغطة، وتبويب "قد أسمع منه" يشرح لك جمل شائعة قد يقولها المتصل.</p></div>
     </div>
 
     <div class="guide-step">
       <div class="num">6</div>
-      <div><h4>🔊 إذا ما سمعت صوت الترجمة</h4>
-      <p>اضغط زر "استمع" الصغير الظاهر تحت النص المترجم — يشغّل الصوت يدوياً، يعمل دائماً حتى لو الصوت التلقائي ما اشتغل على جوالك.</p></div>
+      <div><h4 id="gS6T">🔊 إذا ما سمعت صوت الترجمة</h4>
+      <p id="gS6D">اضغط زر "استمع" الصغير الظاهر تحت النص المترجم — يشغّل الصوت يدوياً، يعمل دائماً حتى لو الصوت التلقائي ما اشتغل على جوالك.</p></div>
     </div>
 
     <div class="guide-step">
       <div class="num">7</div>
-      <div><h4>📋 لنسخ النص أو إرساله في واتساب</h4>
-      <p>تحت كل نص مترجم زران: "نسخ" يحفظ النص لتلصقه بأي مكان، و"مشاركة" يفتح واتساب مباشرة والنص جاهز — لا يمكن دمج الموقع داخل واتساب نفسه، لكن هذا أسرع طريقة بديلة.</p></div>
+      <div><h4 id="gS7T">📋 لنسخ النص أو إرساله في واتساب</h4>
+      <p id="gS7D">تحت كل نص مترجم زران: "نسخ" يحفظ النص لتلصقه بأي مكان، و"مشاركة" يفتح واتساب مباشرة والنص جاهز — لا يمكن دمج الموقع داخل واتساب نفسه، لكن هذا أسرع طريقة بديلة.</p></div>
     </div>
 
     <button class="guide-close" id="guideClose">فهمت، ابدأ الاستخدام</button>
@@ -585,8 +590,15 @@
   </div>
   <div class="controls">
     <span class="status-pill" id="statusLine">جاهز</span>
+    <select id="uiLangSelect" title="لغة الواجهة">
+      <option value="ar">العربية</option>
+      <option value="tr">Türkçe</option>
+      <option value="en">English</option>
+    </select>
     <button class="icon-btn" id="guideBtn" title="دليل الاستخدام">❓ كيف أستخدمه</button>
-    <select id="langSelect" title="اللغة المقابلة"></select>
+    <select id="langSelectA" title="اللغة الأولى"></select>
+    <button class="icon-btn" id="swapLangs" title="تبديل اللغتين">⇄</button>
+    <select id="langSelectB" title="اللغة الثانية"></select>
     <button class="icon-btn" id="callModeToggle" title="أدوات المكالمات الهاتفية">📞 أثناء المكالمة</button>
     <button class="icon-btn" id="convToggle" title="محادثة تلقائية متتابعة">↻ تلقائي</button>
     <button class="icon-btn" id="textSize" title="حجم الخط">Aa</button>
@@ -596,26 +608,26 @@
 
 <div class="call-panel" id="callPanel">
   <button class="icon-btn" id="backHomeBtn" style="margin-bottom:16px;">→ الرجوع للصفحة الرئيسية</button>
-  <p class="call-sub" style="background:var(--bg);border:1px solid var(--line);padding:12px 14px;border-radius:10px;margin-bottom:20px;">
-    💡 <b style="color:var(--ink);">تذكير:</b> العبارات تحت مخصصة للحالات الحرجة فقط. لترجمة أي حديث حر أثناء المكالمة (مو بس هذي العبارات)، أغلق هذي اللوحة واستخدم الميكروفون العادي أو زر "تلقائي" بالأعلى — فعّل السماعة الخارجية بالمكالمة وقرّب الجوال منها، ويترجم أي كلام يقال بنفس طريقة المحادثة المباشرة.
+  <p class="call-sub" id="callReminder" style="background:var(--bg);border:1px solid var(--line);padding:12px 14px;border-radius:10px;margin-bottom:20px;">
+    💡 <b style="color:var(--ink);" id="callReminderB">تذكير:</b> العبارات تحت مخصصة للحالات الحرجة فقط. لترجمة أي حديث حر أثناء المكالمة (مو بس هذي العبارات)، أغلق هذي اللوحة واستخدم الميكروفون العادي أو زر "تلقائي" بالأعلى — فعّل السماعة الخارجية بالمكالمة وقرّب الجوال منها، ويترجم أي كلام يقال بنفس طريقة المحادثة المباشرة.
   </p>
-  <h3>🏠 قارئ العنوان</h3>
-  <p class="call-sub">الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.</p>
+  <h3 id="addrTitle">🏠 قارئ العنوان</h3>
+  <p class="call-sub" id="addrDesc">الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.</p>
   <div class="addr-box">
     <input type="text" id="addrInput" placeholder="مثال: Bağcılar Mah. 15. Sokak No:7 Daire:3">
     <button class="big-btn" id="addrSpeak">🔊 اقرأ العنوان</button>
   </div>
 
-  <h3>💬 عبارات جاهزة</h3>
+  <h3 id="phrasesTitle">💬 عبارات جاهزة</h3>
   <p class="call-sub" id="phraseHint">اضغط أي عبارة لتُنطق فوراً بالتركية — بدون انتظار أو مخاطرة سوء فهم من الميكروفون وسط ضجيج المكالمة.</p>
   <div class="phrase-tabs" id="directionTabs">
-    <button class="phrase-tab active" data-dir="say">🗣️ أنا أتكلم</button>
-    <button class="phrase-tab" data-dir="hear">👂 قد أسمع منه</button>
+    <button class="phrase-tab active" data-dir="say" id="tabSay">🗣️ أنا أتكلم</button>
+    <button class="phrase-tab" data-dir="hear" id="tabHear">👂 قد أسمع منه</button>
   </div>
   <div class="phrase-tabs" id="phraseTabs">
-    <button class="phrase-tab active" data-cat="delivery">توصيل</button>
-    <button class="phrase-tab" data-cat="appt">مواعيد</button>
-    <button class="phrase-tab" data-cat="general">عام</button>
+    <button class="phrase-tab active" data-cat="delivery" id="catDelivery">توصيل</button>
+    <button class="phrase-tab" data-cat="appt" id="catAppt">مواعيد</button>
+    <button class="phrase-tab" data-cat="general" id="catGeneral">عام</button>
   </div>
   <div class="phrase-grid" id="phraseGrid"></div>
 
@@ -626,8 +638,8 @@
 
 <div class="stage">
   <div class="side left">
-    <div class="lang-tag"><span class="dot"></span> العربية</div>
-    <h2>أنت</h2>
+    <div class="lang-tag"><span class="dot"></span> <span id="langATagLabel">العربية</span></div>
+    <h2 id="sideAHeading">أنت</h2>
     <div class="transcript placeholder" id="transcriptA">اضغط الميكروفون وتكلم…</div>
     <button class="icon-btn" id="replayA" style="display:none;align-self:flex-start;margin-top:8px;">🔊 استمع</button>
     <div class="btn-row" id="actionsA" style="display:none;gap:8px;margin-top:8px;">
@@ -635,10 +647,10 @@
       <button class="icon-btn" id="shareA">📤 مشاركة</button>
     </div>
     <div class="mic-row">
-      <button class="mic-btn" id="micA" title="تحدث بالعربية">
+      <button class="mic-btn" id="micA" title="تحدث">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
       </button>
-      <span class="hint">تُترجم وتُنطق للطرف الآخر</span>
+      <span class="hint" id="hintA">تُترجم وتُنطق للجهة المقابلة</span>
     </div>
   </div>
 
@@ -652,8 +664,8 @@
   </div>
 
   <div class="side right">
-    <div class="lang-tag"><span class="dot"></span> <span id="targetLangLabel">Türkçe</span></div>
-    <h2 id="targetLangHeading">الطرف الآخر</h2>
+    <div class="lang-tag"><span class="dot"></span> <span id="langBTagLabel">Türkçe</span></div>
+    <h2 id="sideBHeading">الطرف الآخر</h2>
     <div class="transcript placeholder" id="transcriptB">…</div>
     <button class="icon-btn" id="replayB" style="display:none;align-self:flex-start;margin-top:8px;">🔊 استمع</button>
     <div class="btn-row" id="actionsB" style="display:none;gap:8px;margin-top:8px;">
@@ -661,10 +673,10 @@
       <button class="icon-btn" id="shareB">📤 مشاركة</button>
     </div>
     <div class="mic-row">
-      <button class="mic-btn" id="micB" title="تحدث باللغة المقابلة">
+      <button class="mic-btn" id="micB" title="تحدث">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
       </button>
-      <span class="hint" id="hintB">تُترجم وتُنطق بالعربية</span>
+      <span class="hint" id="hintB">تُترجم وتُنطق للجهة المقابلة</span>
     </div>
   </div>
 </div>
@@ -674,34 +686,46 @@
 </div>
 
 <footer>
-  <span>سماعات = بدون صدى · جمل قصيرة = ترجمة أدق</span>
+  <span id="footerTip">سماعات = بدون صدى · جمل قصيرة = ترجمة أدق</span>
   <button class="icon-btn" id="copyBtn">نسخ المحادثة</button>
 </footer>
 
 <nav class="bottom-nav" id="bottomNav">
-  <button class="nav-btn active" id="navHome"><span class="nav-ic">🎤</span><span>الرئيسية</span></button>
-  <button class="nav-btn" id="navCall"><span class="nav-ic">📞</span><span>مكالمة</span></button>
-  <button class="nav-btn" id="navAuto"><span class="nav-ic">↻</span><span>تلقائي</span></button>
-  <button class="nav-btn" id="navGuide"><span class="nav-ic">❓</span><span>مساعدة</span></button>
-  <button class="nav-btn" id="navMore"><span class="nav-ic">⋯</span><span>المزيد</span></button>
+  <button class="nav-btn active" id="navHome"><span class="nav-ic">🎤</span><span id="navHomeLbl">الرئيسية</span></button>
+  <button class="nav-btn" id="navCall"><span class="nav-ic">📞</span><span id="navCallLbl">مكالمة</span></button>
+  <button class="nav-btn" id="navAuto"><span class="nav-ic">↻</span><span id="navAutoLbl">تلقائي</span></button>
+  <button class="nav-btn" id="navGuide"><span class="nav-ic">❓</span><span id="navGuideLbl">مساعدة</span></button>
+  <button class="nav-btn" id="navMore"><span class="nav-ic">⋯</span><span id="navMoreLbl">المزيد</span></button>
 </nav>
 
 <div class="sheet-overlay" id="moreSheetOverlay">
   <div class="more-sheet">
     <div class="more-row">
-      <label>🌐 اللغة المقابلة</label>
-      <select id="langSelectMobile"></select>
+      <label id="moreUILangLbl">🗣️ لغة الواجهة</label>
+      <select id="uiLangSelectMobile">
+        <option value="ar">العربية</option>
+        <option value="tr">Türkçe</option>
+        <option value="en">English</option>
+      </select>
     </div>
     <div class="more-row">
-      <label>Aa حجم الخط</label>
+      <label id="moreLangALbl">🌐 اللغة الأولى</label>
+      <select id="langSelectAMobile"></select>
+    </div>
+    <div class="more-row">
+      <label id="moreLangBLbl">🌐 اللغة الثانية</label>
+      <select id="langSelectBMobile"></select>
+    </div>
+    <div class="more-row">
+      <label id="moreTextSizeLbl">Aa حجم الخط</label>
       <button class="icon-btn" id="textSizeMobile">تكبير</button>
     </div>
     <div class="more-row">
-      <label>📋 نسخ كل المحادثة</label>
+      <label id="moreCopyAllLbl">📋 نسخ كل المحادثة</label>
       <button class="icon-btn" id="copyBtnMobile">نسخ</button>
     </div>
     <div class="more-row">
-      <label>🗑️ مسح المحادثة</label>
+      <label id="moreClearLbl">🗑️ مسح المحادثة</label>
       <button class="icon-btn" id="clearBtnMobile">مسح</button>
     </div>
   </div>
@@ -716,6 +740,7 @@ const logEmpty = document.getElementById('logEmpty');
 const crossDot = document.getElementById('crossDot');
 
 const LANGS = [
+  { code:'ar', bcp47:'ar-SA', label:'العربية' },
   { code:'tr', bcp47:'tr-TR', label:'Türkçe' },
   { code:'en', bcp47:'en-US', label:'English' },
   { code:'ru', bcp47:'ru-RU', label:'Русский' },
@@ -723,19 +748,118 @@ const LANGS = [
   { code:'de', bcp47:'de-DE', label:'Deutsch' },
 ];
 
-const langSelect = document.getElementById('langSelect');
-LANGS.forEach((l,i) => {
-  const opt = document.createElement('option');
-  opt.value = i; opt.textContent = l.label;
-  langSelect.appendChild(opt);
-});
-
-let target = LANGS[0];
+let langA = LANGS[0]; // Arabic by default
+let langB = LANGS[1]; // Turkish by default
 let convMode = false;
 let log = [];
 
+/* ---------------- UI language (interface text) ---------------- */
+let UI_LANG = 'ar';
+const STRINGS = {
+  ar: {
+    ready:'جاهز', translating:'يترجم…', speaking:'ينطق…', listeningIn:'يستمع بـ%s…',
+    micDenied:'الرجاء السماح باستخدام الميكروفون.', translateFail:'تعذر الاتصال بخدمة الترجمة. تحقق من الإنترنت.',
+    you:'أنت', otherParty:'الجهة المقابلة', noSpeechYet:'لا توجد جملة سابقة بعد.', noAddress:'اكتب أو الصق العنوان أولاً.',
+    copied:'تم النسخ ✓', copyLabel:'📋 نسخ', shareLabel:'📤 مشاركة', listenLabel:'🔊 استمع',
+    shareFallback:'تم نسخ النص (المشاركة المباشرة غير مدعومة على هذا الجهاز/المتصفح).',
+    noSTT:'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Google Chrome على كمبيوتر أو أندرويد.',
+    hint:'تُترجم وتُنطق للجهة المقابلة',
+    voiceMissing:'صوت النطق للغة "%s" غير مثبّت على هذا الجهاز. من الإعدادات → تحويل النص إلى كلام → غيّر المحرك إلى Google ونزّل حزمة اللغة.',
+    transcriptAPh:'اضغط الميكروفون وتكلم…', transcriptBPh:'…', noConvo:'لا يوجد محادثة بعد.',
+    gTitle:'🌉 دليل استخدام الجسر', gSub:'سبع خطوات بسيطة، اقرأها مرة واحدة وتصير سهلة للأبد.',
+    gS1T:'📱 شريط التنقل بالأسفل (على الجوال)', gS1D:'خمس أزرار كبيرة وواضحة بأسفل الشاشة: الرئيسية، مكالمة، تلقائي، مساعدة، والمزيد (فيه اللغة وحجم الخط والمسح). كل شي بلمسة وحدة، بدون تصفح قوائم.',
+    gS2T:'🎤 للتكلم والترجمة العادية', gS2D:'اضغط الميكروفون تحت أي جهة وتكلم — تُترجم وتُنطق تلقائياً للجهة المقابلة. يشتغل بالاتجاهين.',
+    gS3T:'🌐 لاختيار اللغتين', gS3D:'من القوائم أعلى الصفحة اختر لغة كل جهة (عربي، تركي، إنجليزي، روسي، فارسي، ألماني) — أي زوج لغتين تحتاجه، ليس فقط العربية.',
+    gS4T:'↻ للمحادثة المباشرة وجهاً لوجه', gS4D:'اضغط "تلقائي" ضغطة واحدة فقط — يبدأ يستمع بنفسه ويتبادل الاستماع بينكما بدون أي ضغط إضافي. مرّر الجوال بينكما بحرية.',
+    gS5T:'📞 أثناء مكالمة هاتفية', gS5D:'اضغط "أثناء المكالمة" — تجد قارئ عنوان (يقرأ عنوانك بصوت واضح)، وعبارات جاهزة تنطق فوراً بضغطة، وتبويب "قد أسمع منه" يشرح لك جمل شائعة قد يقولها المتصل.',
+    gS6T:'🔊 إذا ما سمعت صوت الترجمة', gS6D:'اضغط زر "استمع" الصغير الظاهر تحت النص المترجم — يشغّل الصوت يدوياً، يعمل دائماً حتى لو الصوت التلقائي ما اشتغل على جوالك.',
+    gS7T:'📋 لنسخ النص أو إرساله في واتساب', gS7D:'تحت كل نص مترجم زران: "نسخ" يحفظ النص لتلصقه بأي مكان، و"مشاركة" يفتح واتساب مباشرة والنص جاهز — لا يمكن دمج الموقع داخل واتساب نفسه، لكن هذا أسرع طريقة بديلة.',
+    guideClose:'فهمت، ابدأ الاستخدام',
+    guideBtn:'❓ كيف أستخدمه', callBtnOpen:'📞 أثناء المكالمة', callBtnClose:'⬅ الرئيسية', autoBtn:'↻ تلقائي', textSizeBtn:'Aa', clearBtn:'مسح',
+    backHome:'→ الرجوع للصفحة الرئيسية',
+    callReminderB:'تذكير:', callReminder:'العبارات تحت مخصصة للحالات الحرجة فقط. لترجمة أي حديث حر أثناء المكالمة (مو بس هذي العبارات)، أغلق هذي اللوحة واستخدم الميكروفون العادي أو زر "تلقائي" بالأعلى — فعّل السماعة الخارجية بالمكالمة وقرّب الجوال منها، ويترجم أي كلام يقال بنفس طريقة المحادثة المباشرة.',
+    addrTitle:'🏠 قارئ العنوان', addrDesc:'الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.', addrPh:'مثال: Bağcılar Mah. 15. Sokak No:7 Daire:3', addrBtn:'🔊 اقرأ العنوان',
+    phrasesTitle:'💬 عبارات جاهزة', tabSay:'🗣️ أنا أتكلم', tabHear:'👂 قد أسمع منه',
+    catDelivery:'توصيل', catAppt:'مواعيد', catGeneral:'عام', repeatBtn:'🔁 كرّر آخر جملة',
+    sayHint:'اضغط أي عبارة لتُنطق فوراً بالتركية — يفهمك الطرف الآخر مباشرة.',
+    hearHint:'هذا ما قد يقوله لك بالتركية — اقرأ المعنى بالعربي تحته، أو اضغط لتسمع نطقه.',
+    footerTip:'سماعات = بدون صدى · جمل قصيرة = ترجمة أدق', copyConvoBtn:'نسخ المحادثة',
+    navHome:'الرئيسية', navCall:'مكالمة', navAuto:'تلقائي', navGuide:'مساعدة', navMore:'المزيد',
+    moreUILang:'🗣️ لغة الواجهة', moreLangA:'🌐 اللغة الأولى', moreLangB:'🌐 اللغة الثانية',
+    moreTextSize:'Aa حجم الخط', moreTextSizeBtn:'تكبير', moreCopyAll:'📋 نسخ كل المحادثة', moreCopyBtn:'نسخ',
+    moreClear:'🗑️ مسح المحادثة', moreClearBtn:'مسح',
+  },
+  tr: {
+    ready:'Hazır', translating:'Çevriliyor…', speaking:'Sesli okunuyor…', listeningIn:'%s dinleniyor…',
+    micDenied:'Lütfen mikrofon kullanımına izin verin.', translateFail:'Çeviri servisine bağlanılamadı. İnterneti kontrol edin.',
+    you:'Sen', otherParty:'Karşı taraf', noSpeechYet:'Henüz önceki bir cümle yok.', noAddress:'Önce adresi yazın veya yapıştırın.',
+    copied:'Kopyalandı ✓', copyLabel:'📋 Kopyala', shareLabel:'📤 Paylaş', listenLabel:'🔊 Dinle',
+    shareFallback:'Metin kopyalandı (bu cihazda doğrudan paylaşım desteklenmiyor).',
+    noSTT:'Bu tarayıcı sesli tanımayı desteklemiyor. Bilgisayar veya Android’de Google Chrome kullanın.',
+    hint:'Karşı tarafa çevrilip seslendirilir',
+    voiceMissing:'"%s" dili için ses paketi bu cihazda kurulu değil. Ayarlar → Metinden sese → Google motoruna geçin ve dili indirin.',
+    transcriptAPh:'Mikrofona basın ve konuşun…', transcriptBPh:'…', noConvo:'Henüz konuşma yok.',
+    gTitle:'🌉 Köprü Kullanım Kılavuzu', gSub:'Yedi basit adım, bir kez okuyun, sonsuza dek kolaylaşsın.',
+    gS1T:'📱 Alt gezinme çubuğu (telefonda)', gS1D:'Ekranın altında beş büyük ve net buton: Ana Sayfa, Arama, Otomatik, Yardım ve Daha Fazla (dil, yazı boyutu, temizleme). Her şey tek dokunuşla, menüde gezinmeden.',
+    gS2T:'🎤 Normal konuşma ve çeviri', gS2D:'Herhangi bir tarafın altındaki mikrofona basıp konuşun — otomatik olarak çevrilip karşı tarafa seslendirilir. İki yönde de çalışır.',
+    gS3T:'🌐 İki dili seçmek için', gS3D:'Sayfanın üstündeki listelerden her tarafın dilini seçin (Arapça, Türkçe, İngilizce, Rusça, Farsça, Almanca) — sadece Arapça değil, ihtiyacınız olan herhangi bir dil çifti.',
+    gS4T:'↻ Yüz yüze canlı sohbet için', gS4D:'"Otomatik" butonuna sadece bir kez basın — kendi kendine dinlemeye başlar ve aranızda ek dokunuş olmadan sırayla dinler. Telefonu aranızda özgürce geçirin.',
+    gS5T:'📞 Telefon görüşmesi sırasında', gS5D:'"Arama sırasında" butonuna basın — adres okuyucu (adresinizi net sesle okur), tek dokunuşla anında seslenen hazır cümleler, ve karşınızdakinin söyleyebileceği yaygın cümleleri açıklayan bir sekme bulacaksınız.',
+    gS6T:'🔊 Çeviri sesini duymuyorsanız', gS6D:'Çevrilen metnin altındaki küçük "Dinle" butonuna basın — sesi manuel olarak çalar, telefonunuzda otomatik ses çalışmasa bile her zaman çalışır.',
+    gS7T:'📋 Metni kopyalamak veya WhatsApp’tan göndermek için', gS7D:'Her çevrilen metnin altında iki buton var: "Kopyala" metni herhangi bir yere yapıştırmanız için kaydeder, "Paylaş" WhatsApp’ı doğrudan açar ve metin hazırdır — site WhatsApp’ın içine entegre edilemez, ama bu en hızlı alternatif yoldur.',
+    guideClose:'Anladım, kullanmaya başla',
+    guideBtn:'❓ Nasıl kullanılır', callBtnOpen:'📞 Arama sırasında', callBtnClose:'⬅ Ana sayfa', autoBtn:'↻ Otomatik', textSizeBtn:'Aa', clearBtn:'Temizle',
+    backHome:'→ Ana sayfaya dön',
+    callReminderB:'Hatırlatma:', callReminder:'Aşağıdaki cümleler yalnızca kritik durumlar içindir. Görüşme sırasında serbest konuşmayı çevirmek için (sadece bu cümleleri değil) bu paneli kapatın ve normal mikrofonu veya yukarıdaki "Otomatik" butonunu kullanın — görüşmede hoparlörü açın ve telefonu ona yaklaştırın, söylenen her şey canlı sohbetle aynı şekilde çevrilir.',
+    addrTitle:'🏠 Adres okuyucu', addrDesc:'Adresinizi Türkçe olarak yapıştırın (örneğin Google Haritalar’dan) ve site kuryeye net bir sesle okusun — çeviri yapılmaz, çünkü adres zaten Türkçe yazılıdır.', addrPh:'Örnek: Bağcılar Mah. 15. Sokak No:7 Daire:3', addrBtn:'🔊 Adresi oku',
+    phrasesTitle:'💬 Hazır cümleler', tabSay:'🗣️ Ben konuşuyorum', tabHear:'👂 Ondan duyabilirim',
+    catDelivery:'Teslimat', catAppt:'Randevu', catGeneral:'Genel', repeatBtn:'🔁 Son cümleyi tekrarla',
+    sayHint:'Herhangi bir cümleye basın, anında Türkçe seslendirilir — karşı taraf sizi hemen anlar.',
+    hearHint:'Size Türkçe söyleyebileceği şey budur — altındaki Arapça anlamı okuyun, ya da telaffuzunu duymak için basın.',
+    footerTip:'Kulaklık = yankı yok · Kısa cümleler = daha doğru çeviri', copyConvoBtn:'Konuşmayı kopyala',
+    navHome:'Ana Sayfa', navCall:'Arama', navAuto:'Otomatik', navGuide:'Yardım', navMore:'Daha Fazla',
+    moreUILang:'🗣️ Arayüz dili', moreLangA:'🌐 Birinci dil', moreLangB:'🌐 İkinci dil',
+    moreTextSize:'Aa Yazı boyutu', moreTextSizeBtn:'Büyüt', moreCopyAll:'📋 Tüm konuşmayı kopyala', moreCopyBtn:'Kopyala',
+    moreClear:'🗑️ Konuşmayı temizle', moreClearBtn:'Temizle',
+  },
+  en: {
+    ready:'Ready', translating:'Translating…', speaking:'Speaking…', listeningIn:'Listening in %s…',
+    micDenied:'Please allow microphone access.', translateFail:'Could not reach the translation service. Check your internet.',
+    you:'You', otherParty:'Other side', noSpeechYet:'No previous sentence yet.', noAddress:'Type or paste the address first.',
+    copied:'Copied ✓', copyLabel:'📋 Copy', shareLabel:'📤 Share', listenLabel:'🔊 Listen',
+    shareFallback:'Text copied (direct sharing is not supported on this device/browser).',
+    noSTT:'This browser does not support speech recognition. Use Google Chrome on a computer or Android.',
+    hint:'Translated and spoken to the other side',
+    voiceMissing:'A "%s" voice is not installed on this device. Go to Settings → Text-to-speech → switch engine to Google and download the language.',
+    transcriptAPh:'Tap the mic and speak…', transcriptBPh:'…', noConvo:'No conversation yet.',
+    gTitle:'🌉 Al-Jisr Usage Guide', gSub:'Seven simple steps — read once and it becomes easy forever.',
+    gS1T:'📱 Bottom navigation bar (on mobile)', gS1D:'Five big, clear buttons at the bottom: Home, Call, Auto, Help, and More (language, text size, clear). Everything is one tap away, no menu digging.',
+    gS2T:'🎤 Regular talking and translation', gS2D:'Tap the mic under either side and speak — it is translated and spoken automatically to the other side. Works both ways.',
+    gS3T:'🌐 Choosing the two languages', gS3D:'From the dropdowns at the top of the page, pick each side\'s language (Arabic, Turkish, English, Russian, Persian, German) — any pair you need, not just Arabic.',
+    gS4T:'↻ For a live face-to-face conversation', gS4D:'Tap "Auto" just once — it starts listening on its own and alternates listening between you both with no extra taps. Pass the phone freely between you.',
+    gS5T:'📞 During a phone call', gS5D:'Tap "During a call" — you\'ll find an address reader (reads your address clearly), ready phrases that speak instantly on tap, and a "I might hear" tab explaining common lines the caller might say.',
+    gS6T:'🔊 If you don\'t hear the translation', gS6D:'Tap the small "Listen" button shown under the translated text — it plays the audio manually, and always works even if auto-play didn\'t on your phone.',
+    gS7T:'📋 To copy the text or send it on WhatsApp', gS7D:'Under every translated text there are two buttons: "Copy" saves the text to paste anywhere, and "Share" opens WhatsApp directly with the text ready — the site can\'t be embedded inside WhatsApp itself, but this is the fastest alternative.',
+    guideClose:'Got it, start using it',
+    guideBtn:'❓ How to use it', callBtnOpen:'📞 During a call', callBtnClose:'⬅ Home', autoBtn:'↻ Auto', textSizeBtn:'Aa', clearBtn:'Clear',
+    backHome:'→ Back to home',
+    callReminderB:'Reminder:', callReminder:'The phrases below are only for critical situations. To translate any free conversation during the call (not just these phrases), close this panel and use the regular mic or the "Auto" button above — turn on speakerphone during the call and bring the phone close to it; anything said is translated the same way as a live conversation.',
+    addrTitle:'🏠 Address reader', addrDesc:'Paste your address in Turkish (e.g. from Google Maps) and the site reads it clearly for the courier — no translation needed, since the address is already written in Turkish.', addrPh:'Example: Bağcılar Mah. 15. Sokak No:7 Daire:3', addrBtn:'🔊 Read address',
+    phrasesTitle:'💬 Ready phrases', tabSay:'🗣️ I\'m speaking', tabHear:'👂 I might hear',
+    catDelivery:'Delivery', catAppt:'Appointments', catGeneral:'General', repeatBtn:'🔁 Repeat last sentence',
+    sayHint:'Tap any phrase to speak it instantly in Turkish — the other person understands you right away.',
+    hearHint:'This is what they might say to you in Turkish — read the Arabic meaning below it, or tap to hear its pronunciation.',
+    footerTip:'Headphones = no echo · Short sentences = more accurate translation', copyConvoBtn:'Copy conversation',
+    navHome:'Home', navCall:'Call', navAuto:'Auto', navGuide:'Help', navMore:'More',
+    moreUILang:'🗣️ Interface language', moreLangA:'🌐 First language', moreLangB:'🌐 Second language',
+    moreTextSize:'Aa Text size', moreTextSizeBtn:'Larger', moreCopyAll:'📋 Copy whole conversation', moreCopyBtn:'Copy',
+    moreClear:'🗑️ Clear conversation', moreClearBtn:'Clear',
+  },
+};
+function t(key){ return (STRINGS[UI_LANG] && STRINGS[UI_LANG][key]) || STRINGS.ar[key] || key; }
+
 function showBanner(msg){ banner.textContent = msg; banner.classList.add('show'); }
-function setStatus(t){ statusLine.textContent = t; }
+function setStatus(msg){ statusLine.textContent = msg; }
 
 function animateCross(fromGold){
   crossDot.classList.remove('go','back');
@@ -810,7 +934,7 @@ function warnIfVoiceMissing(langCode){
   const has = voices.some(v => v.lang && v.lang.toLowerCase().startsWith(langCode.toLowerCase()));
   if(!has){
     voiceWarned[langCode] = true;
-    showBanner('صوت النطق للغة "' + langCode + '" غير مثبّت على هذا الجهاز. من الإعدادات → تحويل النص إلى كلام → غيّر المحرك إلى Google ونزّل حزمة اللغة.');
+    showBanner(t('voiceMissing').replace('%s', langCode));
   }
 }
 
@@ -837,139 +961,97 @@ function buildRecognizer(lang){
   return rec;
 }
 
-const sideA = { micId:'micA', transcriptId:'transcriptA', rec:null, listening:false, resultReceived:false };
-const sideB = { micId:'micB', transcriptId:'transcriptB', rec:null, listening:false, resultReceived:false };
+let sideA = { listening:false, resultReceived:false, rec:null };
+let sideB = { listening:false, resultReceived:false, rec:null };
 
 function stopAll(){
   if(sideA.rec && sideA.listening) sideA.rec.stop();
   if(sideB.rec && sideB.listening) sideB.rec.stop();
 }
-
-function initSideA(){
-  sideA.rec = buildRecognizer('ar-SA');
-  const micBtn = document.getElementById('micA');
-  const transcriptEl = document.getElementById('transcriptA');
-  if(!sideA.rec){ micBtn.disabled = true; return; }
-
-  sideA.rec.onstart = () => { sideA.listening = true; sideA.resultReceived = false; micBtn.classList.add('listening'); setStatus('يستمع بالعربية…'); };
-  sideA.rec.onerror = (e) => {
-    sideA.listening = false; micBtn.classList.remove('listening');
-    if(e.error === 'not-allowed') showBanner('الرجاء السماح باستخدام الميكروفون.');
-    setStatus('جاهز');
-  };
-  sideA.rec.onend = () => {
-    sideA.listening = false; micBtn.classList.remove('listening'); setStatus('جاهز');
-    // In auto conversation mode, silence just means nobody has spoken yet on this
-    // side — keep re-arming the mic instead of stopping, so no manual tap is needed.
-    if(convMode && !sideA.resultReceived && !sideB.listening){
-      setTimeout(() => { if(convMode) startSide(sideA); }, 500);
-    }
-  };
-
-  sideA.rec.onresult = async (event) => {
-    sideA.resultReceived = true;
-    const said = event.results[0][0].transcript;
-    transcriptEl.textContent = said;
-    transcriptEl.classList.remove('placeholder');
-    setStatus('يترجم…');
-    try{
-      const translated = await translateText(said, 'ar', target.code);
-      const elB = document.getElementById('transcriptB');
-      elB.textContent = translated;
-      elB.classList.remove('placeholder');
-      addLog('أنت', said, translated);
-      animateCross(true);
-      setStatus('ينطق…');
-      replayAudio.B = { text: translated, lang: target.bcp47 };
-      document.getElementById('replayB').style.display = 'inline-flex';
-      document.getElementById('actionsB').style.display = 'flex';
-      speak(translated, target.bcp47, () => {
-        setStatus('جاهز');
-        if(convMode) startSide(sideB);
-      });
-    }catch(err){
-      showBanner('تعذر الاتصال بخدمة الترجمة. تحقق من الإنترنت.');
-      setStatus('جاهز');
-    }
-  };
-
-  micBtn.addEventListener('click', () => {
-    convMode = false; document.getElementById('convToggle').classList.remove('active');
-    if(sideA.listening){ sideA.rec.stop(); return; }
-    window.speechSynthesis.cancel();
-    try{ sideA.rec.start(); }catch(e){}
-  });
-}
-
-function initSideB(){
-  const micBtn = document.getElementById('micB');
-  const transcriptEl = document.getElementById('transcriptB');
-
-  function build(){
-    sideB.rec = buildRecognizer(target.bcp47);
-    if(!sideB.rec){ micBtn.disabled = true; return; }
-
-    sideB.rec.onstart = () => { sideB.listening = true; sideB.resultReceived = false; micBtn.classList.add('listening'); setStatus('يستمع بـ' + target.label + '…'); };
-    sideB.rec.onerror = (e) => {
-      sideB.listening = false; micBtn.classList.remove('listening');
-      if(e.error === 'not-allowed') showBanner('الرجاء السماح باستخدام الميكروفون.');
-      setStatus('جاهز');
-    };
-    sideB.rec.onend = () => {
-      sideB.listening = false; micBtn.classList.remove('listening'); setStatus('جاهز');
-      if(convMode && !sideB.resultReceived && !sideA.listening){
-        setTimeout(() => { if(convMode) startSide(sideB); }, 500);
-      }
-    };
-
-    sideB.rec.onresult = async (event) => {
-      sideB.resultReceived = true;
-      const said = event.results[0][0].transcript;
-      transcriptEl.textContent = said;
-      transcriptEl.classList.remove('placeholder');
-      setStatus('يترجم…');
-      try{
-        const translated = await translateText(said, target.code, 'ar');
-        const elA = document.getElementById('transcriptA');
-        elA.textContent = translated;
-        elA.classList.remove('placeholder');
-        addLog(target.label, said, translated);
-        animateCross(false);
-        setStatus('ينطق…');
-        replayAudio.A = { text: translated, lang: 'ar-SA' };
-        document.getElementById('replayA').style.display = 'inline-flex';
-        document.getElementById('actionsA').style.display = 'flex';
-        speak(translated, 'ar-SA', () => {
-          setStatus('جاهز');
-          if(convMode) startSide(sideA);
-        });
-      }catch(err){
-        showBanner('تعذر الاتصال بخدمة الترجمة. تحقق من الإنترنت.');
-        setStatus('جاهز');
-      }
-    };
-  }
-  build();
-  sideB._rebuild = build;
-
-  micBtn.addEventListener('click', () => {
-    convMode = false; document.getElementById('convToggle').classList.remove('active');
-    if(sideB.listening){ sideB.rec.stop(); return; }
-    window.speechSynthesis.cancel();
-    try{ sideB.rec.start(); }catch(e){}
-  });
-}
-
 function startSide(side){
   window.speechSynthesis.cancel();
   try{ side.rec.start(); }catch(e){}
 }
 
+// One factory drives both sides — 'A' and 'B' are symmetric, each reads its
+// current language from langA/langB so either side can be any language.
+function makeSide(key){
+  const side = key === 'A' ? sideA : sideB;
+  const otherKey = key === 'A' ? 'B' : 'A';
+  const micBtn = document.getElementById('mic' + key);
+  const transcriptEl = document.getElementById('transcript' + key);
+  const curLang = () => key === 'A' ? langA : langB;
+  const otherLang = () => key === 'A' ? langB : langA;
+  const otherSide = () => key === 'A' ? sideB : sideA;
+
+  function build(){
+    side.rec = buildRecognizer(curLang().bcp47);
+    if(!side.rec){ micBtn.disabled = true; return; }
+
+    side.rec.onstart = () => {
+      side.listening = true; side.resultReceived = false;
+      micBtn.classList.add('listening');
+      setStatus(t('listeningIn').replace('%s', curLang().label));
+    };
+    side.rec.onerror = (e) => {
+      side.listening = false; micBtn.classList.remove('listening');
+      if(e.error === 'not-allowed') showBanner(t('micDenied'));
+      setStatus(t('ready'));
+    };
+    side.rec.onend = () => {
+      side.listening = false; micBtn.classList.remove('listening'); setStatus(t('ready'));
+      // In auto conversation mode, silence just means nobody has spoken yet on
+      // this side — keep re-arming the mic instead of stopping.
+      if(convMode && !side.resultReceived && !otherSide().listening){
+        setTimeout(() => { if(convMode) startSide(side); }, 500);
+      }
+    };
+    side.rec.onresult = async (event) => {
+      side.resultReceived = true;
+      const said = event.results[0][0].transcript;
+      transcriptEl.textContent = said;
+      transcriptEl.classList.remove('placeholder');
+      setStatus(t('translating'));
+      try{
+        const translated = await translateText(said, curLang().code, otherLang().code);
+        const otherEl = document.getElementById('transcript' + otherKey);
+        otherEl.textContent = translated;
+        otherEl.classList.remove('placeholder');
+        const speakerLabel = key === 'A' ? t('you') : curLang().label;
+        addLog(speakerLabel, said, translated);
+        animateCross(key === 'A');
+        setStatus(t('speaking'));
+        replayAudio[otherKey] = { text: translated, lang: otherLang().bcp47 };
+        document.getElementById('replay' + otherKey).style.display = 'inline-flex';
+        document.getElementById('actions' + otherKey).style.display = 'flex';
+        speak(translated, otherLang().bcp47, () => {
+          setStatus(t('ready'));
+          if(convMode) startSide(otherSide());
+        });
+      }catch(err){
+        showBanner(t('translateFail'));
+        setStatus(t('ready'));
+      }
+    };
+  }
+  build();
+  side._rebuild = build;
+
+  micBtn.addEventListener('click', () => {
+    convMode = false;
+    document.getElementById('convToggle').classList.remove('active');
+    document.getElementById('navAuto')?.classList.remove('active');
+    if(side.listening){ side.rec.stop(); return; }
+    window.speechSynthesis.cancel();
+    try{ side.rec.start(); }catch(e){}
+  });
+}
+
 if(!SR){
-  showBanner('هذا المتصفح لا يدعم التعرف على الصوت. استخدم Google Chrome على كمبيوتر أو أندرويد.');
+  showBanner(t('noSTT'));
 } else {
-  initSideA();
-  initSideB();
+  makeSide('A');
+  makeSide('B');
 }
 
 if('serviceWorker' in navigator){
@@ -979,91 +1061,82 @@ if('serviceWorker' in navigator){
 }
 
 /* ---------------- Call Mode ---------------- */
-const PHRASES_SAY = {
+// One canonical English phrase list, translated on the fly into whichever two
+// languages are currently selected (langA/langB) — this is what makes the
+// phrase bank work for any pair (ar↔en, ar↔tr, en↔tr), not just Arabic-Turkish.
+const PHRASE_BASE = {
   delivery: [
-    { ar:'مرحباً', tr:'Merhaba' },
-    { ar:'أنا في المنزل، تفضل بالصعود', tr:'Evdeyim, buyurun yukarı çıkabilirsiniz' },
-    { ar:'من فضلك انتظر خمس دقائق', tr:'Lütfen beş dakika bekleyin' },
-    { ar:'أنا بالأسفل عند المدخل', tr:'Aşağıdayım, girişteyim' },
-    { ar:'الرجاء الاتصال عند الوصول', tr:'Lütfen vardığınızda arayın' },
-    { ar:'كم تبقى من الوقت للوصول؟', tr:'Varmanıza ne kadar kaldı?' },
-    { ar:'الطابق الثالث، رقم الشقة كذا', tr:'Üçüncü kat, daire numarası bu' },
-    { ar:'لا أتحدث التركية جيداً، شكراً لصبرك', tr:'Türkçeyi iyi konuşamıyorum, sabrınız için teşekkürler' },
+    'Hello',
+    "I'm home, please come up",
+    'Please wait five minutes',
+    "I'm downstairs at the entrance",
+    'Please call me when you arrive',
+    'How much longer until you arrive?',
+    'Third floor, the apartment number is this',
+    "I don't speak the language well, thanks for your patience",
   ],
   appt: [
-    { ar:'أريد تأكيد الموعد', tr:'Randevumu onaylamak istiyorum' },
-    { ar:'أريد تأجيل الموعد لوقت آخر', tr:'Randevumu başka bir zamana ertelemek istiyorum' },
-    { ar:'متى موعدي القادم؟', tr:'Bir sonraki randevum ne zaman?' },
-    { ar:'هل يمكن الحضور اليوم؟', tr:'Bugün gelebilir miyim?' },
-    { ar:'أحتاج مترجماً من فضلكم', tr:'Lütfen bir tercümana ihtiyacım var' },
-    { ar:'شكراً جزيلاً، إلى اللقاء', tr:'Çok teşekkür ederim, görüşürüz' },
+    'I want to confirm the appointment',
+    'I want to reschedule the appointment to another time',
+    'When is my next appointment?',
+    'Can I come in today?',
+    'I need an interpreter please',
+    'Thank you very much, goodbye',
   ],
   general: [
-    { ar:'لحظة من فضلك', tr:'Bir dakika lütfen' },
-    { ar:'هل يمكنك التحدث ببطء؟', tr:'Daha yavaş konuşabilir misiniz?' },
-    { ar:'لم أفهم، هل يمكن التكرار؟', tr:'Anlamadım, tekrar edebilir misiniz?' },
-    { ar:'شكراً لك', tr:'Teşekkür ederim' },
-  ],
-};
-
-// The reverse direction: common lines a Turkish courier/official might say TO you,
-// shown Turkish-first (what you'll hear) with the Arabic meaning beneath —
-// this is what actually solves "understanding them", since the app has no access
-// to the real call audio to translate it live.
-const PHRASES_HEAR = {
-  delivery: [
-    { tr:'Merhaba', ar:'مرحباً' },
-    { tr:'Neredesiniz?', ar:'أين أنت؟' },
-    { tr:'Kapıdayım', ar:'أنا عند الباب' },
-    { tr:'Adresi tekrar söyler misiniz?', ar:'هل يمكن إعادة العنوان؟' },
-    { tr:'Kaç numara?', ar:'أي رقم (شقة/منزل)؟' },
-    { tr:'Beş dakikaya geliyorum', ar:'سأصل خلال خمس دقائق' },
-    { tr:'Ödeme nakit mi kart mı?', ar:'الدفع نقدي أم بالبطاقة؟' },
-    { tr:'Teşekkürler, iyi günler', ar:'شكراً، نهارك سعيد' },
-  ],
-  appt: [
-    { tr:'Randevunuz onaylandı', ar:'تم تأكيد موعدك' },
-    { tr:'Hangi gün uygun?', ar:'أي يوم يناسبك؟' },
-    { tr:'Belgelerinizi getirin', ar:'أحضر مستنداتك' },
-    { tr:'Saat kaçta gelebilirsiniz?', ar:'أي ساعة يمكنك الحضور؟' },
-    { tr:'Randevunuz iptal edildi', ar:'تم إلغاء موعدك' },
-    { tr:'Lütfen bekleyin', ar:'من فضلك انتظر' },
-  ],
-  general: [
-    { tr:'Alo, kimsiniz?', ar:'ألو، من المتصل؟' },
-    { tr:'Bir saniye lütfen', ar:'لحظة من فضلك' },
-    { tr:'Anlıyor musunuz?', ar:'هل تفهم؟' },
-    { tr:'Tercüman ister misiniz?', ar:'هل تريد مترجماً؟' },
+    'One moment please',
+    'Can you speak more slowly?',
+    "I didn't understand, can you repeat that?",
+    'Thank you',
   ],
 };
 
 let phraseDirection = 'say';
 let phraseCat = 'delivery';
+const phraseCache = {}; // `${idx}_${cat}_${langCode}` -> translated text, avoids re-fetching on tab toggles
+let phraseRenderToken = 0;
 
-function renderPhrases(){
+async function translateCached(idx, cat, text, langCode){
+  const key = idx + '_' + cat + '_' + langCode;
+  if(phraseCache[key]) return phraseCache[key];
+  if(langCode === 'en'){ phraseCache[key] = text; return text; }
+  const translated = await translateText(text, 'en', langCode);
+  phraseCache[key] = translated;
+  return translated;
+}
+
+async function renderPhrases(){
   const grid = document.getElementById('phraseGrid');
   const hint = document.getElementById('phraseHint');
+  const myToken = ++phraseRenderToken; // cancels stale renders if the user switches tabs quickly
+  hint.textContent = phraseDirection === 'say' ? t('sayHint') : t('hearHint');
   grid.innerHTML = '';
 
-  if(phraseDirection === 'say'){
-    hint.textContent = 'اضغط أي عبارة لتُنطق فوراً بالتركية — يفهمك الطرف الآخر مباشرة.';
-    PHRASES_SAY[phraseCat].forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'phrase-card';
-      card.innerHTML = `<div class="ar">${p.ar}</div><div class="tr">${p.tr}</div>`;
-      card.addEventListener('click', () => speak(p.tr, 'tr-TR'));
-      grid.appendChild(card);
-    });
-  } else {
-    hint.textContent = 'هذا ما قد يقوله لك بالتركية — اقرأ المعنى بالعربي تحته، أو اضغط لتسمع نطقه.';
-    PHRASES_HEAR[phraseCat].forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'phrase-card';
-      card.innerHTML = `<div class="tr" style="color:var(--gold);font-size:14.5px;margin-bottom:4px;">${p.tr}</div><div class="ar" style="color:var(--muted);">= ${p.ar}</div>`;
-      card.addEventListener('click', () => speak(p.tr, 'tr-TR'));
-      grid.appendChild(card);
-    });
-  }
+  const items = PHRASE_BASE[phraseCat];
+  const cards = items.map(() => {
+    const card = document.createElement('div');
+    card.className = 'phrase-card';
+    card.innerHTML = `<div class="ar">…</div><div class="tr">…</div>`;
+    grid.appendChild(card);
+    return card;
+  });
+
+  await Promise.all(items.map(async (text, idx) => {
+    try{
+      const spokenLang = langB; // the phrase is always spoken in the "other" language
+      const meaningLang = langA;
+      const spoken = await translateCached(idx, phraseCat, text, spokenLang.code);
+      const meaning = await translateCached(idx, phraseCat, text, meaningLang.code);
+      if(myToken !== phraseRenderToken) return; // a newer render superseded this one
+      const card = cards[idx];
+      if(phraseDirection === 'say'){
+        card.innerHTML = `<div class="ar">${meaning}</div><div class="tr">${spoken}</div>`;
+      } else {
+        card.innerHTML = `<div class="tr" style="color:var(--gold);font-size:14.5px;margin-bottom:4px;">${spoken}</div><div class="ar" style="color:var(--muted);">= ${meaning}</div>`;
+      }
+      card.addEventListener('click', () => speak(spoken, spokenLang.bcp47));
+    }catch(err){ /* leave the placeholder if a single phrase fails to translate */ }
+  }));
 }
 renderPhrases();
 
@@ -1088,13 +1161,13 @@ document.getElementById('phraseTabs').addEventListener('click', (e) => {
 function openCallMode(){
   document.getElementById('callPanel').classList.add('show');
   document.getElementById('callModeToggle').classList.add('active');
-  document.getElementById('callModeToggle').textContent = '⬅ الرئيسية';
+  document.getElementById('callModeToggle').textContent = t('callBtnClose');
   document.getElementById('navCall')?.classList.add('active');
 }
 function closeCallMode(){
   document.getElementById('callPanel').classList.remove('show');
   document.getElementById('callModeToggle').classList.remove('active');
-  document.getElementById('callModeToggle').textContent = '📞 أثناء المكالمة';
+  document.getElementById('callModeToggle').textContent = t('callBtnOpen');
   document.getElementById('navCall')?.classList.remove('active');
 }
 document.getElementById('callModeToggle').addEventListener('click', () => {
@@ -1104,12 +1177,12 @@ document.getElementById('backHomeBtn').addEventListener('click', closeCallMode);
 
 document.getElementById('addrSpeak').addEventListener('click', () => {
   const val = document.getElementById('addrInput').value.trim();
-  if(!val){ showBanner('اكتب أو الصق العنوان أولاً.'); return; }
-  speak(val, 'tr-TR');
+  if(!val){ showBanner(t('noAddress')); return; }
+  speak(val, langB.bcp47);
 });
 
 document.getElementById('repeatBtn').addEventListener('click', () => {
-  if(!lastSpokenGlobal.text){ showBanner('لا توجد جملة سابقة بعد.'); return; }
+  if(!lastSpokenGlobal.text){ showBanner(t('noSpeechYet')); return; }
   speak(lastSpokenGlobal.text, lastSpokenGlobal.lang);
 });
 
@@ -1124,7 +1197,7 @@ function copyText(text, btn){
   if(!text) return;
   navigator.clipboard.writeText(text).then(() => {
     const old = btn.textContent;
-    btn.textContent = 'تم النسخ ✓';
+    btn.textContent = t('copied');
     setTimeout(() => btn.textContent = old, 1400);
   });
 }
@@ -1136,7 +1209,7 @@ async function shareText(text){
   } else {
     // no native share available (mostly desktop) — fall back to copy
     navigator.clipboard.writeText(text);
-    showBanner('تم نسخ النص (المشاركة المباشرة غير مدعومة على هذا الجهاز/المتصفح).');
+    showBanner(t('shareFallback'));
   }
 }
 
@@ -1145,14 +1218,79 @@ document.getElementById('copyB').addEventListener('click', (e) => copyText(repla
 document.getElementById('shareA').addEventListener('click', () => shareText(replayAudio.A?.text));
 document.getElementById('shareB').addEventListener('click', () => shareText(replayAudio.B?.text));
 
-langSelect.addEventListener('change', () => {
-  target = LANGS[langSelect.value];
-  document.getElementById('targetLangLabel').textContent = target.label;
-  document.getElementById('hintB').textContent = 'تُترجم وتُنطق بالعربية';
-  document.getElementById('transcriptB').textContent = '…';
-  document.getElementById('transcriptB').classList.add('placeholder');
+/* ---------------- Language pickers (both sides independently selectable) ---------------- */
+function populateLangSelect(sel){
+  LANGS.forEach((l,i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = l.label;
+    sel.appendChild(opt);
+  });
+}
+const langSelectA = document.getElementById('langSelectA');
+const langSelectB = document.getElementById('langSelectB');
+const langSelectAMobile = document.getElementById('langSelectAMobile');
+const langSelectBMobile = document.getElementById('langSelectBMobile');
+[langSelectA, langSelectB, langSelectAMobile, langSelectBMobile].forEach(populateLangSelect);
+
+function syncLangSelectUI(){
+  const idxA = LANGS.indexOf(langA), idxB = LANGS.indexOf(langB);
+  langSelectA.value = idxA; langSelectAMobile.value = idxA;
+  langSelectB.value = idxB; langSelectBMobile.value = idxB;
+  document.getElementById('langATagLabel').textContent = langA.label;
+  document.getElementById('langBTagLabel').textContent = langB.label;
+}
+syncLangSelectUI();
+
+function resetSideTranscript(key){
+  const el = document.getElementById('transcript' + key);
+  el.textContent = key === 'A' ? t('transcriptAPh') : t('transcriptBPh');
+  el.classList.add('placeholder');
+}
+
+function onLangAChange(newIdx){
+  const chosen = LANGS[newIdx];
+  if(chosen.code === langB.code){ // avoid picking the same language on both sides
+    langB = LANGS[(newIdx + 1) % LANGS.length];
+  }
+  langA = chosen;
+  syncLangSelectUI();
+  resetSideTranscript('A');
+  if(sideA.rec && sideA.listening) sideA.rec.stop();
+  sideA._rebuild();
   if(sideB.rec && sideB.listening) sideB.rec.stop();
   sideB._rebuild();
+  renderPhrases();
+}
+function onLangBChange(newIdx){
+  const chosen = LANGS[newIdx];
+  if(chosen.code === langA.code){
+    langA = LANGS[(newIdx + 1) % LANGS.length];
+  }
+  langB = chosen;
+  syncLangSelectUI();
+  resetSideTranscript('B');
+  if(sideB.rec && sideB.listening) sideB.rec.stop();
+  sideB._rebuild();
+  if(sideA.rec && sideA.listening) sideA.rec.stop();
+  sideA._rebuild();
+  renderPhrases();
+}
+
+langSelectA.addEventListener('change', (e) => onLangAChange(Number(e.target.value)));
+langSelectB.addEventListener('change', (e) => onLangBChange(Number(e.target.value)));
+langSelectAMobile.addEventListener('change', (e) => onLangAChange(Number(e.target.value)));
+langSelectBMobile.addEventListener('change', (e) => onLangBChange(Number(e.target.value)));
+
+document.getElementById('swapLangs').addEventListener('click', () => {
+  const oldA = langA;
+  langA = langB;
+  langB = oldA;
+  syncLangSelectUI();
+  resetSideTranscript('A'); resetSideTranscript('B');
+  stopAll();
+  sideA._rebuild();
+  sideB._rebuild();
+  renderPhrases();
 });
 
 function toggleAutoMode(){
@@ -1178,19 +1316,16 @@ document.getElementById('textSize').addEventListener('click', cycleTextSize);
 
 function clearConversation(){
   log = []; renderLog();
-  ['transcriptA','transcriptB'].forEach(id=>{
-    const el = document.getElementById(id);
-    el.textContent = id==='transcriptA' ? 'اضغط الميكروفون وتكلم…' : '…';
-    el.classList.add('placeholder');
-  });
+  resetSideTranscript('A');
+  resetSideTranscript('B');
 }
 document.getElementById('clearBtn').addEventListener('click', clearConversation);
 
 function copyConversation(btn){
   const text = log.map(i => `[${i.t}] ${i.speakerLabel}: ${i.original}\n→ ${i.translated}`).join('\n\n');
-  navigator.clipboard.writeText(text || 'لا يوجد محادثة بعد.').then(() => {
+  navigator.clipboard.writeText(text || t('noConvo')).then(() => {
     const old = btn.textContent;
-    btn.textContent = 'تم النسخ ✓';
+    btn.textContent = t('copied');
     setTimeout(()=>btn.textContent = old, 1500);
   });
 }
@@ -1206,6 +1341,68 @@ document.getElementById('guideOverlay').addEventListener('click', (e) => {
   if(e.target.id === 'guideOverlay') closeGuide();
 });
 
+/* ---------------- Interface language switcher ---------------- */
+const SIMPLE_I18N_MAP = {
+  gTitle:'gTitle', gSub:'gSub', gS1T:'gS1T', gS1D:'gS1D', gS2T:'gS2T', gS2D:'gS2D',
+  gS3T:'gS3T', gS3D:'gS3D', gS4T:'gS4T', gS4D:'gS4D', gS5T:'gS5T', gS5D:'gS5D',
+  gS6T:'gS6T', gS6D:'gS6D', gS7T:'gS7T', gS7D:'gS7D', guideClose:'guideClose',
+  guideBtn:'guideBtn', textSize:'textSizeBtn', clearBtn:'clearBtn', backHomeBtn:'backHome',
+  addrTitle:'addrTitle', addrDesc:'addrDesc', addrSpeak:'addrBtn',
+  phrasesTitle:'phrasesTitle', tabSay:'tabSay', tabHear:'tabHear',
+  catDelivery:'catDelivery', catAppt:'catAppt', catGeneral:'catGeneral', repeatBtn:'repeatBtn',
+  footerTip:'footerTip', copyBtn:'copyConvoBtn',
+  navHomeLbl:'navHome', navCallLbl:'navCall', navAutoLbl:'navAuto', navGuideLbl:'navGuide', navMoreLbl:'navMore',
+  moreUILangLbl:'moreUILang', moreLangALbl:'moreLangA', moreLangBLbl:'moreLangB',
+  moreTextSizeLbl:'moreTextSize', textSizeMobile:'moreTextSizeBtn',
+  moreCopyAllLbl:'moreCopyAll', copyBtnMobile:'moreCopyBtn',
+  moreClearLbl:'moreClear', clearBtnMobile:'moreClearBtn',
+  sideAHeading:'you', sideBHeading:'otherParty', hintA:'hint', hintB:'hint',
+  replayA:'listenLabel', replayB:'listenLabel',
+};
+
+function applyUILang(lang){
+  UI_LANG = lang;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.body.classList.toggle('latin-ui', lang !== 'ar');
+
+  Object.entries(SIMPLE_I18N_MAP).forEach(([id,key]) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = t(key);
+  });
+
+  document.getElementById('addrInput').placeholder = t('addrPh');
+  document.getElementById('callReminder').innerHTML =
+    '💡 <b style="color:var(--ink);" id="callReminderB">' + t('callReminderB') + '</b> ' + t('callReminder');
+
+  // copy/share buttons keep their icon+label together
+  ['copyA','copyB'].forEach(id => document.getElementById(id).textContent = t('copyLabel'));
+  ['shareA','shareB'].forEach(id => document.getElementById(id).textContent = t('shareLabel'));
+
+  // call-mode toggle text depends on whether the panel is currently open
+  const callBtn = document.getElementById('callModeToggle');
+  const panelOpen = document.getElementById('callPanel').classList.contains('show');
+  callBtn.textContent = panelOpen ? t('callBtnClose') : t('callBtnOpen');
+
+  document.getElementById('convToggle').textContent = t('autoBtn');
+
+  // refresh transcript placeholders only if currently showing a placeholder
+  ['A','B'].forEach(k => {
+    const el = document.getElementById('transcript'+k);
+    if(el.classList.contains('placeholder')) el.textContent = t(k==='A' ? 'transcriptAPh' : 'transcriptBPh');
+  });
+
+  syncLangSelectUI();
+  renderPhrases();
+
+  document.getElementById('uiLangSelect').value = lang;
+  document.getElementById('uiLangSelectMobile').value = lang;
+}
+
+document.getElementById('uiLangSelect').addEventListener('change', (e) => applyUILang(e.target.value));
+document.getElementById('uiLangSelectMobile').addEventListener('change', (e) => applyUILang(e.target.value));
+
+applyUILang('ar');
 // show the guide automatically as soon as the page opens
 openGuide();
 
@@ -1246,17 +1443,6 @@ function closeMoreSheet(){ document.getElementById('moreSheetOverlay').classList
 document.getElementById('navMore').addEventListener('click', openMoreSheet);
 document.getElementById('moreSheetOverlay').addEventListener('click', (e) => {
   if(e.target.id === 'moreSheetOverlay') closeMoreSheet();
-});
-
-// keep the mobile language dropdown in sync with the main one
-LANGS.forEach((l,i) => {
-  const opt = document.createElement('option');
-  opt.value = i; opt.textContent = l.label;
-  document.getElementById('langSelectMobile').appendChild(opt);
-});
-document.getElementById('langSelectMobile').addEventListener('change', (e) => {
-  langSelect.value = e.target.value;
-  langSelect.dispatchEvent(new Event('change'));
 });
 
 document.getElementById('textSizeMobile').addEventListener('click', cycleTextSize);
