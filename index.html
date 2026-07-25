@@ -158,6 +158,12 @@
     white-space:pre-wrap;
   }
   .transcript.placeholder{color:var(--muted);}
+  .transcript.editing{
+    outline:2px dashed var(--gold);
+    outline-offset:4px;
+    border-radius:6px;
+    cursor:text;
+  }
 
   .mic-row{
     margin-top:20px;
@@ -719,6 +725,7 @@
     <div class="transcript placeholder" id="transcriptA">اضغط الميكروفون وتكلم…</div>
     <button class="icon-btn" id="replayA" style="display:none;align-self:flex-start;margin-top:8px;">🔊 استمع</button>
     <div class="btn-row" id="actionsA" style="display:none;gap:8px;margin-top:8px;">
+      <button class="icon-btn" id="editA">✏️ تعديل</button>
       <button class="icon-btn" id="copyA">📋 نسخ</button>
       <button class="icon-btn" id="shareA">📤 مشاركة</button>
     </div>
@@ -745,6 +752,7 @@
     <div class="transcript placeholder" id="transcriptB">…</div>
     <button class="icon-btn" id="replayB" style="display:none;align-self:flex-start;margin-top:8px;">🔊 استمع</button>
     <div class="btn-row" id="actionsB" style="display:none;gap:8px;margin-top:8px;">
+      <button class="icon-btn" id="editB">✏️ تعديل</button>
       <button class="icon-btn" id="copyB">📋 نسخ</button>
       <button class="icon-btn" id="shareB">📤 مشاركة</button>
     </div>
@@ -831,6 +839,7 @@ const STRINGS = {
     micDenied:'الرجاء السماح باستخدام الميكروفون.', translateFail:'تعذر الاتصال بخدمة الترجمة. تحقق من الإنترنت.',
     you:'أنت', otherParty:'الجهة المقابلة', noSpeechYet:'لا توجد جملة سابقة بعد.', noAddress:'اكتب أو الصق العنوان أولاً.',
     copied:'تم النسخ ✓', copyLabel:'📋 نسخ', shareLabel:'📤 مشاركة', listenLabel:'🔊 استمع',
+    editLabel:'✏️ تعديل', editConfirmLabel:'✔️ ترجم بعد التعديل',
     shareFallback:'تم نسخ النص (المشاركة المباشرة غير مدعومة على هذا الجهاز/المتصفح).',
     noSTT:'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Google Chrome على كمبيوتر أو أندرويد.',
     gateSub:'هذا الموقع خاص — أدخل رمز الدخول اللي أُعطيته لك.', gatePlaceholder:'ادخل الرمز', gateBtn:'دخول',
@@ -868,6 +877,7 @@ const STRINGS = {
     micDenied:'Lütfen mikrofon kullanımına izin verin.', translateFail:'Çeviri servisine bağlanılamadı. İnterneti kontrol edin.',
     you:'Sen', otherParty:'Karşı taraf', noSpeechYet:'Henüz önceki bir cümle yok.', noAddress:'Önce adresi yazın veya yapıştırın.',
     copied:'Kopyalandı ✓', copyLabel:'📋 Kopyala', shareLabel:'📤 Paylaş', listenLabel:'🔊 Dinle',
+    editLabel:'✏️ Düzenle', editConfirmLabel:'✔️ Düzenledikten sonra çevir',
     shareFallback:'Metin kopyalandı (bu cihazda doğrudan paylaşım desteklenmiyor).',
     noSTT:'Bu tarayıcı sesli tanımayı desteklemiyor. Bilgisayar veya Android’de Google Chrome kullanın.',
     gateSub:'Bu site özeldir — size verilen giriş kodunu girin.', gatePlaceholder:'Kodu girin', gateBtn:'Giriş',
@@ -905,6 +915,7 @@ const STRINGS = {
     micDenied:'Please allow microphone access.', translateFail:'Could not reach the translation service. Check your internet.',
     you:'You', otherParty:'Other side', noSpeechYet:'No previous sentence yet.', noAddress:'Type or paste the address first.',
     copied:'Copied ✓', copyLabel:'📋 Copy', shareLabel:'📤 Share', listenLabel:'🔊 Listen',
+    editLabel:'✏️ Edit', editConfirmLabel:'✔️ Translate after editing',
     shareFallback:'Text copied (direct sharing is not supported on this device/browser).',
     noSTT:'This browser does not support speech recognition. Use Google Chrome on a computer or Android.',
     gateSub:'This site is private — enter the access code you were given.', gatePlaceholder:'Enter the code', gateBtn:'Enter',
@@ -1396,6 +1407,61 @@ document.getElementById('copyB').addEventListener('click', (e) => copyText(repla
 document.getElementById('shareA').addEventListener('click', () => shareText(replayAudio.A?.text));
 document.getElementById('shareB').addEventListener('click', () => shareText(replayAudio.B?.text));
 
+/* ---------------- Inline edit: fix a mis-heard word, then re-translate ---------------- */
+// Each transcript panel always shows text in ITS OWN side's language, whether
+// that text came from this side speaking or from translating the other side's
+// speech. So editing transcriptA and re-translating always means: "translate
+// this corrected langA text into langB", regardless of who originally spoke it.
+function makeEditable(key){
+  const el = document.getElementById('transcript' + key);
+  const btn = document.getElementById('edit' + key);
+  const isEditing = el.classList.contains('editing');
+
+  if(!isEditing){
+    el.setAttribute('contenteditable', 'true');
+    el.classList.add('editing');
+    el.focus();
+    // place cursor at the end
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    btn.textContent = t('editConfirmLabel');
+  } else {
+    el.setAttribute('contenteditable', 'false');
+    el.classList.remove('editing');
+    btn.textContent = t('editLabel');
+    retranslateFromEdit(key, el.textContent.trim());
+  }
+}
+
+async function retranslateFromEdit(key, text){
+  if(!text) return;
+  const otherKey = key === 'A' ? 'B' : 'A';
+  const fromLang = key === 'A' ? langA : langB;
+  const toLang = key === 'A' ? langB : langA;
+  setStatus(t('translating'));
+  try{
+    const translated = await translateText(text, fromLang.code, toLang.code);
+    const otherEl = document.getElementById('transcript' + otherKey);
+    otherEl.textContent = translated;
+    otherEl.classList.remove('placeholder');
+    replayAudio[otherKey] = { text: translated, lang: toLang.bcp47 };
+    document.getElementById('replay' + otherKey).style.display = 'inline-flex';
+    document.getElementById('actions' + otherKey).style.display = 'flex';
+    setStatus(t('speaking'));
+    speak(translated, toLang.bcp47, () => setStatus(t('ready')));
+  }catch(err){
+    showBanner(t('translateFail'));
+    setStatus(t('ready'));
+  }
+}
+
+document.getElementById('editA').addEventListener('click', () => makeEditable('A'));
+document.getElementById('editB').addEventListener('click', () => makeEditable('B'));
+
 /* ---------------- Language pickers (both sides independently selectable) ---------------- */
 function populateLangSelect(sel){
   LANGS.forEach((l,i) => {
@@ -1536,7 +1602,7 @@ const SIMPLE_I18N_MAP = {
   moreClearLbl:'moreClear', clearBtnMobile:'moreClearBtn',
   displayLangLbl:'displayLangLbl', translateLangLbl:'translateLangLbl',
   sideAHeading:'you', sideBHeading:'otherParty', hintA:'hint', hintB:'hint',
-  replayA:'listenLabel', replayB:'listenLabel',
+  replayA:'listenLabel', replayB:'listenLabel', editA:'editLabel', editB:'editLabel',
 };
 
 function applyUILang(lang){
