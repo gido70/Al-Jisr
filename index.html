@@ -6,7 +6,7 @@
 <title>الجسر — مترجم صوتي فوري</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0e1620">
+<meta name="theme-color" content="#fdf8ec">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,25 +15,26 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;900&family=Lora:ital,wght@0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
   :root{
-    --ink:#eef1f5;
-    --bg:#0e1620;
-    --bg2:#121d2b;
-    --line:#26364a;
-    --gold:#c9a227;
-    --teal:#2ea8a0;
-    --muted:#7d8ba0;
+    --ink:#2b2118;
+    --bg:#fdf8ec;
+    --bg2:#f5ead0;
+    --line:#e3d2a3;
+    --gold:#a8710a;
+    --teal:#0f766e;
+    --muted:#7d6f52;
     --danger:#b5442e;
     --radius:14px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
   body{
-    background:var(--bg);
+    background:linear-gradient(180deg, #eaf3ee 0%, #fdf8ec 22%, #fdf8ec 100%);
     color:var(--ink);
     font-family:'Tajawal',sans-serif;
+    font-weight:500;
     display:flex;
     flex-direction:column;
     min-height:100vh;
@@ -187,16 +188,16 @@
   .mic-btn.listening{
     background:var(--gold);
     color:var(--bg);
-    box-shadow:0 0 0 10px rgba(201,162,39,.14);
+    box-shadow:0 0 0 10px rgba(168,113,10,.14);
     animation:pulse 1.4s ease-in-out infinite;
   }
   .side.right .mic-btn.listening{
     background:var(--teal);
-    box-shadow:0 0 0 10px rgba(46,168,160,.14);
+    box-shadow:0 0 0 10px rgba(15,118,110,.14);
   }
   @keyframes pulse{
-    0%,100%{box-shadow:0 0 0 8px rgba(201,162,39,.14);}
-    50%{box-shadow:0 0 0 14px rgba(201,162,39,.06);}
+    0%,100%{box-shadow:0 0 0 8px rgba(168,113,10,.14);}
+    50%{box-shadow:0 0 0 14px rgba(168,113,10,.06);}
   }
   .mic-btn svg{width:24px;height:24px;stroke:currentColor;}
   .hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
@@ -392,12 +393,12 @@
   .quick-btn .quick-lbl{ font-size:11px; font-weight:700; }
   .quick-btn.listening{
     background:var(--gold); color:var(--bg);
-    box-shadow:0 0 0 8px rgba(201,162,39,.14);
+    box-shadow:0 0 0 8px rgba(168,113,10,.14);
     animation:pulse 1.4s ease-in-out infinite;
   }
   .quick-btn.teal.listening{
     background:var(--teal); color:var(--bg);
-    box-shadow:0 0 0 8px rgba(46,168,160,.14);
+    box-shadow:0 0 0 8px rgba(15,118,110,.14);
   }
   .quick-result{
     flex:1;
@@ -474,7 +475,9 @@
 
   .latin-ui .brand h1,
   .latin-ui .guide-card h2,
-  .latin-ui .side h2{ font-family:Georgia,'Times New Roman',serif; }
+  .latin-ui .side h2{ font-family:'Lora',Georgia,serif; font-weight:700; }
+  .latin-ui .quick-call h3,
+  .latin-ui h3{ font-family:'Lora',Georgia,serif; }
 
   /* access gate */
   .gate-overlay{
@@ -542,6 +545,9 @@
     .side h2{ font-size:23px; }
     .transcript{ font-size:16.5px; }
 
+    .btn-row{ gap:6px !important; }
+    .btn-row .icon-btn{ font-size:11.5px; padding:6px 8px; gap:3px; }
+
     .quick-row{ flex-direction:column; align-items:stretch; }
     .quick-btn{ width:100%; flex-direction:row; height:56px; gap:10px; }
     .quick-btn .quick-lbl{ font-size:14px; }
@@ -591,7 +597,7 @@
       transition:color .15s ease, background .15s ease;
     }
     .nav-btn .nav-ic{ font-size:21px; line-height:1; }
-    .nav-btn.active{ color:var(--gold); background:rgba(201,162,39,.12); }
+    .nav-btn.active{ color:var(--gold); background:rgba(168,113,10,.12); }
     .nav-btn:active{ transform:scale(.93); }
 
     /* more sheet */
