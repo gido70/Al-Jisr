@@ -6,7 +6,7 @@
 <title>الجسر — مترجم صوتي فوري</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#fdf8ec">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,23 +18,23 @@
   @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;900&family=Lora:ital,wght@0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
   :root{
-    --ink:#2b2118;
-    --bg:#fdf8ec;
-    --bg2:#f5ead0;
-    --line:#e3d2a3;
-    --gold:#a8710a;
-    --teal:#0f766e;
-    --muted:#7d6f52;
-    --danger:#b5442e;
+    --ink:#15171c;
+    --bg:#ffffff;
+    --bg2:#eef1f6;
+    --line:#c7cedb;
+    --gold:#a85b00;
+    --teal:#1447c9;
+    --muted:#4c5566;
+    --danger:#d6291a;
     --radius:14px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
   body{
-    background:linear-gradient(180deg, #eaf3ee 0%, #fdf8ec 22%, #fdf8ec 100%);
+    background:var(--bg);
     color:var(--ink);
     font-family:'Tajawal',sans-serif;
-    font-weight:500;
+    font-weight:600;
     display:flex;
     flex-direction:column;
     min-height:100vh;
@@ -188,16 +188,16 @@
   .mic-btn.listening{
     background:var(--gold);
     color:var(--bg);
-    box-shadow:0 0 0 10px rgba(168,113,10,.14);
+    box-shadow:0 0 0 10px rgba(168,91,0,.14);
     animation:pulse 1.4s ease-in-out infinite;
   }
   .side.right .mic-btn.listening{
     background:var(--teal);
-    box-shadow:0 0 0 10px rgba(15,118,110,.14);
+    box-shadow:0 0 0 10px rgba(20,71,201,.14);
   }
   @keyframes pulse{
-    0%,100%{box-shadow:0 0 0 8px rgba(168,113,10,.14);}
-    50%{box-shadow:0 0 0 14px rgba(168,113,10,.06);}
+    0%,100%{box-shadow:0 0 0 8px rgba(168,91,0,.14);}
+    50%{box-shadow:0 0 0 14px rgba(168,91,0,.06);}
   }
   .mic-btn svg{width:24px;height:24px;stroke:currentColor;}
   .hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
@@ -212,7 +212,7 @@
     background:linear-gradient(180deg, transparent, var(--bg2), transparent);
   }
   .bridge-col svg{width:36px;height:120px;}
-  .arch{stroke:var(--line);stroke-width:1.5;fill:none;}
+  .arch{stroke:var(--muted);stroke-width:1.5;fill:none;}
   .crossing{
     fill:var(--gold);
     opacity:0;
@@ -393,12 +393,12 @@
   .quick-btn .quick-lbl{ font-size:11px; font-weight:700; }
   .quick-btn.listening{
     background:var(--gold); color:var(--bg);
-    box-shadow:0 0 0 8px rgba(168,113,10,.14);
+    box-shadow:0 0 0 8px rgba(168,91,0,.14);
     animation:pulse 1.4s ease-in-out infinite;
   }
   .quick-btn.teal.listening{
     background:var(--teal); color:var(--bg);
-    box-shadow:0 0 0 8px rgba(15,118,110,.14);
+    box-shadow:0 0 0 8px rgba(20,71,201,.14);
   }
   .quick-result{
     flex:1;
@@ -597,7 +597,7 @@
       transition:color .15s ease, background .15s ease;
     }
     .nav-btn .nav-ic{ font-size:21px; line-height:1; }
-    .nav-btn.active{ color:var(--gold); background:rgba(168,113,10,.12); }
+    .nav-btn.active{ color:var(--gold); background:rgba(168,91,0,.12); }
     .nav-btn:active{ transform:scale(.93); }
 
     /* more sheet */
