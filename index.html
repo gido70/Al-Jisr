@@ -2,11 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
 <title>الجسر — مترجم صوتي فوري</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b3b55">
+<meta name="theme-color" content="#123b8f">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -769,67 +769,40 @@
     .more-row select{ min-width:140px; }
   }
 
-  /* 2026 mobile visual refresh */
-  :root{
-    --ink:#102431; --bg:#f7fbfd; --bg2:#e9f4f7; --line:#c5dbe2;
-    --gold:#d48724; --teal:#087f8c; --muted:#58717d; --danger:#c43e35;
-    --shadow:0 14px 38px rgba(9,54,73,.12); --soft-shadow:0 8px 22px rgba(9,54,73,.08);
-  }
-  body{background:linear-gradient(180deg,#fafdff 0%,#eef7f9 100%);}
-  header{background:linear-gradient(135deg,#073b56,#0b6670);color:#fff;border:0;box-shadow:var(--soft-shadow);}
-  header .brand h1, header .brand-mark{color:#fff;}
-  header .status-pill, header .icon-btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);color:#fff;}
-  .side{background:rgba(255,255,255,.72);}
-  .stage{gap:14px;padding:16px;max-width:1280px;width:100%;margin:0 auto;}
-  .side{border:1px solid rgba(197,219,226,.9);border-radius:22px;box-shadow:var(--soft-shadow);}
-  .bridge-col{border-radius:20px;background:linear-gradient(180deg,rgba(212,135,36,.08),rgba(8,127,140,.08));}
-  .mic-btn{background:#fff;box-shadow:0 8px 22px rgba(9,54,73,.12);}
-  .icon-btn,select,input,.quick-result{min-height:44px;}
-  .call-panel{background:linear-gradient(180deg,#f7fbfd,#edf6f8);}
-  .call-panel h3{color:#0b3b55;}
-  .ocr-mode-buttons .icon-btn{justify-content:center;background:#fff;border:1px solid var(--line);font-weight:700;}
-  .ocr-camera-btn{border-color:var(--teal)!important;color:var(--teal)!important;}
-  .ocr-video-wrap{box-shadow:var(--shadow);border:3px solid #fff;}
-  #ocrPreview{width:100%;max-height:48vh;object-fit:contain;background:#fff;box-shadow:var(--soft-shadow);}
-  #ocrResults .quick-result{box-shadow:var(--soft-shadow);}
+/* ===== Al-Jisr mobile clarity + camera/call enhancements ===== */
+:root{--navy:#123b8f;--blue:#1d63d8;--red:#d93025;--cyan:#0d9488;--soft-blue:#eaf2ff;--soft-red:#fff0ee;}
+header{background:linear-gradient(135deg,#123b8f,#1d63d8);color:#fff;border-bottom:0;box-shadow:0 8px 28px rgba(18,59,143,.2);}
+header .brand-mark,header .brand h1{color:#fff;}
+header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.96);border-color:rgba(255,255,255,.65);}
+.big-btn{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border:0;box-shadow:0 7px 18px rgba(29,99,216,.22);font-weight:900;}
+.big-btn:active,.top-quick-btn:active,.quick-btn:active{transform:scale(.97);}
+#ocrStartLiveBtn{background:linear-gradient(135deg,#d93025,#f05a3d);}
+.call-panel{background:linear-gradient(180deg,#f8fbff 0%,#fff 40%);}
+.quick-call,.type-during-call{border:1px solid #cddaf1;box-shadow:0 12px 32px rgba(18,59,143,.08);}
+.type-during-call{background:linear-gradient(135deg,var(--soft-blue),#fff);}
+.quick-result{line-height:1.65;overflow-wrap:anywhere;}
+.call-action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.call-action-row .icon-btn{flex:1;justify-content:center;min-height:44px;font-weight:800;}
+.ocr-mode-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ocr-mode-buttons #ocrStartLiveBtn,.ocr-mode-buttons #ocrStopLiveBtn{grid-column:1/-1;justify-content:center;}
+.ocr-upload-btn,.ocr-capture-btn{justify-content:center;min-height:48px;font-weight:800;}
+.ocr-video-wrap{position:relative;background:#06152f;border-radius:18px;overflow:hidden;box-shadow:0 18px 45px rgba(0,0,0,.25);}
+#ocrVideo{width:100%;display:block;max-height:62vh;object-fit:cover;}
+.ocr-live-overlay{position:absolute;left:10px;right:10px;bottom:48px;background:rgba(5,18,48,.9);color:#fff;padding:12px 14px;border-radius:12px;font-size:18px;font-weight:900;line-height:1.55;backdrop-filter:blur(8px);}
+.ocr-live-status{position:absolute;top:10px;left:10px;right:10px;background:rgba(217,48,37,.9);color:#fff;border-radius:999px;padding:7px 12px;text-align:center;font-weight:800;}
+#ocrPanel.show{min-height:100dvh;}
+@media(max-width:720px){
+ body{font-size:16px;} header{padding:calc(12px + env(safe-area-inset-top)) 12px 12px;}
+ .brand h1{font-size:23px}.call-panel{padding:16px 12px calc(90px + env(safe-area-inset-bottom));}
+ .ocr-lang-row{position:sticky;top:0;z-index:4;background:#fff;padding:10px 0;}
+ .ocr-mode-buttons{grid-template-columns:1fr;} .ocr-mode-buttons>*{grid-column:1!important;width:100%;}
+ #ocrVideo{height:58dvh;max-height:none;} .ocr-live-overlay{font-size:17px;}
+ .type-row{display:grid!important;grid-template-columns:1fr;} #quickTypeBtn{width:100%!important;}
+ .quick-result{font-size:18px!important;}
+}
 
-  @media (max-width:720px){
-    html,body{width:100%;max-width:100%;overflow-x:hidden;}
-    body{min-height:100dvh;padding-bottom:calc(82px + env(safe-area-inset-bottom));}
-    header{padding:calc(12px + env(safe-area-inset-top)) 14px 12px;border-radius:0 0 22px 22px;}
-    header .brand{width:100%;justify-content:center;}
-    header .brand h1{font-size:22px;}
-    header .controls{position:absolute;left:12px;top:calc(10px + env(safe-area-inset-top));}
-    header .status-pill{display:none;}
-    .top-quick-bar{top:0;padding:10px 12px;background:rgba(247,251,253,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:0;}
-    .top-quick-btn{min-height:64px;border:0;background:#fff;color:#0b5263;box-shadow:var(--soft-shadow);border-radius:18px;}
-    .top-quick-btn.active{background:linear-gradient(135deg,#087f8c,#0b5263);color:#fff;}
-    .stage{display:flex;flex-direction:column;padding:10px 12px 16px;gap:10px;}
-    .side{padding:16px 14px;min-height:auto;border-radius:20px;}
-    .side h2{font-size:24px;margin-bottom:10px;}
-    .transcript{min-height:92px;max-height:30vh;overflow-y:auto;font-size:17px;line-height:1.75;}
-    .bridge-col{height:34px!important;min-height:34px;}
-    .bridge-col svg{width:90px;height:28px;transform:rotate(90deg);}
-    .mic-row{margin-top:12px;justify-content:center;}
-    .mic-btn{width:68px;height:68px;}
-    .log-wrap{margin:0 12px 12px;border:1px solid var(--line);border-radius:18px;padding:14px;background:rgba(255,255,255,.75);}
-    footer{display:none;}
-    .bottom-nav{background:rgba(247,251,253,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 -8px 28px rgba(9,54,73,.12);border:0;}
-    .call-panel{padding:calc(14px + env(safe-area-inset-top)) 14px calc(92px + env(safe-area-inset-bottom));}
-    .call-panel h3{font-size:23px;}
-    .call-sub{font-size:14px;line-height:1.6;}
-    .ocr-lang-row{display:grid;grid-template-columns:1fr 48px 1fr;gap:8px;}
-    .ocr-lang-row select{width:100%;min-width:0;font-size:14px;padding:8px;}
-    .ocr-mode-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-    .ocr-mode-buttons .big-btn{grid-column:1/-1;min-width:0;width:100%;min-height:52px;}
-    .ocr-mode-buttons .icon-btn{width:100%;min-width:0;padding:10px 6px;font-size:12.5px;white-space:normal;text-align:center;}
-    .ocr-video-wrap{aspect-ratio:3/4;max-height:56dvh;}
-    .ocr-live-overlay{font-size:16px;}
-    #ocrBackBtn{position:sticky;top:0;z-index:4;background:#fff;box-shadow:var(--soft-shadow);}
-    .guide-card,.more-sheet{background:#f7fbfd;}
-  }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 
@@ -984,6 +957,10 @@
       </div>
       <div class="quick-result placeholder" id="quickTypeResult" style="margin-top:10px;font-size:19px;font-weight:700;">…</div>
       <div class="phonetic-hint" id="quickTypePhonetic" style="display:none;"></div>
+      <div class="call-action-row">
+        <button class="icon-btn" id="quickTypeSpeak">🔊 حاول نطق الرد</button>
+        <button class="icon-btn" id="quickTypeCopy">📋 نسخ التركية</button>
+      </div>
     </div>
   </div>
 
@@ -1033,10 +1010,10 @@
   <div class="ocr-mode-buttons">
     <button class="big-btn" id="ocrStartLiveBtn">▶️ <span id="ocrStartLiveText">ابدأ الترجمة المباشرة</span></button>
     <button class="big-btn" id="ocrStopLiveBtn" style="display:none;background:var(--danger);">⏹ <span id="ocrStopLiveText">إيقاف</span></button>
-    <label class="icon-btn ocr-upload-btn ocr-camera-btn" id="ocrUploadLabel" for="ocrCameraInput">📸 <span id="ocrUploadText">التقط صورة</span></label>
-    <input type="file" id="ocrCameraInput" accept="image/*" capture="environment" style="display:none;">
-    <label class="icon-btn ocr-upload-btn" id="ocrGalleryLabel" for="ocrGalleryInput">🖼️ <span>اختر من الصور</span></label>
-    <input type="file" id="ocrGalleryInput" accept="image/*" style="display:none;">
+    <label class="icon-btn ocr-capture-btn" id="ocrCaptureLabel" for="ocrCaptureInput">📸 <span>التقط صورة</span></label>
+    <input type="file" id="ocrCaptureInput" accept="image/*" capture="environment" style="display:none;">
+    <label class="icon-btn ocr-upload-btn" id="ocrUploadLabel" for="ocrCameraInput">🖼️ <span id="ocrUploadText">اختر صورة</span></label>
+    <input type="file" id="ocrCameraInput" accept="image/*" style="display:none;">
   </div>
 
   <div class="ocr-video-wrap" id="ocrVideoWrap" style="display:none;">
@@ -1901,6 +1878,21 @@ document.getElementById('callModeToggle').addEventListener('click', () => {
 });
 document.getElementById('backHomeBtn').addEventListener('click', closeCallMode);
 
+
+// Phone-call assistant: the other person does not need the app.
+// On the same device, iOS/Android may reserve the microphone and audio path for the call,
+// so typed translation is the reliable fallback; these buttons still try TTS where allowed.
+document.getElementById('quickTypeSpeak').addEventListener('click', ()=>{
+  const text=document.getElementById('quickTypeResult').textContent.trim();
+  if(text && text!=='…') speak(text, langB.bcp47);
+});
+document.getElementById('quickTypeCopy').addEventListener('click', async ()=>{
+  const text=document.getElementById('quickTypeResult').textContent.trim();
+  if(!text || text==='…') return;
+  try{ await navigator.clipboard.writeText(text); showBanner('تم نسخ الرد التركي'); }
+  catch(e){ showBanner(text); }
+});
+
 /* ---------------- Camera OCR translation ---------------- */
 function openOcrPanel(){
   closeCallMode();
@@ -1917,6 +1909,31 @@ function closeOcrPanel(){
 document.getElementById('ocrOpenBtn').addEventListener('click', openOcrPanel);
 document.getElementById('topQuickCamera').addEventListener('click', () => { openOcrPanel(); closeMoreSheet(); closeLangSheet(); setActiveTopQuick('topQuickCamera'); });
 document.getElementById('ocrBackBtn').addEventListener('click', closeOcrPanel);
+
+// Load the OCR engine with multiple CDN fallbacks. Safari sometimes blocks a worker from one CDN.
+let tesseractLoadPromise = null;
+function ensureTesseract(){
+  if(window.Tesseract) return Promise.resolve(window.Tesseract);
+  if(tesseractLoadPromise) return tesseractLoadPromise;
+  const sources = [
+    'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+    'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js'
+  ];
+  tesseractLoadPromise = new Promise((resolve,reject)=>{
+    let i=0;
+    const tryNext=()=>{
+      if(window.Tesseract) return resolve(window.Tesseract);
+      if(i>=sources.length) return reject(new Error('OCR engine unavailable'));
+      const sc=document.createElement('script');
+      sc.src=sources[i++]; sc.async=true;
+      sc.onload=()=>window.Tesseract?resolve(window.Tesseract):tryNext();
+      sc.onerror=tryNext; document.head.appendChild(sc);
+    };
+    tryNext();
+  });
+  return tesseractLoadPromise;
+}
 
 // maps our language codes to Tesseract.js's traineddata language codes
 const OCR_LANG_MAP = { ar:'ara', tr:'tur', en:'eng', ru:'rus', fa:'fas', de:'deu' };
@@ -1967,16 +1984,9 @@ async function restartOcrWorker(){
 }
 
 async function getOcrWorker(){
+  await ensureTesseract();
   if(!ocrWorker){
-    ocrWorker = await Tesseract.createWorker(
-      OCR_LANG_MAP[ocrFrom.code] || 'eng',
-      1,
-      {
-        workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-        corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core-simd-lstm.wasm.js',
-        langPath:'https://tessdata.projectnaptha.com/4.0.0'
-      }
-    );
+    ocrWorker = await window.Tesseract.createWorker(OCR_LANG_MAP[ocrFrom.code] || 'eng');
   }
   return ocrWorker;
 }
@@ -1990,31 +2000,19 @@ async function startLiveOcr(){
   document.getElementById('ocrStatus').style.display = 'none';
 
   try{
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      throw new Error('camera-api-unavailable');
-    }
-    try{
-      ocrStream = await navigator.mediaDevices.getUserMedia({
-        video:{ facingMode:{ exact:'environment' }, width:{ ideal:1280 }, height:{ ideal:1920 } }, audio:false
-      });
-    }catch(firstErr){
-      ocrStream = await navigator.mediaDevices.getUserMedia({
-        video:{ facingMode:'environment', width:{ ideal:1280 }, height:{ ideal:1920 } }, audio:false
-      });
-    }
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('camera unsupported');
+    ocrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal:'environment' }, width:{ideal:1280}, height:{ideal:720} }, audio:false });
   }catch(err){
     showBanner(t('ocrCameraDenied'));
     return;
   }
   video.srcObject = ocrStream;
-  video.setAttribute('playsinline','');
-  video.muted = true;
   try{ await video.play(); }catch(e){}
   videoWrap.style.display = 'block';
   document.getElementById('ocrStartLiveBtn').style.display = 'none';
   document.getElementById('ocrStopLiveBtn').style.display = 'flex';
   document.getElementById('ocrUploadLabel').style.display = 'none';
-  document.getElementById('ocrGalleryLabel').style.display = 'none';
+  document.getElementById('ocrCaptureLabel').style.display = 'none';
   liveStatus.textContent = t('ocrLoadingEngine');
 
   try{
@@ -2042,7 +2040,7 @@ function stopLiveOcr(){
   document.getElementById('ocrStartLiveBtn').style.display = 'flex';
   document.getElementById('ocrStopLiveBtn').style.display = 'none';
   document.getElementById('ocrUploadLabel').style.display = 'flex';
-  document.getElementById('ocrGalleryLabel').style.display = 'flex';
+  document.getElementById('ocrCaptureLabel').style.display = 'flex';
 }
 
 async function captureAndTranslateFrame(){
@@ -2081,7 +2079,7 @@ document.getElementById('ocrStartLiveBtn').addEventListener('click', startLiveOc
 document.getElementById('ocrStopLiveBtn').addEventListener('click', stopLiveOcr);
 
 /* ---- Single-photo upload mode (fallback: gallery photo, screenshot, etc.) ---- */
-async function handleOcrImageInput(e){
+async function handleOcrImageChange(e){
   const file = e.target.files[0];
   if(!file){ e.target.value = ''; return; }
 
@@ -2102,7 +2100,8 @@ async function handleOcrImageInput(e){
 
   try{
     const ocrLang = OCR_LANG_MAP[ocrFrom.code] || 'eng';
-    const { data } = await Tesseract.recognize(file, ocrLang);
+    await ensureTesseract();
+    const { data } = await window.Tesseract.recognize(file, ocrLang);
     const extracted = (data.text || '').trim();
 
     if(!extracted){
@@ -2124,11 +2123,9 @@ async function handleOcrImageInput(e){
     statusEl.textContent = t('ocrFail');
   }
   e.target.value = ''; // reset so the next photo (even same file) always fires 'change'
-
 }
-
-document.getElementById('ocrCameraInput').addEventListener('change', handleOcrImageInput);
-document.getElementById('ocrGalleryInput').addEventListener('change', handleOcrImageInput);
+document.getElementById('ocrCameraInput').addEventListener('change', handleOcrImageChange);
+document.getElementById('ocrCaptureInput').addEventListener('change', handleOcrImageChange);
 
 document.getElementById('ocrListenBtn').addEventListener('click', () => {
   if(ocrLastTranslated) speak(ocrLastTranslated, ocrTo.bcp47);
