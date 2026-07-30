@@ -801,6 +801,10 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
  .quick-result{font-size:18px!important;}
 }
 
+
+/* iPhone reliability indicators */
+.ios-help-note{display:none;background:#eef5ff;border:1px solid #9fc0ff;color:#123e78;padding:11px 13px;border-radius:12px;margin:10px 0;font-weight:700;line-height:1.55;}
+body.ios-device .ios-help-note{display:block;}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
@@ -930,6 +934,7 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 
   <div class="quick-call">
     <h3 id="quickCallTitle">⚡ ترجمة سريعة</h3>
+    <div class="ios-help-note">على الآيفون يجب الضغط على ميكروفون كل طرف في كل دور؛ التشغيل التلقائي المستمر غير موثوق بسبب قيود Safari.</div>
     <p class="call-sub" id="quickCallSub">مثالية للمحادثة المباشرة وجهاً لوجه. لمكالمة هاتفية حقيقية، استخدم القسم أدناه بدل الميكروفون.</p>
 
     <div class="quick-row">
@@ -1007,6 +1012,7 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
     <select id="ocrToLang"></select>
   </div>
 
+  <div class="ios-help-note">على الآيفون: افتح المنصة من Safari مباشرة، وليس من داخل واتساب أو فيسبوك. عند أول تشغيل اختر «سماح» للكاميرا. المعالجة أبطأ قليلاً لحماية الذاكرة.</div>
   <div class="ocr-mode-buttons">
     <button class="big-btn" id="ocrStartLiveBtn">▶️ <span id="ocrStartLiveText">ابدأ الترجمة المباشرة</span></button>
     <button class="big-btn" id="ocrStopLiveBtn" style="display:none;background:var(--danger);">⏹ <span id="ocrStopLiveText">إيقاف</span></button>
@@ -1441,6 +1447,9 @@ async function tryRedeemCode(code){
 })();
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_STANDALONE = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+if(IS_IOS) document.body.classList.add('ios-device');
 const banner = document.getElementById('banner');
 const statusLine = document.getElementById('statusLine');
 const logWrap = document.getElementById('logWrap');
@@ -1575,15 +1584,34 @@ function speak(text, lang, onDone){
   lastSpokenGlobal.text = text;
   lastSpokenGlobal.lang = lang;
   warnIfVoiceMissing(lang.split('-')[0]);
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = lang;
-  utter.rate = 0.95;
-  const preferred = pickVoiceFor(lang.split('-')[0]);
-  if(preferred) utter.voice = preferred;
-  utter.onend = () => { if(onDone) onDone(); };
-  utter.onerror = () => { if(onDone) onDone(); };
-  window.speechSynthesis.speak(utter);
+  const synth = window.speechSynthesis;
+  if(!synth){ if(onDone) onDone(); return; }
+  synth.cancel();
+  synth.resume();
+  const doSpeak = () => {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang;
+    utter.rate = IS_IOS ? 0.90 : 0.95;
+    utter.volume = 1;
+    const preferred = pickVoiceFor(lang.split('-')[0]);
+    if(preferred) utter.voice = preferred;
+    let finished = false;
+    const finish = () => { if(finished) return; finished = true; if(onDone) onDone(); };
+    utter.onend = finish;
+    utter.onerror = finish;
+    synth.speak(utter);
+    // iOS Safari occasionally leaves speechSynthesis paused after recognition.
+    if(IS_IOS){ setTimeout(() => { try{ synth.resume(); }catch(e){} }, 120); }
+    setTimeout(finish, Math.max(3500, text.length * 170));
+  };
+  const voices = synth.getVoices();
+  if(voices.length || !IS_IOS){ doSpeak(); }
+  else {
+    let fired = false;
+    const ready = () => { if(fired) return; fired = true; synth.removeEventListener?.('voiceschanged', ready); doSpeak(); };
+    synth.addEventListener?.('voiceschanged', ready, { once:true });
+    setTimeout(ready, 700);
+  }
 }
 
 function buildRecognizer(lang){
@@ -1613,9 +1641,19 @@ function startSide(side){
 // user instead of leaving the mic looking "stuck" with zero feedback.
 function safeStartRecognition(side){
   window.speechSynthesis.cancel();
+  // Safari on iPhone is unreliable when the same SpeechRecognition instance is reused.
+  // Recreate it before every turn so both conversation sides keep working.
+  if(IS_IOS && side._rebuild){
+    try{ if(side.rec) side.rec.abort(); }catch(e){}
+    side._rebuild();
+  }
   try{
     side.rec.start();
   }catch(e){
+    // One immediate rebuild/retry fixes the common InvalidStateError on iOS.
+    if(IS_IOS && side._rebuild){
+      try{ side._rebuild(); side.rec.start(); return; }catch(e2){}
+    }
     showBanner(t('micGenericError'));
     return;
   }
@@ -1667,7 +1705,7 @@ function makeSide(key){
       document.getElementById('quickMic' + key)?.classList.remove('listening');
       // In auto conversation mode, silence just means nobody has spoken yet on
       // this side — keep re-arming the mic instead of stopping.
-      if(convMode && !side.resultReceived && !otherSide().listening){
+      if(convMode && !IS_IOS && !side.resultReceived && !otherSide().listening){
         setTimeout(() => { if(convMode) startSide(side); }, 500);
       }
     };
@@ -1698,7 +1736,8 @@ function makeSide(key){
         mirrorQuickResult(otherKey, translated);
         speak(translated, otherLang().bcp47, () => {
           setStatus(t('ready'));
-          if(convMode) startSide(otherSide());
+          if(convMode && !IS_IOS) startSide(otherSide());
+          else if(convMode && IS_IOS) showBanner('على الآيفون: مرّر الهاتف للطرف الآخر واضغط زر الميكروفون المقابل.');
         });
       }catch(err){
         showBanner(t('translateFail'));
@@ -1986,7 +2025,11 @@ async function restartOcrWorker(){
 async function getOcrWorker(){
   await ensureTesseract();
   if(!ocrWorker){
-    ocrWorker = await window.Tesseract.createWorker(OCR_LANG_MAP[ocrFrom.code] || 'eng');
+    ocrWorker = await window.Tesseract.createWorker(OCR_LANG_MAP[ocrFrom.code] || 'eng', 1, {
+      workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+      corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
+      langPath:'https://tessdata.projectnaptha.com/4.0.0'
+    });
   }
   return ocrWorker;
 }
@@ -2000,37 +2043,61 @@ async function startLiveOcr(){
   document.getElementById('ocrStatus').style.display = 'none';
 
   try{
+    if(!window.isSecureContext) throw new Error('secure context required');
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('camera unsupported');
-    ocrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal:'environment' }, width:{ideal:1280}, height:{ideal:720} }, audio:false });
+    if(ocrStream){ ocrStream.getTracks().forEach(t=>t.stop()); ocrStream = null; }
+    const constraints = IS_IOS
+      ? { video:{ facingMode:'environment', width:{ideal:960}, height:{ideal:540} }, audio:false }
+      : { video:{ facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} }, audio:false };
+    try{
+      ocrStream = await navigator.mediaDevices.getUserMedia(constraints);
+    }catch(firstErr){
+      // Some iPhones reject facingMode; retry with the simplest camera request.
+      ocrStream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    }
   }catch(err){
-    showBanner(t('ocrCameraDenied'));
+    const extra = IS_IOS ? ' افتح الموقع في Safari العادي، ثم الإعدادات > Safari > الكاميرا > سماح.' : '';
+    showBanner(t('ocrCameraDenied') + extra);
     return;
   }
+  video.setAttribute('playsinline','');
+  video.setAttribute('webkit-playsinline','');
+  video.muted = true;
   video.srcObject = ocrStream;
-  try{ await video.play(); }catch(e){}
   videoWrap.style.display = 'block';
   document.getElementById('ocrStartLiveBtn').style.display = 'none';
   document.getElementById('ocrStopLiveBtn').style.display = 'flex';
   document.getElementById('ocrUploadLabel').style.display = 'none';
   document.getElementById('ocrCaptureLabel').style.display = 'none';
-  liveStatus.textContent = t('ocrLoadingEngine');
+  liveStatus.textContent = 'جارٍ تشغيل الكاميرا…';
 
+  try{
+    await new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>reject(new Error('video timeout')),7000);
+      const ready=()=>{ if(video.videoWidth>0){ clearTimeout(timer); resolve(); } };
+      video.addEventListener('loadedmetadata', ready, {once:true});
+      video.addEventListener('canplay', ready, {once:true});
+      video.play().then(ready).catch(()=>{});
+    });
+  }catch(e){
+    showBanner('تعذر بدء معاينة الكاميرا على الآيفون. جرّب فتح الموقع من Safari وليس من داخل واتساب أو أي متصفح داخلي.');
+    stopLiveOcr();
+    return;
+  }
+
+  liveStatus.textContent = t('ocrLoadingEngine');
   try{
     await getOcrWorker();
   }catch(err){
-    // the reading engine failed to load (common on iOS Safari due to
-    // cross-origin worker/wasm restrictions) — stop cleanly and tell the
-    // user, instead of leaving the camera frozen with no explanation.
     showBanner(t('ocrEngineFail'));
     stopLiveOcr();
     return;
   }
   liveStatus.textContent = t('ocrLiveScanning');
-
-  ocrLiveTimer = setInterval(captureAndTranslateFrame, 3000);
-  captureAndTranslateFrame(); // run once immediately instead of waiting 3s
+  const interval = IS_IOS ? 5200 : 3000;
+  ocrLiveTimer = setInterval(captureAndTranslateFrame, interval);
+  setTimeout(captureAndTranslateFrame, IS_IOS ? 800 : 100);
 }
-
 function stopLiveOcr(){
   if(ocrLiveTimer){ clearInterval(ocrLiveTimer); ocrLiveTimer = null; }
   if(ocrStream){ ocrStream.getTracks().forEach(tr => tr.stop()); ocrStream = null; }
@@ -2052,9 +2119,12 @@ async function captureAndTranslateFrame(){
   const liveStatus = document.getElementById('ocrLiveStatus');
   try{
     if(video.videoWidth === 0){ ocrBusy = false; return; }
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    const maxW = IS_IOS ? 960 : 1280;
+    const scale = Math.min(1, maxW / video.videoWidth);
+    canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+    canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+    const ctx = canvas.getContext('2d', { willReadFrequently:true });
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     liveStatus.textContent = t('ocrLiveScanning');
     const worker = await getOcrWorker();
@@ -2386,9 +2456,13 @@ function toggleAutoMode(){
   document.getElementById('navAuto')?.classList.toggle('active', convMode);
   if(!convMode){
     stopAll();
+  } else if(IS_IOS){
+    // iOS requires a fresh user gesture for each recognition turn.
+    stopAll();
+    showBanner('وضع الآيفون: اضغط ميكروفون العربية، ثم مرّر الهاتف واضغط ميكروفون التركية لكل دور. سيُنطق الرد بعد الترجمة.');
   } else if(!sideA.listening && !sideB.listening){
     unlockSpeechOnce();
-    startSide(sideA); // starts listening on the Arabic side right away — no mic tap needed
+    startSide(sideA);
   }
 }
 document.getElementById('convToggle').addEventListener('click', toggleAutoMode);
