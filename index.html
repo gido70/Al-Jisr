@@ -230,9 +230,7 @@
   .log-wrap{
     border-top:1px solid var(--line);
     background:var(--bg2);
-    max-height:26vh;
-    overflow-y:auto;
-    padding:12px 22px;
+    padding:16px 22px 22px;
   }
   .log-heading{
     font-family:'Amiri',serif;
@@ -1825,12 +1823,16 @@ function openCallMode(){
   document.getElementById('callModeToggle').classList.add('active');
   document.getElementById('callModeToggle').textContent = t('callBtnClose');
   document.getElementById('topQuickCall')?.classList.add('active');
+  document.getElementById('topQuickBar').style.display = 'none';
 }
 function closeCallMode(){
   document.getElementById('callPanel').classList.remove('show');
   document.getElementById('callModeToggle').classList.remove('active');
   document.getElementById('callModeToggle').textContent = t('callBtnOpen');
   document.getElementById('topQuickCall')?.classList.remove('active');
+  if(!document.getElementById('ocrPanel').classList.contains('show')){
+    document.getElementById('topQuickBar').style.display = '';
+  }
 }
 document.getElementById('callModeToggle').addEventListener('click', () => {
   document.getElementById('callPanel').classList.contains('show') ? closeCallMode() : openCallMode();
@@ -1838,8 +1840,18 @@ document.getElementById('callModeToggle').addEventListener('click', () => {
 document.getElementById('backHomeBtn').addEventListener('click', closeCallMode);
 
 /* ---------------- Camera OCR translation ---------------- */
-function openOcrPanel(){ closeCallMode(); document.getElementById('ocrPanel').classList.add('show'); }
-function closeOcrPanel(){ stopLiveOcr(); document.getElementById('ocrPanel').classList.remove('show'); }
+function openOcrPanel(){
+  closeCallMode();
+  document.getElementById('ocrPanel').classList.add('show');
+  document.getElementById('topQuickBar').style.display = 'none';
+}
+function closeOcrPanel(){
+  stopLiveOcr();
+  document.getElementById('ocrPanel').classList.remove('show');
+  if(!document.getElementById('callPanel').classList.contains('show')){
+    document.getElementById('topQuickBar').style.display = '';
+  }
+}
 document.getElementById('ocrOpenBtn').addEventListener('click', openOcrPanel);
 document.getElementById('topQuickCamera').addEventListener('click', () => { openOcrPanel(); closeMoreSheet(); closeLangSheet(); setActiveTopQuick('topQuickCamera'); });
 document.getElementById('ocrBackBtn').addEventListener('click', closeOcrPanel);
@@ -1985,7 +1997,7 @@ document.getElementById('ocrStopLiveBtn').addEventListener('click', stopLiveOcr)
 /* ---- Single-photo upload mode (fallback: gallery photo, screenshot, etc.) ---- */
 document.getElementById('ocrCameraInput').addEventListener('change', async (e) => {
   const file = e.target.files[0];
-  if(!file) return;
+  if(!file){ e.target.value = ''; return; }
 
   const preview = document.getElementById('ocrPreview');
   const statusEl = document.getElementById('ocrStatus');
@@ -1993,6 +2005,9 @@ document.getElementById('ocrCameraInput').addEventListener('change', async (e) =
   const extractedEl = document.getElementById('ocrExtractedText');
   const translatedEl = document.getElementById('ocrTranslatedText');
 
+  // clear any previous result immediately so nothing stale stays on screen
+  extractedEl.textContent = '';
+  translatedEl.textContent = '';
   preview.src = URL.createObjectURL(file);
   preview.style.display = 'block';
   resultsEl.style.display = 'none';
@@ -2006,6 +2021,7 @@ document.getElementById('ocrCameraInput').addEventListener('change', async (e) =
 
     if(!extracted){
       statusEl.textContent = t('ocrNoText');
+      e.target.value = '';
       return;
     }
 
@@ -2021,6 +2037,7 @@ document.getElementById('ocrCameraInput').addEventListener('change', async (e) =
   }catch(err){
     statusEl.textContent = t('ocrFail');
   }
+  e.target.value = ''; // reset so the next photo (even same file) always fires 'change'
 });
 
 document.getElementById('ocrListenBtn').addEventListener('click', () => {
