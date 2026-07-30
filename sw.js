@@ -1,93 +1,30 @@
-const CACHE_NAME = 'aljisr-v37-mobile-fix';
-
-const APP_FILES = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png',
-  './favicon-32.png'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      await Promise.allSettled(
-        APP_FILES.map((file) => cache.add(new Request(file, { cache: 'reload' })))
-      );
-    })
-  );
-
-  self.skipWaiting();
+const CACHE_NAME = 'aljisr-v2026-07-30-2';
+const APP_SHELL = ['./', './index.html', './manifest.json', './favicon-32.png', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+self.addEventListener('install', event => {
+  event.waitUntil((async()=>{
+    const cache=await caches.open(CACHE_NAME);
+    await Promise.allSettled(APP_SHELL.map(url=>cache.add(url)));
+    await self.skipWaiting();
+  })());
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
-    )
-  );
-
-  self.clients.claim();
+self.addEventListener('activate', event => {
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)));
+    await self.clients.claim();
+  })());
 });
-
-self.addEventListener('fetch', (event) => {
-  const request = event.request;
-
-  if (request.method !== 'GET') return;
-
-  const url = new URL(request.url);
-
-  // لا نتدخل في طلبات المواقع والخدمات الخارجية مثل الترجمة وOCR.
-  if (url.origin !== self.location.origin) return;
-
-  // صفحات التنقل: الشبكة أولاً حتى تظهر آخر نسخة، ثم النسخة المحفوظة عند انقطاع الإنترنت.
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', copy));
-          }
-          return response;
-        })
-        .catch(async () => {
-          return (
-            (await caches.match(request)) ||
-            (await caches.match('./index.html')) ||
-            Response.error()
-          );
-        })
-    );
-    return;
-  }
-
-  // ملفات التطبيق المحلية: النسخة المحفوظة أولاً، مع تحديثها من الشبكة في الخلفية.
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const networkResponse = fetch(request)
-        .then((response) => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || networkResponse;
-    })
-  );
-});
-
-self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+self.addEventListener('fetch', event => {
+  if(event.request.method!=='GET') return;
+  const url=new URL(event.request.url);
+  if(url.origin!==location.origin) return;
+  event.respondWith((async()=>{
+    try{
+      const fresh=await fetch(event.request);
+      if(fresh && fresh.ok){ const cache=await caches.open(CACHE_NAME); cache.put(event.request,fresh.clone()); }
+      return fresh;
+    }catch(e){
+      return (await caches.match(event.request)) || (await caches.match('./index.html'));
+    }
+  })());
 });
