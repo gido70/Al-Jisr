@@ -524,7 +524,7 @@
     display:none;
     position:fixed;inset:0;
     background:rgba(6,10,16,.72);
-    z-index:50;
+    z-index:90;
     align-items:center;justify-content:center;
     padding:20px;
   }
@@ -688,7 +688,7 @@
     .bottom-nav{
       display:flex;
       position:fixed; left:0; right:0; bottom:0;
-      z-index:45;
+      z-index:50;
       background:var(--bg2);
       border-top:1px solid var(--line);
       padding:8px 6px calc(8px + env(safe-area-inset-bottom));
@@ -723,7 +723,7 @@
       border-radius:20px 20px 0 0;
       width:100%;
       max-width:620px;
-      padding:18px 20px calc(22px + env(safe-area-inset-bottom));
+      padding:18px 20px calc(90px + env(safe-area-inset-bottom));
       animation:sheetUp .28s cubic-bezier(.32,.72,0,1);
     }
     .more-sheet::before{
@@ -1027,34 +1027,40 @@
 
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-btn active" id="navHome"><span class="nav-ic">🎤</span><span id="navHomeLbl">الرئيسية</span></button>
+  <button class="nav-btn" id="navLang"><span class="nav-ic">🌐</span><span id="navLangLbl">اللغة</span></button>
+  <button class="nav-btn" id="navCamera"><span class="nav-ic">📷</span><span id="navCameraLbl">كاميرا</span></button>
   <button class="nav-btn" id="navCall"><span class="nav-ic">📞</span><span id="navCallLbl">مكالمة</span></button>
   <button class="nav-btn" id="navAuto"><span class="nav-ic">↻</span><span id="navAutoLbl">تلقائي</span></button>
-  <button class="nav-btn" id="navGuide"><span class="nav-ic">❓</span><span id="navGuideLbl">مساعدة</span></button>
   <button class="nav-btn" id="navMore"><span class="nav-ic">⋯</span><span id="navMoreLbl">المزيد</span></button>
 </nav>
 
-<div class="sheet-overlay" id="moreSheetOverlay">
+<div class="sheet-overlay" id="langSheetOverlay">
   <div class="more-sheet">
     <div class="more-row">
-      <label id="moreUILangLbl">🗣️ لغة الواجهة</label>
-      <select id="uiLangSelectMobile">
+      <label id="langSheetUILbl">🗣️ لغة الواجهة</label>
+      <select id="uiLangSelectSheet">
         <option value="ar">العربية</option>
         <option value="tr">Türkçe</option>
         <option value="en">English</option>
       </select>
     </div>
     <div class="more-row">
-      <label id="moreLangALbl">🌐 اللغة الأولى</label>
-      <select id="langSelectAMobile"></select>
+      <label id="langSheetALbl">🌐 اللغة الأولى</label>
+      <select id="langSelectASheet"></select>
     </div>
     <div class="more-row">
-      <label id="moreLangBLbl">🌐 اللغة الثانية</label>
-      <select id="langSelectBMobile"></select>
+      <label id="langSheetBLbl">🌐 اللغة الثانية</label>
+      <select id="langSelectBSheet"></select>
     </div>
     <div class="more-row">
-      <label id="moreCameraLbl">📷 ترجمة بالكاميرا</label>
-      <button class="icon-btn" id="ocrOpenBtnMobile">فتح</button>
+      <label id="langSheetSwapLbl">⇄ تبديل اللغتين</label>
+      <button class="icon-btn" id="langSheetSwapBtn">تبديل</button>
     </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="moreSheetOverlay">
+  <div class="more-sheet">
     <div class="more-row">
       <label id="moreTextSizeLbl">Aa حجم الخط</label>
       <button class="icon-btn" id="textSizeMobile">تكبير</button>
@@ -1160,6 +1166,7 @@ const STRINGS = {
     moreTextSize:'Aa حجم الخط', moreTextSizeBtn:'تكبير', moreCopyAll:'📋 نسخ كل المحادثة', moreCopyBtn:'نسخ',
     moreClear:'🗑️ مسح المحادثة', moreClearBtn:'مسح',
     moreVoice:'🎙️ صوت الترجمة', voiceAuto:'تلقائي', voiceFemale:'أنثوي', voiceMale:'ذكوري',
+    swapLangsLabel:'⇄ تبديل اللغتين', swapNowBtn:'تبديل', navLangLabel:'اللغة',
     moreRefresh:'🔄 تحديث التطبيق (سحب آخر نسخة)', refreshBtn:'تحديث', refreshBtnDesktop:'🔄 تحديث',
   },
   tr: {
@@ -1221,6 +1228,7 @@ const STRINGS = {
     moreTextSize:'Aa Yazı boyutu', moreTextSizeBtn:'Büyüt', moreCopyAll:'📋 Tüm konuşmayı kopyala', moreCopyBtn:'Kopyala',
     moreClear:'🗑️ Konuşmayı temizle', moreClearBtn:'Temizle',
     moreVoice:'🎙️ Çeviri sesi', voiceAuto:'Otomatik', voiceFemale:'Kadın', voiceMale:'Erkek',
+    swapLangsLabel:'⇄ Dilleri değiştir', swapNowBtn:'Değiştir', navLangLabel:'Dil',
     moreRefresh:'🔄 Uygulamayı güncelle (son sürümü al)', refreshBtn:'Güncelle', refreshBtnDesktop:'🔄 Güncelle',
   },
   en: {
@@ -1282,6 +1290,7 @@ const STRINGS = {
     moreTextSize:'Aa Text size', moreTextSizeBtn:'Larger', moreCopyAll:'📋 Copy whole conversation', moreCopyBtn:'Copy',
     moreClear:'🗑️ Clear conversation', moreClearBtn:'Clear',
     moreVoice:'🎙️ Translation voice', voiceAuto:'Automatic', voiceFemale:'Female', voiceMale:'Male',
+    swapLangsLabel:'⇄ Swap languages', swapNowBtn:'Swap', navLangLabel:'Language',
     moreRefresh:'🔄 Refresh app (pull latest version)', refreshBtn:'Refresh', refreshBtnDesktop:'🔄 Refresh',
   },
 };
@@ -1799,7 +1808,7 @@ document.getElementById('backHomeBtn').addEventListener('click', closeCallMode);
 function openOcrPanel(){ closeCallMode(); document.getElementById('ocrPanel').classList.add('show'); }
 function closeOcrPanel(){ stopLiveOcr(); document.getElementById('ocrPanel').classList.remove('show'); }
 document.getElementById('ocrOpenBtn').addEventListener('click', openOcrPanel);
-document.getElementById('ocrOpenBtnMobile').addEventListener('click', () => { openOcrPanel(); closeMoreSheet(); });
+document.getElementById('navCamera').addEventListener('click', () => { openOcrPanel(); closeMoreSheet(); closeLangSheet(); setActiveNav('navCamera'); });
 document.getElementById('ocrBackBtn').addEventListener('click', closeOcrPanel);
 
 // maps our language codes to Tesseract.js's traineddata language codes
@@ -2145,14 +2154,14 @@ function populateLangSelect(sel){
 }
 const langSelectA = document.getElementById('langSelectA');
 const langSelectB = document.getElementById('langSelectB');
-const langSelectAMobile = document.getElementById('langSelectAMobile');
-const langSelectBMobile = document.getElementById('langSelectBMobile');
-[langSelectA, langSelectB, langSelectAMobile, langSelectBMobile].forEach(populateLangSelect);
+const langSelectASheet = document.getElementById('langSelectASheet');
+const langSelectBSheet = document.getElementById('langSelectBSheet');
+[langSelectA, langSelectB, langSelectASheet, langSelectBSheet].forEach(populateLangSelect);
 
 function syncLangSelectUI(){
   const idxA = LANGS.indexOf(langA), idxB = LANGS.indexOf(langB);
-  langSelectA.value = idxA; langSelectAMobile.value = idxA;
-  langSelectB.value = idxB; langSelectBMobile.value = idxB;
+  langSelectA.value = idxA; langSelectASheet.value = idxA;
+  langSelectB.value = idxB; langSelectBSheet.value = idxB;
   document.getElementById('langATagLabel').textContent = langA.label;
   document.getElementById('langBTagLabel').textContent = langB.label;
   const qA = document.getElementById('quickLabelA');
@@ -2210,8 +2219,8 @@ function onLangBChange(newIdx){
 
 langSelectA.addEventListener('change', (e) => onLangAChange(Number(e.target.value)));
 langSelectB.addEventListener('change', (e) => onLangBChange(Number(e.target.value)));
-langSelectAMobile.addEventListener('change', (e) => onLangAChange(Number(e.target.value)));
-langSelectBMobile.addEventListener('change', (e) => onLangBChange(Number(e.target.value)));
+langSelectASheet.addEventListener('change', (e) => onLangAChange(Number(e.target.value)));
+langSelectBSheet.addEventListener('change', (e) => onLangBChange(Number(e.target.value)));
 
 document.getElementById('swapLangs').addEventListener('click', () => {
   const oldA = langA;
@@ -2286,7 +2295,8 @@ const SIMPLE_I18N_MAP = {
   catDelivery:'catDelivery', catAppt:'catAppt', catGeneral:'catGeneral', repeatBtn:'repeatBtn',
   footerTip:'footerTip', copyBtn:'copyConvoBtn',
   navHomeLbl:'navHome', navCallLbl:'navCall', navAutoLbl:'navAuto', navGuideLbl:'navGuide', navMoreLbl:'navMore',
-  moreUILangLbl:'moreUILang', moreLangALbl:'moreLangA', moreLangBLbl:'moreLangB',
+  langSheetUILbl:'moreUILang', langSheetALbl:'moreLangA', langSheetBLbl:'moreLangB', langSheetSwapLbl:'swapLangsLabel',
+  langSheetSwapBtn:'swapNowBtn', navLangLbl:'navLangLabel', navCameraLbl:'moreCamera',
   moreTextSizeLbl:'moreTextSize', textSizeMobile:'moreTextSizeBtn',
   moreCopyAllLbl:'moreCopyAll', copyBtnMobile:'moreCopyBtn',
   moreClearLbl:'moreClear', clearBtnMobile:'moreClearBtn',
@@ -2296,7 +2306,7 @@ const SIMPLE_I18N_MAP = {
   ocrTitle:'ocrTitle', ocrDesc:'ocrDesc', ocrCaptureText:'ocrCaptureText',
   ocrExtractedLabel:'ocrExtractedLabel', ocrTranslatedLabel:'ocrTranslatedLabel',
   ocrStartLiveText:'ocrStartLive', ocrStopLiveText:'ocrStopLive', ocrUploadText:'ocrUpload', logHeading:'logHeading',
-  moreCameraLbl:'moreCamera', ocrOpenBtnMobile:'ocrOpenLabel', ocrOpenBtn:'moreCamera',
+  ocrOpenBtn:'moreCamera',
   displayLangLbl:'displayLangLbl', translateLangLbl:'translateLangLbl',
   sideAHeading:'you', sideBHeading:'otherParty', hintA:'hint', hintB:'hint',
   replayA:'listenLabel', replayB:'listenLabel', editA:'editLabel', editB:'editLabel',
@@ -2340,11 +2350,11 @@ function applyUILang(lang){
   renderPhrases();
 
   document.getElementById('uiLangSelect').value = lang;
-  document.getElementById('uiLangSelectMobile').value = lang;
+  document.getElementById('uiLangSelectSheet').value = lang;
 }
 
 document.getElementById('uiLangSelect').addEventListener('change', (e) => applyUILang(e.target.value));
-document.getElementById('uiLangSelectMobile').addEventListener('change', (e) => applyUILang(e.target.value));
+document.getElementById('uiLangSelectSheet').addEventListener('change', (e) => applyUILang(e.target.value));
 
 applyUILang(UI_LANG); // matches the language already detected for the gate screen
 // show the guide automatically as soon as the page opens
@@ -2360,6 +2370,7 @@ document.getElementById('navHome').addEventListener('click', () => {
   closeCallMode();
   closeOcrPanel();
   closeMoreSheet();
+  closeLangSheet();
   setActiveNav('navHome');
   window.scrollTo({ top:0, behavior:'smooth' });
 });
@@ -2367,6 +2378,7 @@ document.getElementById('navHome').addEventListener('click', () => {
 document.getElementById('navCall').addEventListener('click', () => {
   closeMoreSheet();
   closeOcrPanel();
+  closeLangSheet();
   if(document.getElementById('callPanel').classList.contains('show')){
     closeCallMode(); setActiveNav('navHome');
   } else {
@@ -2376,19 +2388,26 @@ document.getElementById('navCall').addEventListener('click', () => {
 
 document.getElementById('navAuto').addEventListener('click', () => {
   closeMoreSheet();
+  closeLangSheet();
+  closeOcrPanel();
   toggleAutoMode();
-});
-
-document.getElementById('navGuide').addEventListener('click', () => {
-  closeMoreSheet();
-  openGuide();
 });
 
 function openMoreSheet(){ document.getElementById('moreSheetOverlay').classList.add('show'); }
 function closeMoreSheet(){ document.getElementById('moreSheetOverlay').classList.remove('show'); }
-document.getElementById('navMore').addEventListener('click', openMoreSheet);
+document.getElementById('navMore').addEventListener('click', () => { openMoreSheet(); closeLangSheet(); });
 document.getElementById('moreSheetOverlay').addEventListener('click', (e) => {
   if(e.target.id === 'moreSheetOverlay') closeMoreSheet();
+});
+
+function openLangSheet(){ document.getElementById('langSheetOverlay').classList.add('show'); }
+function closeLangSheet(){ document.getElementById('langSheetOverlay').classList.remove('show'); }
+document.getElementById('navLang').addEventListener('click', () => { openLangSheet(); closeMoreSheet(); setActiveNav('navLang'); });
+document.getElementById('langSheetOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'langSheetOverlay') closeLangSheet();
+});
+document.getElementById('langSheetSwapBtn').addEventListener('click', () => {
+  document.getElementById('swapLangs').click();
 });
 
 document.getElementById('textSizeMobile').addEventListener('click', cycleTextSize);
