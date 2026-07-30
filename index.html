@@ -1191,7 +1191,7 @@ const STRINGS = {
     copied:'تم النسخ ✓', copyLabel:'📋 نسخ', shareLabel:'📤 مشاركة', listenLabel:'🔊 استمع',
     editLabel:'✏️ تعديل', editConfirmLabel:'✔️ ترجم بعد التعديل', clearOneLabel:'🗑️ مسح',
     shareFallback:'تم نسخ النص (المشاركة المباشرة غير مدعومة على هذا الجهاز/المتصفح).',
-    noSTT:'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Google Chrome على كمبيوتر أو أندرويد.',
+    noSTT:'الاستماع غير مفعّل على هذا المتصفح. لو كنت على آيفون: افتح الرابط من Safari مباشرة (وليس من داخل واتساب أو فيسبوك)، وتأكد إن نظام iOS محدّث لأحدث إصدار.',
     gateSub:'هذا الموقع خاص — أدخل رمز الدخول اللي أُعطيته لك.', gatePlaceholder:'ادخل الرمز', gateBtn:'دخول',
     gateErrWrong:'الرمز غير صحيح أو مُستخدم من قبل على جهاز آخر.', gateErrEmpty:'اكتب الرمز أولاً.',
     gateErrNetwork:'تعذر التحقق من الرمز. تحقق من اتصال الإنترنت وحاول مجدداً.',
@@ -1254,7 +1254,7 @@ const STRINGS = {
     copied:'Kopyalandı ✓', copyLabel:'📋 Kopyala', shareLabel:'📤 Paylaş', listenLabel:'🔊 Dinle',
     editLabel:'✏️ Düzenle', editConfirmLabel:'✔️ Düzenledikten sonra çevir', clearOneLabel:'🗑️ Sil',
     shareFallback:'Metin kopyalandı (bu cihazda doğrudan paylaşım desteklenmiyor).',
-    noSTT:'Bu tarayıcı sesli tanımayı desteklemiyor. Bilgisayar veya Android’de Google Chrome kullanın.',
+    noSTT:'Bu tarayıcıda dinleme etkin değil. iPhone kullanıyorsanız: bağlantıyı doğrudan Safari\'den açın (WhatsApp veya Facebook içinden değil) ve iOS\'un güncel olduğundan emin olun.',
     gateSub:'Bu site özeldir — size verilen giriş kodunu girin.', gatePlaceholder:'Kodu girin', gateBtn:'Giriş',
     gateErrWrong:'Kod yanlış veya başka bir cihazda zaten kullanılmış.', gateErrEmpty:'Önce kodu yazın.',
     gateErrNetwork:'Kod doğrulanamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.',
@@ -1317,7 +1317,7 @@ const STRINGS = {
     copied:'Copied ✓', copyLabel:'📋 Copy', shareLabel:'📤 Share', listenLabel:'🔊 Listen',
     editLabel:'✏️ Edit', editConfirmLabel:'✔️ Translate after editing', clearOneLabel:'🗑️ Clear',
     shareFallback:'Text copied (direct sharing is not supported on this device/browser).',
-    noSTT:'This browser does not support speech recognition. Use Google Chrome on a computer or Android.',
+    noSTT:'Listening is not enabled in this browser. If you\'re on iPhone: open the link directly in Safari (not from inside WhatsApp or Facebook), and make sure iOS is updated.',
     gateSub:'This site is private — enter the access code you were given.', gatePlaceholder:'Enter the code', gateBtn:'Enter',
     gateErrWrong:'The code is wrong or already used on another device.', gateErrEmpty:'Type the code first.',
     gateErrNetwork:'Could not verify the code. Check your internet connection and try again.',
@@ -1641,10 +1641,21 @@ function startSide(side){
 // user instead of leaving the mic looking "stuck" with zero feedback.
 function safeStartRecognition(side){
   window.speechSynthesis.cancel();
-  // Safari on iPhone is unreliable when the same SpeechRecognition instance is reused.
-  // Recreate it before every turn so both conversation sides keep working.
+  // Safari on iPhone is unreliable when the same SpeechRecognition instance is
+  // reused. Recreate it before every turn — but first neutralize the OLD
+  // instance's event handlers, otherwise a delayed onend/onerror from the
+  // abandoned object can fire AFTER the new one is created and silently
+  // corrupt its state (this was causing the mic to look completely dead).
   if(IS_IOS && side._rebuild){
-    try{ if(side.rec) side.rec.abort(); }catch(e){}
+    if(side.rec){
+      try{
+        side.rec.onstart = null;
+        side.rec.onerror = null;
+        side.rec.onend = null;
+        side.rec.onresult = null;
+        side.rec.abort();
+      }catch(e){}
+    }
     side._rebuild();
   }
   try{
@@ -1652,7 +1663,10 @@ function safeStartRecognition(side){
   }catch(e){
     // One immediate rebuild/retry fixes the common InvalidStateError on iOS.
     if(IS_IOS && side._rebuild){
-      try{ side._rebuild(); side.rec.start(); return; }catch(e2){}
+      try{ side._rebuild(); side.rec.start(); return; }catch(e2){
+        showBanner(t('micGenericError'));
+        return;
+      }
     }
     showBanner(t('micGenericError'));
     return;
@@ -1759,6 +1773,12 @@ function makeSide(key){
 
 if(!SR){
   showBanner(t('noSTT'));
+  document.getElementById('micA').disabled = true;
+  document.getElementById('micB').disabled = true;
+  document.getElementById('micA').style.opacity = '0.4';
+  document.getElementById('micB').style.opacity = '0.4';
+  document.getElementById('hintA').textContent = t('noSTT');
+  document.getElementById('hintB').textContent = t('noSTT');
 } else {
   makeSide('A');
   makeSide('B');
