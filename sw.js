@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aljisr-v2026-07-30-2';
+const CACHE_NAME = 'aljisr-v2026-07-30-ios-fix-1';
 const APP_SHELL = ['./', './index.html', './manifest.json', './favicon-32.png', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil((async()=>{
