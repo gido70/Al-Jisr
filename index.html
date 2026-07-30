@@ -2,11 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>الجسر — مترجم صوتي فوري</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#0b3b55">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -768,6 +768,66 @@
     .more-row label{ font-size:14.5px; }
     .more-row select{ min-width:140px; }
   }
+
+  /* 2026 mobile visual refresh */
+  :root{
+    --ink:#102431; --bg:#f7fbfd; --bg2:#e9f4f7; --line:#c5dbe2;
+    --gold:#d48724; --teal:#087f8c; --muted:#58717d; --danger:#c43e35;
+    --shadow:0 14px 38px rgba(9,54,73,.12); --soft-shadow:0 8px 22px rgba(9,54,73,.08);
+  }
+  body{background:linear-gradient(180deg,#fafdff 0%,#eef7f9 100%);}
+  header{background:linear-gradient(135deg,#073b56,#0b6670);color:#fff;border:0;box-shadow:var(--soft-shadow);}
+  header .brand h1, header .brand-mark{color:#fff;}
+  header .status-pill, header .icon-btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);color:#fff;}
+  .side{background:rgba(255,255,255,.72);}
+  .stage{gap:14px;padding:16px;max-width:1280px;width:100%;margin:0 auto;}
+  .side{border:1px solid rgba(197,219,226,.9);border-radius:22px;box-shadow:var(--soft-shadow);}
+  .bridge-col{border-radius:20px;background:linear-gradient(180deg,rgba(212,135,36,.08),rgba(8,127,140,.08));}
+  .mic-btn{background:#fff;box-shadow:0 8px 22px rgba(9,54,73,.12);}
+  .icon-btn,select,input,.quick-result{min-height:44px;}
+  .call-panel{background:linear-gradient(180deg,#f7fbfd,#edf6f8);}
+  .call-panel h3{color:#0b3b55;}
+  .ocr-mode-buttons .icon-btn{justify-content:center;background:#fff;border:1px solid var(--line);font-weight:700;}
+  .ocr-camera-btn{border-color:var(--teal)!important;color:var(--teal)!important;}
+  .ocr-video-wrap{box-shadow:var(--shadow);border:3px solid #fff;}
+  #ocrPreview{width:100%;max-height:48vh;object-fit:contain;background:#fff;box-shadow:var(--soft-shadow);}
+  #ocrResults .quick-result{box-shadow:var(--soft-shadow);}
+
+  @media (max-width:720px){
+    html,body{width:100%;max-width:100%;overflow-x:hidden;}
+    body{min-height:100dvh;padding-bottom:calc(82px + env(safe-area-inset-bottom));}
+    header{padding:calc(12px + env(safe-area-inset-top)) 14px 12px;border-radius:0 0 22px 22px;}
+    header .brand{width:100%;justify-content:center;}
+    header .brand h1{font-size:22px;}
+    header .controls{position:absolute;left:12px;top:calc(10px + env(safe-area-inset-top));}
+    header .status-pill{display:none;}
+    .top-quick-bar{top:0;padding:10px 12px;background:rgba(247,251,253,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:0;}
+    .top-quick-btn{min-height:64px;border:0;background:#fff;color:#0b5263;box-shadow:var(--soft-shadow);border-radius:18px;}
+    .top-quick-btn.active{background:linear-gradient(135deg,#087f8c,#0b5263);color:#fff;}
+    .stage{display:flex;flex-direction:column;padding:10px 12px 16px;gap:10px;}
+    .side{padding:16px 14px;min-height:auto;border-radius:20px;}
+    .side h2{font-size:24px;margin-bottom:10px;}
+    .transcript{min-height:92px;max-height:30vh;overflow-y:auto;font-size:17px;line-height:1.75;}
+    .bridge-col{height:34px!important;min-height:34px;}
+    .bridge-col svg{width:90px;height:28px;transform:rotate(90deg);}
+    .mic-row{margin-top:12px;justify-content:center;}
+    .mic-btn{width:68px;height:68px;}
+    .log-wrap{margin:0 12px 12px;border:1px solid var(--line);border-radius:18px;padding:14px;background:rgba(255,255,255,.75);}
+    footer{display:none;}
+    .bottom-nav{background:rgba(247,251,253,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 -8px 28px rgba(9,54,73,.12);border:0;}
+    .call-panel{padding:calc(14px + env(safe-area-inset-top)) 14px calc(92px + env(safe-area-inset-bottom));}
+    .call-panel h3{font-size:23px;}
+    .call-sub{font-size:14px;line-height:1.6;}
+    .ocr-lang-row{display:grid;grid-template-columns:1fr 48px 1fr;gap:8px;}
+    .ocr-lang-row select{width:100%;min-width:0;font-size:14px;padding:8px;}
+    .ocr-mode-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .ocr-mode-buttons .big-btn{grid-column:1/-1;min-width:0;width:100%;min-height:52px;}
+    .ocr-mode-buttons .icon-btn{width:100%;min-width:0;padding:10px 6px;font-size:12.5px;white-space:normal;text-align:center;}
+    .ocr-video-wrap{aspect-ratio:3/4;max-height:56dvh;}
+    .ocr-live-overlay{font-size:16px;}
+    #ocrBackBtn{position:sticky;top:0;z-index:4;background:#fff;box-shadow:var(--soft-shadow);}
+    .guide-card,.more-sheet{background:#f7fbfd;}
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
@@ -973,8 +1033,10 @@
   <div class="ocr-mode-buttons">
     <button class="big-btn" id="ocrStartLiveBtn">▶️ <span id="ocrStartLiveText">ابدأ الترجمة المباشرة</span></button>
     <button class="big-btn" id="ocrStopLiveBtn" style="display:none;background:var(--danger);">⏹ <span id="ocrStopLiveText">إيقاف</span></button>
-    <label class="icon-btn ocr-upload-btn" id="ocrUploadLabel" for="ocrCameraInput">📁 <span id="ocrUploadText">أو ارفع صورة</span></label>
-    <input type="file" id="ocrCameraInput" accept="image/*" style="display:none;">
+    <label class="icon-btn ocr-upload-btn ocr-camera-btn" id="ocrUploadLabel" for="ocrCameraInput">📸 <span id="ocrUploadText">التقط صورة</span></label>
+    <input type="file" id="ocrCameraInput" accept="image/*" capture="environment" style="display:none;">
+    <label class="icon-btn ocr-upload-btn" id="ocrGalleryLabel" for="ocrGalleryInput">🖼️ <span>اختر من الصور</span></label>
+    <input type="file" id="ocrGalleryInput" accept="image/*" style="display:none;">
   </div>
 
   <div class="ocr-video-wrap" id="ocrVideoWrap" style="display:none;">
@@ -1906,7 +1968,15 @@ async function restartOcrWorker(){
 
 async function getOcrWorker(){
   if(!ocrWorker){
-    ocrWorker = await Tesseract.createWorker(OCR_LANG_MAP[ocrFrom.code] || 'eng');
+    ocrWorker = await Tesseract.createWorker(
+      OCR_LANG_MAP[ocrFrom.code] || 'eng',
+      1,
+      {
+        workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+        corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core-simd-lstm.wasm.js',
+        langPath:'https://tessdata.projectnaptha.com/4.0.0'
+      }
+    );
   }
   return ocrWorker;
 }
@@ -1920,16 +1990,31 @@ async function startLiveOcr(){
   document.getElementById('ocrStatus').style.display = 'none';
 
   try{
-    ocrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error('camera-api-unavailable');
+    }
+    try{
+      ocrStream = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:{ exact:'environment' }, width:{ ideal:1280 }, height:{ ideal:1920 } }, audio:false
+      });
+    }catch(firstErr){
+      ocrStream = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:'environment', width:{ ideal:1280 }, height:{ ideal:1920 } }, audio:false
+      });
+    }
   }catch(err){
     showBanner(t('ocrCameraDenied'));
     return;
   }
   video.srcObject = ocrStream;
+  video.setAttribute('playsinline','');
+  video.muted = true;
+  try{ await video.play(); }catch(e){}
   videoWrap.style.display = 'block';
   document.getElementById('ocrStartLiveBtn').style.display = 'none';
   document.getElementById('ocrStopLiveBtn').style.display = 'flex';
   document.getElementById('ocrUploadLabel').style.display = 'none';
+  document.getElementById('ocrGalleryLabel').style.display = 'none';
   liveStatus.textContent = t('ocrLoadingEngine');
 
   try{
@@ -1957,6 +2042,7 @@ function stopLiveOcr(){
   document.getElementById('ocrStartLiveBtn').style.display = 'flex';
   document.getElementById('ocrStopLiveBtn').style.display = 'none';
   document.getElementById('ocrUploadLabel').style.display = 'flex';
+  document.getElementById('ocrGalleryLabel').style.display = 'flex';
 }
 
 async function captureAndTranslateFrame(){
@@ -1995,7 +2081,7 @@ document.getElementById('ocrStartLiveBtn').addEventListener('click', startLiveOc
 document.getElementById('ocrStopLiveBtn').addEventListener('click', stopLiveOcr);
 
 /* ---- Single-photo upload mode (fallback: gallery photo, screenshot, etc.) ---- */
-document.getElementById('ocrCameraInput').addEventListener('change', async (e) => {
+async function handleOcrImageInput(e){
   const file = e.target.files[0];
   if(!file){ e.target.value = ''; return; }
 
@@ -2038,7 +2124,11 @@ document.getElementById('ocrCameraInput').addEventListener('change', async (e) =
     statusEl.textContent = t('ocrFail');
   }
   e.target.value = ''; // reset so the next photo (even same file) always fires 'change'
-});
+
+}
+
+document.getElementById('ocrCameraInput').addEventListener('change', handleOcrImageInput);
+document.getElementById('ocrGalleryInput').addEventListener('change', handleOcrImageInput);
 
 document.getElementById('ocrListenBtn').addEventListener('click', () => {
   if(ocrLastTranslated) speak(ocrLastTranslated, ocrTo.bcp47);
