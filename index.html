@@ -934,7 +934,7 @@ body.ios-device .ios-help-note{display:block;}
 
   <div class="quick-call">
     <h3 id="quickCallTitle">⚡ ترجمة سريعة</h3>
-    <div class="ios-help-note">على الآيفون يجب الضغط على ميكروفون كل طرف في كل دور؛ التشغيل التلقائي المستمر غير موثوق بسبب قيود Safari.</div>
+    <div class="ios-help-note">على الآيفون تمت إضافة إعادة تشغيل تلقائية للمحادثة بين الطرفين. عند توقف Safari مؤقتاً، اضغط زر «تلقائي» مرة واحدة لإعادة الدورة.</div>
     <p class="call-sub" id="quickCallSub">مثالية للمحادثة المباشرة وجهاً لوجه. لمكالمة هاتفية حقيقية، استخدم القسم أدناه بدل الميكروفون.</p>
 
     <div class="quick-row">
@@ -1012,7 +1012,7 @@ body.ios-device .ios-help-note{display:block;}
     <select id="ocrToLang"></select>
   </div>
 
-  <div class="ios-help-note">على الآيفون: افتح المنصة من Safari مباشرة، وليس من داخل واتساب أو فيسبوك. عند أول تشغيل اختر «سماح» للكاميرا. المعالجة أبطأ قليلاً لحماية الذاكرة.</div>
+  <div class="ios-help-note">على الآيفون: افتح المنصة من Safari مباشرة، واسمح للكاميرا. ثبّت الهاتف لحظة أمام النص؛ زر «اقرأ الآن» يلتقط إطاراً واضحاً إذا تأخرت القراءة المباشرة.</div>
   <div class="ocr-mode-buttons">
     <button class="big-btn" id="ocrStartLiveBtn">▶️ <span id="ocrStartLiveText">ابدأ الترجمة المباشرة</span></button>
     <button class="big-btn" id="ocrStopLiveBtn" style="display:none;background:var(--danger);">⏹ <span id="ocrStopLiveText">إيقاف</span></button>
@@ -1026,6 +1026,7 @@ body.ios-device .ios-help-note{display:block;}
     <video id="ocrVideo" autoplay playsinline muted></video>
     <div class="ocr-live-overlay" id="ocrLiveOverlay"></div>
     <div class="ocr-live-status" id="ocrLiveStatus"></div>
+    <button class="big-btn" id="ocrReadNowBtn" style="position:absolute;left:12px;right:12px;bottom:12px;z-index:4;background:linear-gradient(135deg,#0b5ed7,#c62828);">📖 اقرأ الآن</button>
   </div>
   <canvas id="ocrCanvas" style="display:none;"></canvas>
 
@@ -1191,7 +1192,7 @@ const STRINGS = {
     copied:'تم النسخ ✓', copyLabel:'📋 نسخ', shareLabel:'📤 مشاركة', listenLabel:'🔊 استمع',
     editLabel:'✏️ تعديل', editConfirmLabel:'✔️ ترجم بعد التعديل', clearOneLabel:'🗑️ مسح',
     shareFallback:'تم نسخ النص (المشاركة المباشرة غير مدعومة على هذا الجهاز/المتصفح).',
-    noSTT:'الاستماع غير مفعّل على هذا المتصفح. لو كنت على آيفون: افتح الرابط من Safari مباشرة (وليس من داخل واتساب أو فيسبوك)، وتأكد إن نظام iOS محدّث لأحدث إصدار.',
+    noSTT:'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Google Chrome على كمبيوتر أو أندرويد.',
     gateSub:'هذا الموقع خاص — أدخل رمز الدخول اللي أُعطيته لك.', gatePlaceholder:'ادخل الرمز', gateBtn:'دخول',
     gateErrWrong:'الرمز غير صحيح أو مُستخدم من قبل على جهاز آخر.', gateErrEmpty:'اكتب الرمز أولاً.',
     gateErrNetwork:'تعذر التحقق من الرمز. تحقق من اتصال الإنترنت وحاول مجدداً.',
@@ -1254,7 +1255,7 @@ const STRINGS = {
     copied:'Kopyalandı ✓', copyLabel:'📋 Kopyala', shareLabel:'📤 Paylaş', listenLabel:'🔊 Dinle',
     editLabel:'✏️ Düzenle', editConfirmLabel:'✔️ Düzenledikten sonra çevir', clearOneLabel:'🗑️ Sil',
     shareFallback:'Metin kopyalandı (bu cihazda doğrudan paylaşım desteklenmiyor).',
-    noSTT:'Bu tarayıcıda dinleme etkin değil. iPhone kullanıyorsanız: bağlantıyı doğrudan Safari\'den açın (WhatsApp veya Facebook içinden değil) ve iOS\'un güncel olduğundan emin olun.',
+    noSTT:'Bu tarayıcı sesli tanımayı desteklemiyor. Bilgisayar veya Android’de Google Chrome kullanın.',
     gateSub:'Bu site özeldir — size verilen giriş kodunu girin.', gatePlaceholder:'Kodu girin', gateBtn:'Giriş',
     gateErrWrong:'Kod yanlış veya başka bir cihazda zaten kullanılmış.', gateErrEmpty:'Önce kodu yazın.',
     gateErrNetwork:'Kod doğrulanamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.',
@@ -1317,7 +1318,7 @@ const STRINGS = {
     copied:'Copied ✓', copyLabel:'📋 Copy', shareLabel:'📤 Share', listenLabel:'🔊 Listen',
     editLabel:'✏️ Edit', editConfirmLabel:'✔️ Translate after editing', clearOneLabel:'🗑️ Clear',
     shareFallback:'Text copied (direct sharing is not supported on this device/browser).',
-    noSTT:'Listening is not enabled in this browser. If you\'re on iPhone: open the link directly in Safari (not from inside WhatsApp or Facebook), and make sure iOS is updated.',
+    noSTT:'This browser does not support speech recognition. Use Google Chrome on a computer or Android.',
     gateSub:'This site is private — enter the access code you were given.', gatePlaceholder:'Enter the code', gateBtn:'Enter',
     gateErrWrong:'The code is wrong or already used on another device.', gateErrEmpty:'Type the code first.',
     gateErrNetwork:'Could not verify the code. Check your internet connection and try again.',
@@ -1624,8 +1625,8 @@ function buildRecognizer(lang){
   return rec;
 }
 
-let sideA = { listening:false, resultReceived:false, rec:null };
-let sideB = { listening:false, resultReceived:false, rec:null };
+let sideA = { listening:false, resultReceived:false, rec:null, retries:0 };
+let sideB = { listening:false, resultReceived:false, rec:null, retries:0 };
 
 function stopAll(){
   if(sideA.rec && sideA.listening) sideA.rec.stop();
@@ -1641,21 +1642,10 @@ function startSide(side){
 // user instead of leaving the mic looking "stuck" with zero feedback.
 function safeStartRecognition(side){
   window.speechSynthesis.cancel();
-  // Safari on iPhone is unreliable when the same SpeechRecognition instance is
-  // reused. Recreate it before every turn — but first neutralize the OLD
-  // instance's event handlers, otherwise a delayed onend/onerror from the
-  // abandoned object can fire AFTER the new one is created and silently
-  // corrupt its state (this was causing the mic to look completely dead).
+  // Safari on iPhone is unreliable when the same SpeechRecognition instance is reused.
+  // Recreate it before every turn so both conversation sides keep working.
   if(IS_IOS && side._rebuild){
-    if(side.rec){
-      try{
-        side.rec.onstart = null;
-        side.rec.onerror = null;
-        side.rec.onend = null;
-        side.rec.onresult = null;
-        side.rec.abort();
-      }catch(e){}
-    }
+    try{ if(side.rec) side.rec.abort(); }catch(e){}
     side._rebuild();
   }
   try{
@@ -1663,10 +1653,7 @@ function safeStartRecognition(side){
   }catch(e){
     // One immediate rebuild/retry fixes the common InvalidStateError on iOS.
     if(IS_IOS && side._rebuild){
-      try{ side._rebuild(); side.rec.start(); return; }catch(e2){
-        showBanner(t('micGenericError'));
-        return;
-      }
+      try{ side._rebuild(); side.rec.start(); return; }catch(e2){}
     }
     showBanner(t('micGenericError'));
     return;
@@ -1697,6 +1684,7 @@ function makeSide(key){
 
     side.rec.onstart = () => {
       clearTimeout(side._startTimeout);
+      side.retries = 0;
       side.listening = true; side.resultReceived = false;
       micBtn.classList.add('listening');
       document.getElementById('quickMic' + key)?.classList.add('listening');
@@ -1712,6 +1700,10 @@ function makeSide(key){
       else if(e.error === 'no-speech'){ showBanner(t('noSpeechHeard')); }
       else { showBanner(t('micGenericError')); }
       setStatus(t('ready'));
+      if(convMode && IS_IOS && ['aborted','no-speech','network'].includes(e.error) && side.retries < 3){
+        side.retries++;
+        setTimeout(() => { if(convMode) safeStartRecognition(side); }, 900);
+      }
     };
     side.rec.onend = () => {
       clearTimeout(side._startTimeout);
@@ -1719,8 +1711,9 @@ function makeSide(key){
       document.getElementById('quickMic' + key)?.classList.remove('listening');
       // In auto conversation mode, silence just means nobody has spoken yet on
       // this side — keep re-arming the mic instead of stopping.
-      if(convMode && !IS_IOS && !side.resultReceived && !otherSide().listening){
-        setTimeout(() => { if(convMode) startSide(side); }, 500);
+      if(convMode && !side.resultReceived && !otherSide().listening){
+        const wait = IS_IOS ? 900 : 500;
+        setTimeout(() => { if(convMode) safeStartRecognition(side); }, wait);
       }
     };
     side.rec.onresult = async (event) => {
@@ -1750,8 +1743,14 @@ function makeSide(key){
         mirrorQuickResult(otherKey, translated);
         speak(translated, otherLang().bcp47, () => {
           setStatus(t('ready'));
-          if(convMode && !IS_IOS) startSide(otherSide());
-          else if(convMode && IS_IOS) showBanner('على الآيفون: مرّر الهاتف للطرف الآخر واضغط زر الميكروفون المقابل.');
+          if(convMode){
+            const wait = IS_IOS ? 850 : 250;
+            setTimeout(() => {
+              if(!convMode) return;
+              try{ safeStartRecognition(otherSide()); }
+              catch(e){ showBanner('اضغط زر «تلقائي» مرة واحدة لإعادة تشغيل الميكروفون.'); }
+            }, wait);
+          }
         });
       }catch(err){
         showBanner(t('translateFail'));
@@ -1773,12 +1772,6 @@ function makeSide(key){
 
 if(!SR){
   showBanner(t('noSTT'));
-  document.getElementById('micA').disabled = true;
-  document.getElementById('micB').disabled = true;
-  document.getElementById('micA').style.opacity = '0.4';
-  document.getElementById('micB').style.opacity = '0.4';
-  document.getElementById('hintA').textContent = t('noSTT');
-  document.getElementById('hintB').textContent = t('noSTT');
 } else {
   makeSide('A');
   makeSide('B');
@@ -2067,8 +2060,8 @@ async function startLiveOcr(){
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('camera unsupported');
     if(ocrStream){ ocrStream.getTracks().forEach(t=>t.stop()); ocrStream = null; }
     const constraints = IS_IOS
-      ? { video:{ facingMode:'environment', width:{ideal:960}, height:{ideal:540} }, audio:false }
-      : { video:{ facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} }, audio:false };
+      ? { video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:24,max:30} }, audio:false }
+      : { video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:24,max:30} }, audio:false };
     try{
       ocrStream = await navigator.mediaDevices.getUserMedia(constraints);
     }catch(firstErr){
@@ -2105,6 +2098,14 @@ async function startLiveOcr(){
     return;
   }
 
+  try{
+    const track = ocrStream.getVideoTracks()[0];
+    const caps = track?.getCapabilities?.() || {};
+    const advanced = [];
+    if(caps.focusMode?.includes?.('continuous')) advanced.push({focusMode:'continuous'});
+    if(caps.exposureMode?.includes?.('continuous')) advanced.push({exposureMode:'continuous'});
+    if(advanced.length) await track.applyConstraints({advanced});
+  }catch(e){}
   liveStatus.textContent = t('ocrLoadingEngine');
   try{
     await getOcrWorker();
@@ -2114,9 +2115,9 @@ async function startLiveOcr(){
     return;
   }
   liveStatus.textContent = t('ocrLiveScanning');
-  const interval = IS_IOS ? 5200 : 3000;
+  const interval = IS_IOS ? 3800 : 2600;
   ocrLiveTimer = setInterval(captureAndTranslateFrame, interval);
-  setTimeout(captureAndTranslateFrame, IS_IOS ? 800 : 100);
+  setTimeout(captureAndTranslateFrame, IS_IOS ? 1200 : 250);
 }
 function stopLiveOcr(){
   if(ocrLiveTimer){ clearInterval(ocrLiveTimer); ocrLiveTimer = null; }
@@ -2145,6 +2146,17 @@ async function captureAndTranslateFrame(){
     canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
     const ctx = canvas.getContext('2d', { willReadFrequently:true });
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Raise contrast and sharpen text for iPhone camera frames.
+    try{
+      const img = ctx.getImageData(0,0,canvas.width,canvas.height);
+      const d = img.data;
+      for(let i=0;i<d.length;i+=4){
+        const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+        const v = Math.max(0, Math.min(255, (gray-128)*1.65+128));
+        d[i]=d[i+1]=d[i+2]=v;
+      }
+      ctx.putImageData(img,0,0);
+    }catch(e){}
 
     liveStatus.textContent = t('ocrLiveScanning');
     const worker = await getOcrWorker();
@@ -2167,6 +2179,12 @@ async function captureAndTranslateFrame(){
 
 document.getElementById('ocrStartLiveBtn').addEventListener('click', startLiveOcr);
 document.getElementById('ocrStopLiveBtn').addEventListener('click', stopLiveOcr);
+document.getElementById('ocrReadNowBtn').addEventListener('click', async () => {
+  if(!ocrStream){ await startLiveOcr(); return; }
+  const btn=document.getElementById('ocrReadNowBtn');
+  const old=btn.textContent; btn.disabled=true; btn.textContent='⏳ جارٍ القراءة…';
+  try{ await captureAndTranslateFrame(); } finally { btn.disabled=false; btn.textContent=old; }
+});
 
 /* ---- Single-photo upload mode (fallback: gallery photo, screenshot, etc.) ---- */
 async function handleOcrImageChange(e){
@@ -2476,13 +2494,11 @@ function toggleAutoMode(){
   document.getElementById('navAuto')?.classList.toggle('active', convMode);
   if(!convMode){
     stopAll();
-  } else if(IS_IOS){
-    // iOS requires a fresh user gesture for each recognition turn.
-    stopAll();
-    showBanner('وضع الآيفون: اضغط ميكروفون العربية، ثم مرّر الهاتف واضغط ميكروفون التركية لكل دور. سيُنطق الرد بعد الترجمة.');
   } else if(!sideA.listening && !sideB.listening){
     unlockSpeechOnce();
-    startSide(sideA);
+    stopAll();
+    setTimeout(() => safeStartRecognition(sideA), IS_IOS ? 180 : 0);
+    if(IS_IOS) showBanner('بدأ الوضع التلقائي للآيفون. إذا أوقف Safari الميكروفون، اضغط «تلقائي» مرة أخرى فقط.');
   }
 }
 document.getElementById('convToggle').addEventListener('click', toggleAutoMode);
