@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aljisr-mobile-ui-v3';
+const CACHE_NAME = 'aljisr-external-audio-v4';
 const CORE = ['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(CORE.map(u => cache.add(u)))).then(() => self.skipWaiting()));
