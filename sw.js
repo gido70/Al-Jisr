@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aljisr-clean-v12';
+const CACHE_NAME = 'aljisr-mobile-a-to-z-v8';
 const CORE = ['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(CORE.map(u => cache.add(u)))).then(() => self.skipWaiting()));
