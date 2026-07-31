@@ -2850,6 +2850,7 @@ function clearConversation(){
   resetSideTranscript('B');
 }
 document.getElementById('clearBtn').addEventListener('click', clearConversation);
+document.getElementById('logClearBtn2').addEventListener('click', clearConversation);
 
 function copyConversation(btn){
   const text = log.map(i => `[${i.t}] ${i.speakerLabel}: ${i.original}\n→ ${i.translated}`).join('\n\n');
@@ -2860,6 +2861,56 @@ function copyConversation(btn){
   });
 }
 document.getElementById('copyBtn').addEventListener('click', (e) => copyConversation(e.currentTarget));
+document.getElementById('logCopyBtn2').addEventListener('click', (e) => copyConversation(e.currentTarget));
+
+document.getElementById('logShareBtn2').addEventListener('click', async () => {
+  const text = log.map(i => `🕒 ${i.t}\n${i.speakerLabel}: ${i.original}\n${i.translated}`).join('\n-------------------\n');
+  if(!text){ showBanner(t('noConvo')); return; }
+  if(navigator.share){
+    try{ await navigator.share({ text }); }catch(e){ /* المستخدم ألغى */ }
+  } else {
+    navigator.clipboard.writeText(text).catch(()=>{});
+    showBanner(t('shareFallback'));
+  }
+});
+
+document.getElementById('logPdfBtn2').addEventListener('click', () => {
+  if(log.length === 0){ showBanner(t('noConvo')); return; }
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 15;
+    log.forEach(en => {
+      doc.setFontSize(9); doc.text(`Time: ${en.t}  |  ${en.speakerLabel}`, 15, y); y += 6;
+      doc.setFontSize(11);
+      const origLines = doc.splitTextToSize(en.original, 180);
+      if(y + origLines.length*6 > 280){ doc.addPage(); y = 15; }
+      doc.text(origLines, 15, y); y += origLines.length*6 + 3;
+      const transLines = doc.splitTextToSize('-> ' + en.translated, 180);
+      if(y + transLines.length*6 > 280){ doc.addPage(); y = 15; }
+      doc.text(transLines, 15, y); y += transLines.length*6 + 4;
+      doc.setDrawColor(200); doc.line(15, y, 195, y); y += 8;
+    });
+    doc.save('aljisr-conversation.pdf');
+  }catch(err){ showBanner('تعذر إنشاء PDF. جرّب النسخ بدلاً منه.'); }
+});
+
+document.getElementById('logWordBtn2').addEventListener('click', () => {
+  if(log.length === 0){ showBanner(t('noConvo')); return; }
+  const bodyHtml = log.map(en =>
+    `<p style="margin:0 0 2px;color:#a8710a;font-size:11px;font-weight:bold;">🕒 ${en.t} — ${en.speakerLabel}</p>
+     <p style="margin:0 0 4px;color:#666;font-size:12px;">${en.original}</p>
+     <p style="margin:0 0 10px;font-size:15px;font-weight:bold;">${en.translated}</p>
+     <hr style="border:none;border-top:1px dashed #ccc;margin:0 0 14px;">`
+  ).join('');
+  const html = `<html><head><meta charset="utf-8"></head><body dir="rtl" style="font-family:Arial,Tajawal,sans-serif;">${bodyHtml}</body></html>`;
+  const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'aljisr-conversation.doc';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
 
 /* ---------------- Usage guide modal ---------------- */
 function openGuide(){ document.getElementById('guideOverlay').classList.add('show'); }
