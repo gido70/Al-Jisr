@@ -945,6 +945,31 @@ body.ios-device .ios-help-note{display:block;}
     <button class="icon-btn" id="forceRefreshBtnDesktop" title="تحديث التطبيق">🔄 تحديث</button>
   </div>
 </header>
+<nav class="portal-nav" id="portalNav" aria-label="أقسام الجسر">
+  <button id="portalHome"><span class="nav-icon">⌂</span>الرئيسية</button>
+  <button id="portalConversation"><span class="nav-icon">💬</span>المحادثة</button>
+  <button id="portalCall"><span class="nav-icon">☎️</span>المكالمات</button>
+  <button id="portalCamera"><span class="nav-icon">📷</span>عدسة الترجمة</button>
+  <button id="portalLecture"><span class="nav-icon">🎙️</span>الخطب والمحاضرات</button>
+  <button id="portalDialogue"><span class="nav-icon">👥</span>الاستماع للحوار</button>
+  <button id="portalGuide"><span class="nav-icon">❔</span>الدليل</button>
+</nav>
+<section class="portal-hero" id="portalHero">
+  <div class="portal-hero-inner">
+    <span class="portal-kicker">🌉 الجسر — مساعدك اللغوي في تركيا</span>
+    <h2>الترجمة التي ترافقك في الحديث، الطريق، المحاضرة والمكالمة</h2>
+    <p>واجهة موحدة وسريعة للترجمة بين العربية والتركية والإنجليزية، مع المحادثة الصوتية، عدسة النصوص، الاستماع للمحاضرات وفهم الحوارات المحيطة.</p>
+    <div class="portal-hero-actions"><button class="portal-primary" id="heroStart">ابدأ المحادثة الآن</button><button class="portal-secondary" id="heroCamera">افتح عدسة الترجمة</button></div>
+  </div>
+</section>
+<section class="portal-grid" id="portalGrid">
+  <button class="portal-tile tile-chat" id="tileConversation"><span class="tile-icon">💬</span><b>المحادثة المباشرة</b><small>تحدث وترجم بين شخصين بسرعة.</small></button>
+  <button class="portal-tile tile-call" id="tileCall"><span class="tile-icon">☎️</span><b>مساعد المكالمات</b><small>جمل سريعة وقراءة الرد للطرف الآخر.</small></button>
+  <button class="portal-tile tile-camera" id="tileCamera"><span class="tile-icon">📷</span><b>عدسة الترجمة</b><small>ترجمة اللافتات والصور والنصوص.</small></button>
+  <button class="portal-tile tile-lecture" id="tileLecture"><span class="tile-icon">🎙️</span><b>الخطب والمحاضرات</b><small>ترجمة كتابة أو صوتاً في السماعة.</small></button>
+  <button class="portal-tile tile-dialogue" id="tileDialogue"><span class="tile-icon">👥</span><b>الاستماع للحوار</b><small>افهم ما يقال حولك باللغة المختارة.</small></button>
+</section>
+
 
 <div class="top-quick-bar" id="topQuickBar">
   <button class="top-quick-btn" id="topQuickLang"><span class="top-quick-ic">🌐</span><span id="topQuickLangLbl">اللغة</span></button>
@@ -2770,9 +2795,55 @@ function saveLiveSession(){if(liveKeepLocal.checked)localStorage.setItem(LIVE_KE
 function restoreLiveSession(){try{const v=JSON.parse(localStorage.getItem(LIVE_KEY)||'null');if(v?.entries?.length){liveEntries=v.entries;liveKeepLocal.checked=true;renderLiveEntries()}}catch{}}
 function downloadLive(content,type,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
 function exportLiveWord(){const body=liveEntries.map(e=>`<p><small>${e.time}</small><br><b>${esc(e.translated)}</b></p>`).join('');downloadLive(`<html dir="rtl"><meta charset="utf-8"><body><h1>${esc(liveModeTitle.textContent)}</h1>${body}</body></html>`,'application/msword','aljisr-session.doc')}
-function exportLivePdf(){const w=window.open('','_blank');if(!w)return showBanner('اسمح بفتح النوافذ لتصدير PDF');w.document.write(`<html dir="rtl"><head><meta charset="utf-8"><style>body{font-family:Arial;padding:30px;line-height:1.8}p{border-bottom:1px solid #ddd;padding:10px}</style></head><body><h1>${esc(liveModeTitle.textContent)}</h1>${liveEntries.map(e=>`<p><small>${e.time}</small><br><b>${esc(e.translated)}</b></p>`).join('')}<script>onload=()=>print()<\/script></body></html>`);w.document.close()}
+function exportLivePdf(){const w=window.open('','_blank');if(!w)return showBanner('اسمح بفتح النوافذ لتصدير PDF');w.document.write(`<html dir="rtl"><head><meta charset="utf-8"><style>body{font-family:Arial;padding:30px;line-height:1.8}p{border-bottom:1px solid #ddd;padding:10px}
+/* ===== AL-JISR PORTAL REDESIGN 2026 ===== */
+:root{
+  --portal-navy:#082b55;--portal-blue:#0f67d8;--portal-cyan:#12b9d6;
+  --portal-red:#d9364f;--portal-orange:#ef8f24;--portal-green:#0f9f77;
+  --portal-purple:#6c4cf1;--portal-bg:#f4f7fb;--portal-card:#fff;
+}
+body{background:radial-gradient(circle at 15% 0%,#e8f4ff 0,transparent 34%),linear-gradient(180deg,#f8fbff 0,#f3f6fb 100%);color:#10233f}
+header{background:rgba(255,255,255,.94)!important;border-bottom:1px solid #dbe5f1!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 28px rgba(15,52,94,.08)}
+.brand h1{color:var(--portal-navy)!important}.brand-mark{background:linear-gradient(135deg,var(--portal-blue),var(--portal-cyan))!important;box-shadow:0 10px 24px rgba(15,103,216,.25)}
+.portal-nav{position:sticky;top:0;z-index:85;display:flex;gap:8px;align-items:center;padding:10px max(12px,env(safe-area-inset-left));overflow-x:auto;background:rgba(8,43,85,.96);box-shadow:0 10px 26px rgba(5,24,48,.22);scrollbar-width:none}.portal-nav::-webkit-scrollbar{display:none}
+.portal-nav button{flex:0 0 auto;display:flex;align-items:center;gap:8px;border:0;border-radius:14px;padding:10px 14px;background:rgba(255,255,255,.1);color:#fff;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;transition:.2s}.portal-nav button:hover,.portal-nav button:active{background:#fff;color:var(--portal-navy);transform:translateY(-1px)}
+.portal-nav .nav-icon{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:#fff;color:var(--portal-navy);font-size:16px}
+.portal-hero{max-width:1180px;margin:18px auto 8px;padding:0 16px}.portal-hero-inner{position:relative;overflow:hidden;border-radius:28px;padding:30px;background:linear-gradient(135deg,#082b55 0%,#0f67d8 60%,#12b9d6 100%);color:#fff;box-shadow:0 22px 55px rgba(8,43,85,.25)}
+.portal-hero-inner:after{content:"";position:absolute;width:250px;height:250px;border-radius:50%;right:-65px;top:-110px;background:rgba(255,255,255,.14)}
+.portal-kicker{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px;font-weight:800}.portal-hero h2{font-size:clamp(25px,5vw,43px);margin:12px 0 8px;line-height:1.12}.portal-hero p{max-width:720px;margin:0;color:#eaf6ff;line-height:1.75;font-size:15px}.portal-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.portal-hero-actions button{border:0;border-radius:14px;padding:12px 17px;font-weight:900;cursor:pointer}.portal-primary{background:#fff;color:var(--portal-navy)}.portal-secondary{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.28)!important}
+.portal-grid{max-width:1180px;margin:14px auto 10px;padding:0 16px;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.portal-tile{border:0;border-radius:20px;padding:16px;text-align:right;color:#fff;min-height:132px;cursor:pointer;box-shadow:0 14px 28px rgba(22,47,83,.14);transition:.2s;position:relative;overflow:hidden}.portal-tile:hover{transform:translateY(-3px)}.portal-tile .tile-icon{width:45px;height:45px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:23px;margin-bottom:12px}.portal-tile b{display:block;font-size:16px;margin-bottom:4px}.portal-tile small{display:block;opacity:.88;line-height:1.5}.tile-chat{background:linear-gradient(135deg,#0f67d8,#0a4da4)}.tile-call{background:linear-gradient(135deg,#d9364f,#a61f3a)}.tile-camera{background:linear-gradient(135deg,#ef8f24,#d15d13)}.tile-lecture{background:linear-gradient(135deg,#6c4cf1,#4930b6)}.tile-dialogue{background:linear-gradient(135deg,#0f9f77,#08765a)}
+.mode-hub{max-width:1180px!important}.mode-card{border:0!important;box-shadow:0 14px 34px rgba(23,49,82,.11)!important}.mode-card:first-child{background:linear-gradient(135deg,#fff,#f0edff)!important}.mode-card.dialogue{background:linear-gradient(135deg,#fff,#eafbf5)!important}
+.call-panel,.live-panel{background:var(--portal-bg)!important}.call-panel.show,.live-panel.show{animation:portalFade .22s ease}@keyframes portalFade{from{opacity:.3;transform:translateY(8px)}to{opacity:1;transform:none}}
+.quick-call,.live-setup-card,.listening-card,.ocr-video-wrap,.type-during-call{border-radius:22px!important;box-shadow:0 14px 32px rgba(24,51,87,.09)!important;border:1px solid #e0e8f2!important;background:#fff!important}
+.live-head{background:linear-gradient(135deg,#39228d,#6c4cf1)!important;color:#fff;border-radius:22px!important;padding:16px!important;box-shadow:0 12px 28px rgba(76,50,177,.2)}.live-head .live-title,.live-head .live-sub{color:#fff!important}.live-clear-mini,.live-back,.live-home{background:rgba(255,255,255,.16)!important;color:#fff!important;border-color:rgba(255,255,255,.25)!important}
+#ocrPanel h3{color:#a94b09}.ocr-mode-buttons .big-btn:first-child{background:linear-gradient(135deg,#ef8f24,#d9364f)!important}
+.fixed-actionbar{background:rgba(255,255,255,.97)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 -12px 30px rgba(20,45,78,.12)!important}
+.stage{max-width:1180px;margin:16px auto!important;border-radius:26px;overflow:hidden;box-shadow:0 18px 44px rgba(20,45,78,.12);background:#fff}.side.left{background:linear-gradient(180deg,#f4f9ff,#fff)!important}.side.right{background:linear-gradient(180deg,#fff6f7,#fff)!important}
+.top-quick-bar{display:none!important}
+@media(max-width:980px){.portal-grid{grid-template-columns:repeat(3,1fr)}header .controls{display:none!important}.portal-nav{top:0}.portal-hero{margin-top:12px}}
+@media(max-width:640px){
+  body{padding-bottom:82px}.portal-nav{padding-top:calc(8px + env(safe-area-inset-top));gap:6px}.portal-nav button{padding:8px 10px;font-size:11px;border-radius:12px}.portal-nav .nav-icon{width:27px;height:27px;font-size:14px}
+  .portal-hero{padding:0 10px;margin:10px auto 6px}.portal-hero-inner{padding:22px 18px;border-radius:22px}.portal-hero h2{font-size:28px}.portal-hero p{font-size:13px}.portal-hero-actions button{flex:1 1 42%;padding:11px 10px}
+  .portal-grid{grid-template-columns:repeat(2,1fr);padding:0 10px;gap:9px}.portal-tile{min-height:116px;padding:13px;border-radius:17px}.portal-tile .tile-icon{width:40px;height:40px;font-size:20px;margin-bottom:9px}.portal-tile b{font-size:14px}.portal-tile small{font-size:11px}
+  .portal-grid .portal-tile:last-child{grid-column:1/-1;min-height:98px}.mode-hub{padding:9px 10px!important}.stage{margin:10px!important;border-radius:20px}.call-panel{padding:12px!important}.live-shell{padding:10px!important}.live-head{padding:13px!important}.fixed-actionbar button span{font-size:10px!important}
+}
+</style></head><body><h1>${esc(liveModeTitle.textContent)}</h1>${liveEntries.map(e=>`<p><small>${e.time}</small><br><b>${esc(e.translated)}</b></p>`).join('')}<script>onload=()=>print()<\/script></body></html>`);w.document.close()}
 lectureModeBtn.onclick=()=>openLiveMode('lecture');dialogueModeBtn.onclick=()=>openLiveMode('dialogue');liveBackBtn.onclick=closeLiveMode;liveHomeBtn.onclick=closeLiveMode;document.querySelectorAll('input[name="liveInputSource"]').forEach(r=>r.onchange=()=>{externalAudioTip.classList.toggle('show',r.checked&&r.value==='external');liveStatus.textContent=r.value==='external'?'جاهز لالتقاط صوت التلفاز أو الراديو':'جاهز للاستماع إلى متحدث قريب'});liveStartBtn.onclick=startLiveRecognition;livePauseBtn.onclick=pauseLiveRecognition;liveStopBtn.onclick=stopLiveRecognition;liveClearTop.onclick=clearLiveText;liveClearBottom.onclick=clearLiveText;liveNewBtn.onclick=()=>{stopLiveRecognition();clearLiveText();liveSourceLang.value='tr';liveTargetLang.value='ar'};liveCopyBtn.onclick=e=>copyText(livePlainText(),e.currentTarget);liveShareBtn.onclick=()=>shareText(livePlainText());liveWordBtn.onclick=exportLiveWord;livePdfBtn.onclick=exportLivePdf;document.querySelectorAll('input[name="liveOutput"]').forEach(r=>r.onchange=()=>{liveAudioHint.textContent=r.value==='text'?'ستظهر الترجمة كتابة فقط.':r.value==='audio'?'ستُقرأ الترجمة في السماعة دون عرض النص.':'ستظهر الترجمة وتُقرأ في السماعة.'});liveTestAudio.onclick=()=>{unlockSpeechOnce();const to=liveTargetLang.value||'ar';speak(to==='ar'?'تم تفعيل السماعة بنجاح':to==='tr'?'Kulaklık başarıyla etkinleştirildi':'Headphone audio is ready',to+'-'+({ar:'SA',tr:'TR',en:'US'}[to]||'US'));};liveKeepLocal.onchange=saveLiveSession;fillLiveLanguages();
 
+
+// ===== Portal navigation bindings =====
+(function(){
+ const q=id=>document.getElementById(id);
+ const showHome=()=>{try{closeCallMode();closeOcrPanel();closeLiveMode();}catch(e){} document.querySelector('.stage').style.display=''; const lw=q('logWrap'); if(lw) lw.style.display=''; const f=document.querySelector('footer'); if(f) f.style.display=''; const mh=q('modeHub'); if(mh) mh.style.display=''; const ph=q('portalHero'); if(ph) ph.style.display=''; const pg=q('portalGrid'); if(pg) pg.style.display=''; window.scrollTo({top:0,behavior:'smooth'});};
+ const hidePortal=()=>{const ph=q('portalHero'),pg=q('portalGrid'); if(ph) ph.style.display='none'; if(pg) pg.style.display='none';};
+ const conversation=()=>{showHome(); setTimeout(()=>document.querySelector('.stage')?.scrollIntoView({behavior:'smooth',block:'start'}),80)};
+ const call=()=>{hidePortal(); q('callModeToggle')?.click();};
+ const camera=()=>{hidePortal(); q('ocrOpenBtn')?.click();};
+ const lecture=()=>{hidePortal(); q('lectureModeBtn')?.click();};
+ const dialogue=()=>{hidePortal(); q('dialogueModeBtn')?.click();};
+ [['portalHome',showHome],['portalConversation',conversation],['tileConversation',conversation],['heroStart',conversation],['portalCall',call],['tileCall',call],['portalCamera',camera],['tileCamera',camera],['heroCamera',camera],['portalLecture',lecture],['tileLecture',lecture],['portalDialogue',dialogue],['tileDialogue',dialogue],['portalGuide',()=>q('guideBtn')?.click()]].forEach(([id,fn])=>q(id)?.addEventListener('click',fn));
+ ['backHomeBtn','ocrBackBtn','liveHomeBtn'].forEach(id=>q(id)?.addEventListener('click',()=>setTimeout(showHome,50)));
+})();
 </script>
 
 </body>
