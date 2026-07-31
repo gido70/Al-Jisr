@@ -791,6 +791,35 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 .ocr-live-overlay{position:absolute;left:10px;right:10px;bottom:48px;background:rgba(5,18,48,.9);color:#fff;padding:12px 14px;border-radius:12px;font-size:18px;font-weight:900;line-height:1.55;backdrop-filter:blur(8px);}
 .ocr-live-status{position:absolute;top:10px;left:10px;right:10px;background:rgba(217,48,37,.9);color:#fff;border-radius:999px;padding:7px 12px;text-align:center;font-weight:800;}
 #ocrPanel.show{min-height:100dvh;}
+
+/* live listening panels (lecture/dialogue) */
+.live-lang-row{display:flex;align-items:flex-end;gap:10px;margin-top:16px;}
+.live-lang-col{flex:1;display:flex;flex-direction:column;gap:6px;}
+.live-lang-col label{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.live-audio-toggle{display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-size:13px;color:var(--muted);line-height:1.6;cursor:pointer;}
+.live-audio-toggle input{margin-top:3px;flex-shrink:0;}
+.live-controls{margin-top:18px;}
+.live-controls .big-btn{width:100%;}
+.live-status{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px;text-align:center;}
+.live-transcript{
+  margin-top:16px;
+  background:var(--bg2);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+  min-height:200px;
+  max-height:50vh;
+  overflow-y:auto;
+}
+.live-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 0;}
+.live-entry{padding:10px 0;border-bottom:1px dashed var(--line);}
+.live-entry:last-child{border-bottom:none;}
+.live-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);margin-bottom:4px;font-weight:700;}
+.live-entry .orig{font-size:13.5px;color:var(--muted);margin-bottom:3px;}
+.live-entry .trans{font-size:16px;font-weight:700;}
+.live-sep{display:none;}
+.live-export-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+.live-export-row .icon-btn{flex:1;min-width:100px;justify-content:center;}
 @media(max-width:720px){
  body{font-size:16px;} header{padding:calc(12px + env(safe-area-inset-top)) 12px 12px;}
  .brand h1{font-size:23px}.call-panel{padding:16px 12px calc(90px + env(safe-area-inset-bottom));}
@@ -807,6 +836,7 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 body.ios-device .ios-help-note{display:block;}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -1043,6 +1073,90 @@ body.ios-device .ios-help-note{display:block;}
   </div>
 </div>
 
+<div class="call-panel" id="lecturePanel">
+  <button class="icon-btn" id="lectureBackBtn" style="margin-bottom:16px;">→ الرجوع للصفحة الرئيسية</button>
+  <h3>🕌 خطبة / محاضرة</h3>
+  <p class="call-sub">استماع مستمر لمتحدث واحد (خطبة، محاضرة، درس) — النص يظهر أولاً بأول، ولا يُحفظ في أي مكان، فقط تقدر تنسخه أو تصدّره بعد الانتهاء.</p>
+
+  <div class="live-lang-row">
+    <div class="live-lang-col">
+      <label>🗣️ لغة المتحدث</label>
+      <select id="lectureSpeakerLang"></select>
+    </div>
+    <button class="icon-btn" id="lectureSwapBtn">⇄</button>
+    <div class="live-lang-col">
+      <label>👂 لغتي (الترجمة)</label>
+      <select id="lectureMyLang"></select>
+    </div>
+  </div>
+
+  <label class="live-audio-toggle">
+    <input type="checkbox" id="lectureAudioToggle">
+    <span>🎧 نطق الترجمة بصوت أيضاً (استخدم سماعة الأذن حتى لا تزعج من حولك — الصوت يخرج من السماعة الموصولة تلقائياً لو كانت مركّبة)</span>
+  </label>
+
+  <div class="live-controls">
+    <button class="big-btn" id="lectureStartBtn">▶️ ابدأ الاستماع المستمر</button>
+    <button class="big-btn" id="lectureStopBtn" style="display:none;background:var(--danger);">⏹ إيقاف</button>
+  </div>
+  <div class="live-status" id="lectureStatus"></div>
+
+  <div class="live-transcript" id="lectureTranscript">
+    <div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>
+  </div>
+
+  <div class="live-export-row">
+    <button class="icon-btn" id="lectureClearBtn">🗑️ مسح</button>
+    <button class="icon-btn" id="lectureCopyBtn">📋 نسخ</button>
+    <button class="icon-btn" id="lectureShareBtn">📤 مشاركة</button>
+    <button class="icon-btn" id="lecturePdfBtn">📄 PDF</button>
+    <button class="icon-btn" id="lectureWordBtn">📝 Word</button>
+  </div>
+  <button class="icon-btn" id="lectureNewSessionBtn" style="width:100%;justify-content:center;margin-top:10px;">🔄 جلسة جديدة</button>
+</div>
+
+<div class="call-panel" id="dialoguePanel">
+  <button class="icon-btn" id="dialogueBackBtn" style="margin-bottom:16px;">→ الرجوع للصفحة الرئيسية</button>
+  <h3>👥 حوار مباشر</h3>
+  <p class="call-sub">لفهم حديث بين شخصين قريبين منك بلغة ما تفهمها — استماع مستمر، والنص لا يُحفظ، فقط للنسخ أو التصدير.</p>
+
+  <div class="live-lang-row">
+    <div class="live-lang-col">
+      <label>🗣️ لغة حديثهم</label>
+      <select id="dialogueSpeakerLang"></select>
+    </div>
+    <button class="icon-btn" id="dialogueSwapBtn">⇄</button>
+    <div class="live-lang-col">
+      <label>👂 لغتي (الترجمة)</label>
+      <select id="dialogueMyLang"></select>
+    </div>
+  </div>
+
+  <label class="live-audio-toggle">
+    <input type="checkbox" id="dialogueAudioToggle">
+    <span>🎧 نطق الترجمة بصوت أيضاً (استخدم سماعة الأذن حتى لا يلاحظوا — الصوت يخرج من السماعة الموصولة تلقائياً لو كانت مركّبة)</span>
+  </label>
+
+  <div class="live-controls">
+    <button class="big-btn" id="dialogueStartBtn">▶️ ابدأ الاستماع المستمر</button>
+    <button class="big-btn" id="dialogueStopBtn" style="display:none;background:var(--danger);">⏹ إيقاف</button>
+  </div>
+  <div class="live-status" id="dialogueStatus"></div>
+
+  <div class="live-transcript" id="dialogueTranscript">
+    <div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>
+  </div>
+
+  <div class="live-export-row">
+    <button class="icon-btn" id="dialogueClearBtn">🗑️ مسح</button>
+    <button class="icon-btn" id="dialogueCopyBtn">📋 نسخ</button>
+    <button class="icon-btn" id="dialogueShareBtn">📤 مشاركة</button>
+    <button class="icon-btn" id="dialoguePdfBtn">📄 PDF</button>
+    <button class="icon-btn" id="dialogueWordBtn">📝 Word</button>
+  </div>
+  <button class="icon-btn" id="dialogueNewSessionBtn" style="width:100%;justify-content:center;margin-top:10px;">🔄 جلسة جديدة</button>
+</div>
+
 <div class="stage">
   <div class="side left">
     <div class="lang-tag"><span class="dot"></span> <span id="langATagLabel">العربية</span></div>
@@ -1095,6 +1209,14 @@ body.ios-device .ios-help-note{display:block;}
 <div class="log-wrap" id="logWrap">
   <div class="log-heading" id="logHeading">📜 سجل المحادثة (محفوظ تلقائياً بجهازك)</div>
   <div class="log-empty" id="logEmpty">سجل المحادثة يظهر هنا…</div>
+</div>
+
+<div class="live-export-row" id="logToolbar" style="padding:0 22px 16px;background:var(--bg2);">
+  <button class="icon-btn" id="logClearBtn2">🗑️ مسح</button>
+  <button class="icon-btn" id="logCopyBtn2">📋 نسخ</button>
+  <button class="icon-btn" id="logShareBtn2">📤 مشاركة</button>
+  <button class="icon-btn" id="logPdfBtn2">📄 PDF</button>
+  <button class="icon-btn" id="logWordBtn2">📝 Word</button>
 </div>
 
 <footer>
@@ -1154,6 +1276,14 @@ body.ios-device .ios-help-note{display:block;}
         <option value="female" id="voiceOptFemale">أنثوي</option>
         <option value="male" id="voiceOptMale">ذكوري</option>
       </select>
+    </div>
+    <div class="more-row">
+      <label>🕌 خطبة / محاضرة</label>
+      <button class="icon-btn" id="lectureOpenBtn">فتح</button>
+    </div>
+    <div class="more-row">
+      <label>👥 حوار مباشر (أفهم اثنين يتكلمون)</label>
+      <button class="icon-btn" id="dialogueOpenBtn">فتح</button>
     </div>
     <div class="more-row">
       <label id="moreRefreshLbl">🔄 تحديث التطبيق (سحب آخر نسخة)</label>
@@ -2238,6 +2368,209 @@ document.getElementById('ocrCaptureInput').addEventListener('change', handleOcrI
 document.getElementById('ocrListenBtn').addEventListener('click', () => {
   if(ocrLastTranslated) speak(ocrLastTranslated, ocrTo.bcp47);
 });
+
+/* ---------------- Live continuous listening (Lecture/Sermon & Dialogue) ----------------
+   Shared engine for both panels. IMPORTANT: transcripts here are kept ONLY in
+   memory for the current session — never written to localStorage/history —
+   per explicit requirement. Only copy/PDF/Word export is offered. */
+function makeLivePanel(prefix){
+  const speakerSelect = document.getElementById(prefix + 'SpeakerLang');
+  const mySelect = document.getElementById(prefix + 'MyLang');
+  const swapBtn = document.getElementById(prefix + 'SwapBtn');
+  const audioToggle = document.getElementById(prefix + 'AudioToggle');
+  const startBtn = document.getElementById(prefix + 'StartBtn');
+  const stopBtn = document.getElementById(prefix + 'StopBtn');
+  const statusEl = document.getElementById(prefix + 'Status');
+  const transcriptEl = document.getElementById(prefix + 'Transcript');
+  const panelEl = document.getElementById(prefix + 'Panel');
+
+  LANGS.forEach((l,i) => {
+    const o1 = document.createElement('option'); o1.value = i; o1.textContent = l.label;
+    speakerSelect.appendChild(o1);
+    const o2 = document.createElement('option'); o2.value = i; o2.textContent = l.label;
+    mySelect.appendChild(o2);
+  });
+  let speakerLang = LANGS.find(l => l.code === 'tr') || LANGS[1];
+  let myLang = LANGS.find(l => l.code === 'ar') || LANGS[0];
+  function syncSelects(){
+    speakerSelect.value = LANGS.indexOf(speakerLang);
+    mySelect.value = LANGS.indexOf(myLang);
+  }
+  syncSelects();
+  speakerSelect.addEventListener('change', (e) => {
+    const chosen = LANGS[Number(e.target.value)];
+    if(chosen.code === myLang.code) myLang = speakerLang;
+    speakerLang = chosen; syncSelects();
+  });
+  mySelect.addEventListener('change', (e) => {
+    const chosen = LANGS[Number(e.target.value)];
+    if(chosen.code === speakerLang.code) speakerLang = myLang;
+    myLang = chosen; syncSelects();
+  });
+  swapBtn.addEventListener('click', () => {
+    const old = speakerLang; speakerLang = myLang; myLang = old; syncSelects();
+  });
+
+  let rec = null;
+  let running = false;
+  let entries = []; // in-memory only: {original, translated, time}
+
+  function appendEntry(original, translated){
+    entries.push({ original, translated, time: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) });
+    transcriptEl.querySelector('.live-empty')?.remove();
+    const div = document.createElement('div');
+    div.className = 'live-entry';
+    const timeLabel = entries[entries.length-1].time;
+    div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="orig">${original}</div><div class="trans">${translated}</div><div class="live-sep">────────</div>`;
+    transcriptEl.appendChild(div);
+    transcriptEl.scrollTop = transcriptEl.scrollHeight;
+  }
+
+  function resetToDefaults(){
+    stop();
+    speakerLang = LANGS.find(l => l.code === 'tr') || LANGS[1];
+    myLang = LANGS.find(l => l.code === 'ar') || LANGS[0];
+    syncSelects();
+    audioToggle.checked = false;
+    entries = [];
+    transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
+    statusEl.textContent = 'جاهز للاستماع';
+    setTimeout(() => { statusEl.textContent = ''; }, 1500);
+  }
+
+  function buildRec(){
+    rec = buildRecognizer(speakerLang.bcp47);
+    if(!rec) return;
+    rec.onstart = () => { statusEl.textContent = '🔎 يستمع...'; };
+    rec.onerror = (e) => {
+      if(e.error === 'not-allowed'){ showBanner(t('micDenied')); running = false; }
+    };
+    rec.onend = () => {
+      if(running){
+        setTimeout(() => { if(running){ buildRec(); try{ rec.start(); }catch(e){} } }, IS_IOS ? 500 : 150);
+      } else {
+        statusEl.textContent = '';
+      }
+    };
+    rec.onresult = async (event) => {
+      const said = event.results[0][0].transcript;
+      if(!said || !said.trim()) return;
+      statusEl.textContent = '🌐 يترجم...';
+      try{
+        const translated = await translateText(said, speakerLang.code, myLang.code);
+        appendEntry(said, translated);
+        if(audioToggle.checked) speak(translated, myLang.bcp47);
+      }catch(err){ /* skip this segment, keep listening */ }
+      if(running) statusEl.textContent = '🔎 يستمع...';
+    };
+  }
+
+  function start(){
+    if(!SR){ showBanner(t('noSTT')); return; }
+    running = true;
+    startBtn.style.display = 'none';
+    stopBtn.style.display = 'flex';
+    unlockSpeechOnce();
+    buildRec();
+    try{ rec.start(); }catch(e){}
+  }
+  function stop(){
+    running = false;
+    startBtn.style.display = 'flex';
+    stopBtn.style.display = 'none';
+    statusEl.textContent = '';
+    if(rec){ try{ rec.stop(); }catch(e){} }
+  }
+  startBtn.addEventListener('click', start);
+  stopBtn.addEventListener('click', stop);
+
+  function fullText(){
+    return entries.map(e => `🕒 ${e.time}\n${e.original}\n${e.translated}`).join('\n-------------------\n');
+  }
+
+  document.getElementById(prefix + 'CopyBtn').addEventListener('click', (e) => {
+    const text = fullText() || 'لا يوجد نص بعد.';
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = e.currentTarget; const old = btn.textContent;
+      btn.textContent = 'تم النسخ ✓';
+      setTimeout(() => btn.textContent = old, 1500);
+    }).catch(() => { showBanner('تعذر النسخ. جرّب مرة أخرى.'); });
+  });
+
+  document.getElementById(prefix + 'ClearBtn').addEventListener('click', () => {
+    entries = [];
+    transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
+    if(!running) statusEl.textContent = 'جاهز للاستماع';
+  });
+
+  document.getElementById(prefix + 'NewSessionBtn').addEventListener('click', () => {
+    if(!confirm('جلسة جديدة: راح تُعاد كل الإعدادات (اللغات والصوت) للوضع الافتراضي وتُمسح المحادثة. متأكد؟')) return;
+    resetToDefaults();
+  });
+
+  document.getElementById(prefix + 'ShareBtn').addEventListener('click', async () => {
+    const text = fullText();
+    if(!text){ showBanner('لا يوجد نص للمشاركة بعد.'); return; }
+    if(navigator.share){
+      try{ await navigator.share({ text }); }catch(e){ /* المستخدم ألغى، تجاهل */ }
+    } else {
+      navigator.clipboard.writeText(text).catch(()=>{});
+      showBanner('تم نسخ النص (المشاركة المباشرة غير مدعومة على هذا الجهاز).');
+    }
+  });
+
+  document.getElementById(prefix + 'PdfBtn').addEventListener('click', () => {
+    if(entries.length === 0){ showBanner('لا يوجد نص للتصدير بعد.'); return; }
+    try{
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 15;
+      entries.forEach(en => {
+        doc.setFontSize(9); doc.text(`Time: ${en.time}`, 15, y); y += 6;
+        doc.setFontSize(11);
+        const origLines = doc.splitTextToSize(en.original, 180);
+        if(y + origLines.length*6 > 280){ doc.addPage(); y = 15; }
+        doc.text(origLines, 15, y); y += origLines.length*6 + 3;
+        const transLines = doc.splitTextToSize('-> ' + en.translated, 180);
+        if(y + transLines.length*6 > 280){ doc.addPage(); y = 15; }
+        doc.text(transLines, 15, y); y += transLines.length*6 + 4;
+        doc.setDrawColor(200); doc.line(15, y, 195, y); y += 8;
+      });
+      doc.save((prefix === 'lecture' ? 'khutbah' : 'dialogue') + '-transcript.pdf');
+    }catch(err){ showBanner('تعذر إنشاء PDF. جرّب النسخ بدلاً منه.'); }
+  });
+
+  document.getElementById(prefix + 'WordBtn').addEventListener('click', () => {
+    if(entries.length === 0){ showBanner('لا يوجد نص للتصدير بعد.'); return; }
+    const bodyHtml = entries.map(en =>
+      `<p style="margin:0 0 2px;color:#a8710a;font-size:11px;font-weight:bold;">🕒 ${en.time}</p>
+       <p style="margin:0 0 4px;color:#666;font-size:12px;">${en.original}</p>
+       <p style="margin:0 0 10px;font-size:15px;font-weight:bold;">${en.translated}</p>
+       <hr style="border:none;border-top:1px dashed #ccc;margin:0 0 14px;">`
+    ).join('');
+    const html = `<html><head><meta charset="utf-8"></head><body dir="rtl" style="font-family:Arial,Tajawal,sans-serif;">${bodyHtml}</body></html>`;
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (prefix === 'lecture' ? 'khutbah' : 'dialogue') + '-transcript.doc';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById(prefix + 'BackBtn').addEventListener('click', () => {
+    stop();
+    panelEl.classList.remove('show');
+  });
+}
+
+makeLivePanel('lecture');
+makeLivePanel('dialogue');
+
+function openLecturePanel(){ closeMoreSheet(); document.getElementById('lecturePanel').classList.add('show'); }
+function openDialoguePanel(){ closeMoreSheet(); document.getElementById('dialoguePanel').classList.add('show'); }
+document.getElementById('lectureOpenBtn').addEventListener('click', openLecturePanel);
+document.getElementById('dialogueOpenBtn').addEventListener('click', openDialoguePanel);
 
 document.getElementById('quickMicA').addEventListener('click', () => document.getElementById('micA').click());
 document.getElementById('quickMicB').addEventListener('click', () => document.getElementById('micB').click());
