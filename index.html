@@ -1501,11 +1501,24 @@ async function callSupabaseFn(fn, body){
 
 async function tryRedeemCode(code){
   const btn = document.getElementById('gateSubmit');
+  const cleanCode = (code || '').trim();
   btn.disabled = true; showGateError('');
   try{
-    const ok = await callSupabaseFn('redeem_aljisr_code', { p_code: code.trim() });
-    if(ok === true){
-      try{ localStorage.setItem(GATE_STORAGE_KEY, code.trim()); }catch(e){}
+    // A previously redeemed code may still be active for its owner. Check its
+    // current validity first so reactivated subscribers are not forced to
+    // redeem the same one-time code a second time.
+    const alreadyValid = await callSupabaseFn('check_aljisr_code_valid', { p_code: cleanCode });
+    if(alreadyValid === true){
+      try{ localStorage.setItem(GATE_STORAGE_KEY, cleanCode); }catch(e){}
+      hideGate();
+      btn.disabled = false;
+      return;
+    }
+
+    // Only a genuinely new code should go through the one-time redemption RPC.
+    const redeemed = await callSupabaseFn('redeem_aljisr_code', { p_code: cleanCode });
+    if(redeemed === true){
+      try{ localStorage.setItem(GATE_STORAGE_KEY, cleanCode); }catch(e){}
       hideGate();
     } else {
       showGateError(t('gateErrWrong'));
@@ -1527,9 +1540,14 @@ async function tryRedeemCode(code){
     callSupabaseFn('check_aljisr_code_valid', { p_code: storedCode }).then(stillValid => {
       if(stillValid === true){
         hideGate();
+      } else if(stillValid === false) {
+        // The server explicitly revoked this code. Keep the gate visible, but
+        // preserve the code locally so an administrator can reactivate it and
+        // the subscriber can retry without losing the original code.
       } else {
-        try{ localStorage.removeItem(GATE_STORAGE_KEY); }catch(e){}
-        // gate stays visible, asking for a fresh code
+        // Unexpected server response: do not log out an already authorised
+        // subscriber because of a temporary RPC/API response problem.
+        hideGate();
       }
     }).catch(() => {
       // network hiccup — fail safe by trusting the last known local state
