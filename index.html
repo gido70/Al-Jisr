@@ -860,6 +860,21 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 .svc-link:active{ transform:scale(.95); }
 .svc-link.svc-lang{ border-color:#1447c9; color:#1447c9; }
 .svc-link.svc-lang.active{ background:#1447c9; border-color:#1447c9; color:#fff; }
+@media(max-width:600px){
+  .services-bar{ padding:8px 10px; gap:6px; justify-content:space-between; mask-image:none; -webkit-mask-image:none; }
+  .svc-link{
+    flex:1; flex-shrink:1;
+    flex-direction:column; gap:2px;
+    padding:7px 2px;
+    min-width:0;
+  }
+  .svc-link span:not(.svc-ic){
+    font-size:8.5px;
+    max-width:100%;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .svc-link .svc-ic{ font-size:16px; }
+}
 
 .hub-section{padding:26px 22px 8px;border-bottom:1px solid var(--line);}
 .guide-banner{
@@ -1071,6 +1086,7 @@ body.ios-device .ios-help-note{display:block;}
 
 <div class="call-panel" id="callPanel">
   <button class="icon-btn" id="backHomeBtn" style="margin-bottom:16px;">→ الرجوع للصفحة الرئيسية</button>
+  <button class="icon-btn" id="callClearBtn" style="margin-bottom:16px;margin-inline-start:8px;">🗑️ مسح السجل</button>
 
   <div class="quick-call">
     <h3 id="quickCallTitle">⚡ ترجمة سريعة</h3>
@@ -1268,7 +1284,7 @@ body.ios-device .ios-help-note{display:block;}
 </div>
 
 <section class="hub-section" id="hubSection">
-  <button class="guide-banner" id="guideBanner">
+  <button class="guide-banner" id="guideBanner" style="display:none;">
     <span class="guide-banner-ic">❓</span>
     <span class="guide-banner-text">
       <b id="guideBannerTitle">دليل الاستخدام</b>
@@ -1314,6 +1330,7 @@ body.ios-device .ios-help-note{display:block;}
 <div class="stage" id="stage">
   <div class="stage-topbar">
     <button class="icon-btn" id="stageBackBtn">→ الرجوع للرئيسية</button>
+    <button class="icon-btn" id="stageClearBtn" title="مسح السجل">🗑️ مسح السجل</button>
     <button class="icon-btn" id="stageAutoBtn">↻ تلقائي</button>
   </div>
   <div class="side left">
@@ -1534,6 +1551,7 @@ const STRINGS = {
     displayLangLbl:'🖥️ لغة العرض', translateLangLbl:'🌐 لغتا الترجمة',
     moreTextSize:'Aa حجم الخط', moreTextSizeBtn:'تكبير', moreCopyAll:'📋 نسخ كل المحادثة', moreCopyBtn:'نسخ',
     moreClear:'🗑️ مسح المحادثة', moreClearBtn:'مسح',
+    confirmClearLog:'هل متأكد تبي تمسح سجل هذي المحادثة؟ لا يمكن التراجع.',
     moreVoice:'🎙️ صوت الترجمة', voiceAuto:'تلقائي', voiceFemale:'أنثوي', voiceMale:'ذكوري',
     swapLangsLabel:'⇄ تبديل اللغتين', swapNowBtn:'تبديل', navLangLabel:'اللغة', navCameraLabel:'كاميرا',
     moreRefresh:'🔄 تحديث التطبيق (سحب آخر نسخة)', refreshBtn:'تحديث', refreshBtnDesktop:'🔄 تحديث',
@@ -1597,6 +1615,7 @@ const STRINGS = {
     displayLangLbl:'🖥️ Arayüz dili', translateLangLbl:'🌐 Çeviri dilleri',
     moreTextSize:'Aa Yazı boyutu', moreTextSizeBtn:'Büyüt', moreCopyAll:'📋 Tüm konuşmayı kopyala', moreCopyBtn:'Kopyala',
     moreClear:'🗑️ Konuşmayı temizle', moreClearBtn:'Temizle',
+    confirmClearLog:'Bu konuşma geçmişini silmek istediğinize emin misiniz? Geri alınamaz.',
     moreVoice:'🎙️ Çeviri sesi', voiceAuto:'Otomatik', voiceFemale:'Kadın', voiceMale:'Erkek',
     swapLangsLabel:'⇄ Dilleri değiştir', swapNowBtn:'Değiştir', navLangLabel:'Dil', navCameraLabel:'Kamera',
     moreRefresh:'🔄 Uygulamayı güncelle (son sürümü al)', refreshBtn:'Güncelle', refreshBtnDesktop:'🔄 Güncelle',
@@ -1660,6 +1679,7 @@ const STRINGS = {
     displayLangLbl:'🖥️ Display language', translateLangLbl:'🌐 Translation languages',
     moreTextSize:'Aa Text size', moreTextSizeBtn:'Larger', moreCopyAll:'📋 Copy whole conversation', moreCopyBtn:'Copy',
     moreClear:'🗑️ Clear conversation', moreClearBtn:'Clear',
+    confirmClearLog:'Are you sure you want to clear this conversation history? This cannot be undone.',
     moreVoice:'🎙️ Translation voice', voiceAuto:'Automatic', voiceFemale:'Female', voiceMale:'Male',
     swapLangsLabel:'⇄ Swap languages', swapNowBtn:'Swap', navLangLabel:'Language', navCameraLabel:'Camera',
     moreRefresh:'🔄 Refresh app (pull latest version)', refreshBtn:'Refresh', refreshBtnDesktop:'🔄 Refresh',
@@ -2776,6 +2796,16 @@ document.getElementById('lectureOpenBtn').addEventListener('click', openLectureP
 document.getElementById('dialogueOpenBtn').addEventListener('click', openDialoguePanel);
 
 /* ---------------- Home hub — each tile opens an existing, already-tested panel ---------------- */
+function syncServicesBarVisibility(){
+  const anyPanelOpen = document.querySelector('.call-panel.show') || document.getElementById('stage')?.classList.contains('show');
+  const bar = document.getElementById('servicesBar');
+  if(bar) bar.style.display = anyPanelOpen ? 'none' : '';
+}
+document.querySelectorAll('.call-panel, #stage').forEach(el => {
+  new MutationObserver(syncServicesBarVisibility).observe(el, { attributes:true, attributeFilter:['class'] });
+});
+syncServicesBarVisibility();
+
 function showChatPanel(){
   closeCallMode(); closeOcrPanel(); closeLecturePanel(); closeDialoguePanel();
   closeMoreSheet(); closeLangSheet();
@@ -2792,6 +2822,12 @@ function showHubHome(){
 
 document.getElementById('hubTileChat').addEventListener('click', showChatPanel);
 document.getElementById('stageBackBtn').addEventListener('click', showHubHome);
+document.getElementById('stageClearBtn').addEventListener('click', () => {
+  if(confirm(t('confirmClearLog'))) clearConversation();
+});
+document.getElementById('callClearBtn').addEventListener('click', () => {
+  if(confirm(t('confirmClearLog'))) clearConversation();
+});
 document.getElementById('stageAutoBtn').addEventListener('click', () => {
   toggleAutoMode();
   document.getElementById('stageAutoBtn').classList.toggle('active', convMode);
