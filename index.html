@@ -126,10 +126,38 @@
     }
     .stage-topbar .icon-btn{ font-size:12.5px; }
     #stageAutoBtn.active{ background:var(--gold); color:#fff; border-color:var(--gold); }
+    .stage-bottombar{
+      grid-column:1/-1;
+      display:flex; justify-content:center;
+      padding:20px 16px calc(20px + env(safe-area-inset-bottom));
+    }
+    .stage-bottombar .icon-btn{ font-size:13px; padding:12px 24px; }
     .bridge-col{
       grid-row:2;
       height:44px;
       flex-direction:row !important;
+    }
+    .divider-line{
+      width:140px; height:3px;
+      background:linear-gradient(90deg, var(--gold), var(--line) 45%, var(--line) 55%, var(--teal));
+    }
+    .divider-dot{
+      left:0; top:50%;
+      margin-inline-start:0; margin-top:-7px;
+    }
+    .divider-dot.go{animation-name:crossRight;}
+    .divider-dot.back{animation-name:crossLeft;}
+    @keyframes crossRight{
+      0%{opacity:0; left:0;}
+      15%{opacity:1;}
+      85%{opacity:1;}
+      100%{opacity:0; left:calc(100% - 14px);}
+    }
+    @keyframes crossLeft{
+      0%{opacity:0; left:calc(100% - 14px);}
+      15%{opacity:1;}
+      85%{opacity:1;}
+      100%{opacity:0; left:0;}
     }
   }
   .side{
@@ -211,7 +239,8 @@
   .mic-btn svg{width:24px;height:24px;stroke:currentColor;}
   .hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
 
-  /* the bridge divider — signature element */
+  /* the divider between the two sides — a clean line instead of the old
+     capsule/bridge shape, with a small dot that shows translation direction */
   .bridge-col{
     display:flex;
     flex-direction:column;
@@ -220,19 +249,36 @@
     position:relative;
     background:linear-gradient(180deg, transparent, var(--bg2), transparent);
   }
-  .bridge-col svg{width:36px;height:120px;}
-  .arch{stroke:var(--muted);stroke-width:1.5;fill:none;}
-  .crossing{
-    fill:var(--gold);
-    opacity:0;
+  .divider-line{
+    width:3px;
+    height:140px;
+    background:linear-gradient(180deg, var(--gold), var(--line) 45%, var(--line) 55%, var(--teal));
+    border-radius:3px;
+    position:relative;
   }
-  .crossing.go{animation:cross 1.1s ease forwards;}
-  .crossing.back{fill:var(--teal);}
-  @keyframes cross{
-    0%{opacity:0;transform:translateY(-50px);}
+  .divider-dot{
+    position:absolute;
+    left:50%; top:0;
+    width:14px; height:14px;
+    margin-inline-start:-7px;
+    border-radius:50%;
+    background:var(--gold);
+    opacity:0;
+    box-shadow:0 0 0 4px var(--bg);
+  }
+  .divider-dot.go{animation:crossDown 1.1s ease forwards;}
+  .divider-dot.back{background:var(--teal); animation-name:crossUp;}
+  @keyframes crossDown{
+    0%{opacity:0; top:0;}
     15%{opacity:1;}
     85%{opacity:1;}
-    100%{opacity:0;transform:translateY(50px);}
+    100%{opacity:0; top:calc(100% - 14px);}
+  }
+  @keyframes crossUp{
+    0%{opacity:0; top:calc(100% - 14px);}
+    15%{opacity:1;}
+    85%{opacity:1;}
+    100%{opacity:0; top:0;}
   }
 
   /* log */
@@ -1406,12 +1452,9 @@ body.ios-device .ios-help-note{display:block;}
   </div>
 
   <div class="bridge-col">
-    <svg viewBox="0 0 36 120">
-      <path class="arch" d="M4 20 Q18 0 32 20 M4 100 Q18 120 32 100"/>
-      <line class="arch" x1="4" y1="20" x2="4" y2="100"/>
-      <line class="arch" x1="32" y1="20" x2="32" y2="100"/>
-      <circle class="crossing" id="crossDot" cx="18" cy="10" r="4"/>
-    </svg>
+    <div class="divider-line">
+      <span class="divider-dot" id="crossDot"></span>
+    </div>
   </div>
 
   <div class="side right">
@@ -1431,6 +1474,9 @@ body.ios-device .ios-help-note{display:block;}
       </button>
       <span class="hint" id="hintB">تُترجم وتُنطق للجهة المقابلة</span>
     </div>
+  </div>
+  <div class="stage-bottombar">
+    <button class="icon-btn" id="stageBackBtnBottom">→ الرجوع للصفحة الرئيسية</button>
   </div>
 </div>
 
@@ -2686,7 +2732,10 @@ function makeLivePanel(prefix){
     div.className = 'live-entry';
     if(getOutputMode() === 'audio') div.classList.add('audio-only-entry');
     const timeLabel = entries[entries.length-1].time;
-    div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="orig">${original}</div><div class="trans">${translated}</div><div class="live-sep">────────</div>`;
+    // Only the TRANSLATED text is shown on screen — the original is kept in
+    // `entries` (above) for PDF/Word export only, never displayed live,
+    // per explicit request: "لا يظهر الاثنين معاً".
+    div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans">${translated}</div>`;
     transcriptEl.appendChild(div);
     transcriptEl.scrollTop = transcriptEl.scrollHeight;
   }
@@ -2734,6 +2783,7 @@ function makeLivePanel(prefix){
     };
   }
 
+  let restReminderTimer = null;
   function start(){
     if(!SR){ showBanner(t('noSTT')); return; }
     running = true;
@@ -2742,6 +2792,12 @@ function makeLivePanel(prefix){
     unlockSpeechOnce();
     buildRec();
     try{ rec.start(); }catch(e){}
+    // gentle rest reminder every 5 minutes for long lectures/dialogues —
+    // doesn't stop listening automatically, just nudges the user
+    clearInterval(restReminderTimer);
+    restReminderTimer = setInterval(() => {
+      if(running) showBanner('⏸️ مرّت 5 دقائق استماع متواصل — فكّر بأخذ استراحة قصيرة لو المحاضرة طويلة (الاستماع يستمر ما لم توقفه).');
+    }, 5 * 60 * 1000);
   }
   function stop(){
     running = false;
@@ -2749,6 +2805,7 @@ function makeLivePanel(prefix){
     stopBtn.style.display = 'none';
     statusEl.textContent = '';
     if(rec){ try{ rec.stop(); }catch(e){} }
+    clearInterval(restReminderTimer);
   }
   startBtn.addEventListener('click', start);
   stopBtn.addEventListener('click', stop);
@@ -2889,6 +2946,7 @@ function showHubHome(){
 
 document.getElementById('hubTileChat').addEventListener('click', showChatPanel);
 document.getElementById('stageBackBtn').addEventListener('click', showHubHome);
+document.getElementById('stageBackBtnBottom').addEventListener('click', showHubHome);
 document.getElementById('stageClearBtn').addEventListener('click', () => {
   if(confirm(t('confirmClearLog'))) clearConversation();
 });
