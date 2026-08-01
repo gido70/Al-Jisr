@@ -2692,6 +2692,45 @@ function makeLivePanel(prefix){
     for(const r of audioSourceInputs) if(r.checked) return r.value;
     return 'natural';
   }
+
+  // A real speech QUEUE — this is the actual fix for the "cutting off"
+  // problem: speak() elsewhere in the app always cancels whatever is
+  // currently playing before starting the new sentence. That's correct for
+  // single manual translations, but during a continuous lecture it meant
+  // sentence 2's audio would chop off sentence 1 mid-word the moment it
+  // finished translating, even if sentence 1 hadn't finished being spoken
+  // yet. This queue speaks one sentence fully, THEN moves to the next.
+  let speechQueue = [];
+  let speaking = false;
+  function queueSpeech(text, lang){
+    speechQueue.push({ text, lang });
+    if(!speaking) playNextInQueue();
+  }
+  function playNextInQueue(){
+    if(speechQueue.length === 0){ speaking = false; return; }
+    speaking = true;
+    const next = speechQueue.shift();
+    try{
+      const utter = new SpeechSynthesisUtterance(next.text);
+      utter.lang = next.lang;
+      utter.rate = IS_IOS ? 0.90 : 0.95;
+      utter.volume = 1;
+      const preferred = (typeof pickVoiceFor === 'function') ? pickVoiceFor(next.lang.split('-')[0]) : null;
+      if(preferred) utter.voice = preferred;
+      let done = false;
+      const finish = () => { if(done) return; done = true; playNextInQueue(); };
+      utter.onend = finish;
+      utter.onerror = finish;
+      window.speechSynthesis.speak(utter);
+      setTimeout(finish, Math.max(4000, next.text.length * 180)); // safety net
+    }catch(e){ playNextInQueue(); }
+  }
+  function clearSpeechQueue(){
+    speechQueue = [];
+    speaking = false;
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+  }
+
   const startBtn = document.getElementById(prefix + 'StartBtn');
   const stopBtn = document.getElementById(prefix + 'StopBtn');
   const statusEl = document.getElementById(prefix + 'Status');
@@ -2803,7 +2842,7 @@ function makeLivePanel(prefix){
         const translated = await translateText(said, speakerLang.code, myLang.code);
         appendEntry(said, translated);
         const mode = getOutputMode();
-        if(mode === 'audio' || mode === 'both') speak(translated, myLang.bcp47);
+        if(mode === 'audio' || mode === 'both') queueSpeech(translated, myLang.bcp47);
       }catch(err){ /* skip this segment, keep listening */ }
       if(running) statusEl.textContent = '🔎 يستمع...';
     };
@@ -2832,6 +2871,7 @@ function makeLivePanel(prefix){
     statusEl.textContent = '';
     if(rec){ try{ rec.stop(); }catch(e){} }
     clearInterval(restReminderTimer);
+    clearSpeechQueue();
   }
   startBtn.addEventListener('click', start);
   stopBtn.addEventListener('click', stop);
