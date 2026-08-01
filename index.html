@@ -2760,22 +2760,44 @@ function makeLivePanel(prefix){
   function buildRec(){
     rec = buildRecognizer(speakerLang.bcp47);
     if(!rec) return;
+    // KEY CHANGE: continuous:true means ONE listening session handles many
+    // sentences back-to-back, without us tearing down and rebuilding the
+    // recognizer (and waiting 150-900ms) between every single sentence like
+    // before. This removes most of the perceived "waiting" the user reported.
+    rec.continuous = true;
+    rec.interimResults = true;
     rec.onstart = () => { statusEl.textContent = '🔎 يستمع...'; };
     rec.onerror = (e) => {
       if(e.error === 'not-allowed'){ showBanner(t('micDenied')); running = false; }
     };
     rec.onend = () => {
       if(running){
+        // With continuous mode, onend now only fires on a real disconnect
+        // (long silence, network hiccup) — not after every sentence — so a
+        // short safety-net delay before reconnecting is enough.
         const broadcastMode = getAudioSource() === 'broadcast';
-        const restartDelay = IS_IOS ? (broadcastMode ? 900 : 500) : (broadcastMode ? 450 : 150);
+        const restartDelay = IS_IOS ? (broadcastMode ? 400 : 200) : (broadcastMode ? 250 : 80);
         setTimeout(() => { if(running){ buildRec(); try{ rec.start(); }catch(e){} } }, restartDelay);
       } else {
         statusEl.textContent = '';
       }
     };
     rec.onresult = async (event) => {
-      const said = event.results[0][0].transcript;
-      if(!said || !said.trim()) return;
+      let finalText = '';
+      let interimText = '';
+      for(let i = event.resultIndex; i < event.results.length; i++){
+        const transcript = event.results[i][0].transcript;
+        if(event.results[i].isFinal) finalText += transcript;
+        else interimText += transcript;
+      }
+      // live preview of what's being heard right now, before translation —
+      // gives an immediate "it's working" feedback like a real interpreter
+      // listening, even before the translated line appears
+      if(interimText.trim()){
+        statusEl.textContent = '🎙️ ' + interimText.trim().slice(-60);
+      }
+      if(!finalText.trim()) return;
+      const said = finalText.trim();
       statusEl.textContent = '🌐 يترجم...';
       try{
         const translated = await translateText(said, speakerLang.code, myLang.code);
