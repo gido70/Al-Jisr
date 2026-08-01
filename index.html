@@ -804,21 +804,6 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 .live-lang-col label{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
 .live-audio-toggle{display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-size:13px;color:var(--muted);line-height:1.6;cursor:pointer;}
 .live-audio-toggle input{margin-top:3px;flex-shrink:0;}
-.live-mode-row{margin-top:16px;padding:12px 14px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;}
-.live-mode-lbl{display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:8px;}
-.live-mode-options{display:flex;flex-wrap:wrap;gap:8px;}
-.live-mode-opt{
-  display:flex;align-items:center;gap:5px;
-  background:var(--bg);border:1px solid var(--line);
-  padding:7px 10px;border-radius:20px;
-  font-size:12px;font-weight:700;color:var(--muted);
-  cursor:pointer;
-}
-.live-mode-opt input{ accent-color:var(--gold); }
-.live-mode-opt:has(input:checked){ background:var(--gold); border-color:var(--gold); color:#fff; }
-.live-mode-hint{margin:8px 0 0;font-size:11px;color:var(--muted);line-height:1.5;}
-.audio-only-entry .orig, .audio-only-entry .trans{ filter:blur(4px); opacity:.4; user-select:none; }
-.audio-only-entry:active .orig, .audio-only-entry:active .trans{ filter:none; opacity:1; }
 .live-controls{margin-top:18px;}
 .live-controls .big-btn{width:100%;}
 .live-status{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px;text-align:center;}
@@ -876,21 +861,19 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 .svc-link.svc-lang{ border-color:#1447c9; color:#1447c9; }
 .svc-link.svc-lang.active{ background:#1447c9; border-color:#1447c9; color:#fff; }
 @media(max-width:600px){
-  .services-bar{ padding:10px 8px; gap:5px; justify-content:space-between; mask-image:none; -webkit-mask-image:none; }
+  .services-bar{ padding:8px 10px; gap:6px; justify-content:space-between; mask-image:none; -webkit-mask-image:none; }
   .svc-link{
     flex:1; flex-shrink:1;
-    flex-direction:column; gap:3px;
-    padding:9px 2px;
+    flex-direction:column; gap:2px;
+    padding:7px 2px;
     min-width:0;
-    border-radius:12px;
   }
   .svc-link span:not(.svc-ic){
-    font-size:9.5px;
-    font-weight:800;
+    font-size:8.5px;
     max-width:100%;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
-  .svc-link .svc-ic{ font-size:21px; }
+  .svc-link .svc-ic{ font-size:16px; }
 }
 
 .hub-section{padding:26px 22px 8px;border-bottom:1px solid var(--line);}
@@ -964,6 +947,44 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 /* iPhone reliability indicators */
 .ios-help-note{display:none;background:#eef5ff;border:1px solid #9fc0ff;color:#123e78;padding:11px 13px;border-radius:12px;margin:10px 0;font-weight:700;line-height:1.55;}
 body.ios-device .ios-help-note{display:block;}
+
+
+/* ===== focused mobile polish + live output modes (2026-08-01) ===== */
+.live-output-title{margin:16px 0 9px;font-size:13px;font-weight:900;color:var(--ink);}
+.live-output-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.live-output-btn{min-height:52px;border:1.5px solid #c8d6ef;background:#fff;color:#2c3e62;border-radius:14px;font-family:'Tajawal',sans-serif;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;}
+.live-output-btn.active{background:linear-gradient(135deg,#123b8f,#2563d8);border-color:#2563d8;color:#fff;box-shadow:0 8px 20px rgba(37,99,216,.18);}
+.live-output-note{font-size:12px;color:var(--muted);line-height:1.55;margin:0 0 12px;}
+.live-transcript.audio-only{display:none;}
+
+@media(max-width:720px){
+  header{padding:calc(10px + env(safe-area-inset-top)) 14px 10px;gap:8px;}
+  .brand{gap:8px}.brand-mark{width:38px;height:38px}.brand h1{font-size:25px;line-height:1;}
+  .status-pill{font-size:11px;padding:7px 12px;background:rgba(255,255,255,.98);color:#8b5a00;border-color:rgba(255,255,255,.8);}
+  .services-bar{position:sticky;top:0;z-index:60;display:grid;grid-template-columns:repeat(5,minmax(58px,1fr));gap:6px;padding:8px 8px 10px;background:#fff;border-bottom:1px solid #dbe4f2;box-shadow:0 6px 18px rgba(18,59,143,.08);overflow:visible;}
+  .svc-link{min-width:0!important;min-height:58px;padding:7px 3px!important;border-radius:13px!important;background:#f7faff;border-color:#dbe4f2;display:flex;flex-direction:column;justify-content:center;gap:3px!important;color:#34425d;}
+  .svc-link .svc-ic{font-size:21px!important;line-height:1;}
+  .svc-link span:not(.svc-ic){font-size:10px!important;line-height:1.15;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;text-align:center;}
+  .svc-link.active{background:#eaf2ff;color:#123b8f;border-color:#9dbcf5;box-shadow:inset 0 0 0 1px #9dbcf5;}
+  html[dir="rtl"] .services-bar{direction:rtl;}
+  html[dir="ltr"] .services-bar{direction:ltr;}
+  .call-panel{padding:16px 12px calc(26px + env(safe-area-inset-bottom));}
+  .call-panel>h3{font-size:22px;line-height:1.35;margin-top:2px;}
+  .call-panel>.call-sub{font-size:13px;line-height:1.7;}
+  .live-lang-row{display:grid;grid-template-columns:1fr 44px 1fr;gap:7px;align-items:end;}
+  .live-lang-col select{width:100%;min-width:0;font-size:14px;padding:11px 8px;}
+  .live-output-modes{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .live-output-btn{min-height:56px;padding:6px 4px;font-size:12px;flex-direction:column;gap:2px;}
+  .live-controls{display:grid;grid-template-columns:1fr;gap:8px;}
+  .live-controls .big-btn{min-height:52px;justify-content:center;}
+  .live-export-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+  .live-export-row .icon-btn{min-width:0!important;min-height:45px;padding:7px 4px;font-size:11.5px;}
+}
+@media(max-width:390px){
+  .services-bar{grid-template-columns:repeat(4,minmax(60px,1fr));}
+  .svc-link{min-height:56px;}
+}
+
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -1233,24 +1254,13 @@ body.ios-device .ios-help-note{display:block;}
     </div>
   </div>
 
-  <div class="live-mode-row">
-    <label class="live-mode-lbl">📋 طريقة العرض</label>
-    <div class="live-mode-options">
-      <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="text" checked><span>📝 نص فقط</span></label>
-      <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="audio"><span>🎧 صوت فقط</span></label>
-      <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="both"><span>📝🎧 الاثنان معاً</span></label>
-    </div>
-    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن أثناء الخطبة — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
+  <div class="live-output-title">كيف تريد الترجمة؟</div>
+  <div class="live-output-modes" id="lectureOutputModes">
+    <button type="button" class="live-output-btn active" data-mode="text">📝<span>كتابة</span></button>
+    <button type="button" class="live-output-btn" data-mode="audio">🎧<span>سماعة</span></button>
+    <button type="button" class="live-output-btn" data-mode="both">📝🎧<span>الاثنان</span></button>
   </div>
-
-  <div class="live-mode-row">
-    <label class="live-mode-lbl">🎙️ مصدر الصوت</label>
-    <div class="live-mode-options">
-      <label class="live-mode-opt"><input type="radio" name="lectureAudioSource" value="natural" checked><span>🗣️ طبيعي (وجهاً لوجه)</span></label>
-      <label class="live-mode-opt"><input type="radio" name="lectureAudioSource" value="broadcast"><span>📻 مذياع / تلفاز / يوتيوب</span></label>
-    </div>
-    <p class="live-mode-hint">اختر "مذياع/تلفاز" لو الصوت آتٍ من جهاز آخر (سماعة خارجية) — يعطي وقتاً أطول بين الجمل بدل ما يقطع الاستماع بسرعة أثناء فواصل الإعلانات أو الموسيقى.</p>
-  </div>
+  <p class="live-output-note">في وضع السماعة فقط تُنطق الترجمة دون عرضها على الشاشة. استخدم سماعة الأذن عند الحاجة.</p>
 
   <div class="live-controls">
     <button class="big-btn" id="lectureStartBtn">▶️ ابدأ الاستماع المستمر</button>
@@ -1289,24 +1299,13 @@ body.ios-device .ios-help-note{display:block;}
     </div>
   </div>
 
-  <div class="live-mode-row">
-    <label class="live-mode-lbl">📋 طريقة العرض</label>
-    <div class="live-mode-options">
-      <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="text" checked><span>📝 نص فقط</span></label>
-      <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="audio"><span>🎧 صوت فقط</span></label>
-      <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="both"><span>📝🎧 الاثنان معاً</span></label>
-    </div>
-    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
+  <div class="live-output-title">كيف تريد الترجمة؟</div>
+  <div class="live-output-modes" id="dialogueOutputModes">
+    <button type="button" class="live-output-btn active" data-mode="text">📝<span>كتابة</span></button>
+    <button type="button" class="live-output-btn" data-mode="audio">🎧<span>سماعة</span></button>
+    <button type="button" class="live-output-btn" data-mode="both">📝🎧<span>الاثنان</span></button>
   </div>
-
-  <div class="live-mode-row">
-    <label class="live-mode-lbl">🎙️ مصدر الصوت</label>
-    <div class="live-mode-options">
-      <label class="live-mode-opt"><input type="radio" name="dialogueAudioSource" value="natural" checked><span>🗣️ طبيعي (وجهاً لوجه)</span></label>
-      <label class="live-mode-opt"><input type="radio" name="dialogueAudioSource" value="broadcast"><span>📻 مذياع / تلفاز / يوتيوب</span></label>
-    </div>
-    <p class="live-mode-hint">اختر "مذياع/تلفاز" لو الصوت آتٍ من جهاز آخر — يعطي وقتاً أطول بين الجمل بدل ما يقطع الاستماع بسرعة.</p>
-  </div>
+  <p class="live-output-note">في وضع السماعة فقط تُنطق الترجمة دون عرضها على الشاشة. استخدم سماعة الأذن عند الحاجة.</p>
 
   <div class="live-controls">
     <button class="big-btn" id="dialogueStartBtn">▶️ ابدأ الاستماع المستمر</button>
@@ -2624,16 +2623,18 @@ function makeLivePanel(prefix){
   const speakerSelect = document.getElementById(prefix + 'SpeakerLang');
   const mySelect = document.getElementById(prefix + 'MyLang');
   const swapBtn = document.getElementById(prefix + 'SwapBtn');
-  const outputModeInputs = document.getElementsByName(prefix + 'OutputMode');
-  const audioSourceInputs = document.getElementsByName(prefix + 'AudioSource');
-  function getOutputMode(){
-    for(const r of outputModeInputs) if(r.checked) return r.value;
-    return 'text';
-  }
-  function getAudioSource(){
-    for(const r of audioSourceInputs) if(r.checked) return r.value;
-    return 'natural';
-  }
+  const outputModes = document.getElementById(prefix + 'OutputModes');
+  let outputMode = 'text';
+  outputModes?.querySelectorAll('.live-output-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      outputMode = btn.dataset.mode || 'text';
+      outputModes.querySelectorAll('.live-output-btn').forEach(b => b.classList.toggle('active', b === btn));
+      transcriptEl.classList.toggle('audio-only', outputMode === 'audio');
+      statusEl.textContent = outputMode === 'text' ? '📝 ترجمة كتابة' : outputMode === 'audio' ? '🎧 ترجمة عبر السماعة' : '📝🎧 كتابة وسماعة';
+      setTimeout(() => { if(!running) statusEl.textContent = ''; }, 1200);
+      unlockSpeechOnce();
+    });
+  });
   const startBtn = document.getElementById(prefix + 'StartBtn');
   const stopBtn = document.getElementById(prefix + 'StopBtn');
   const statusEl = document.getElementById(prefix + 'Status');
@@ -2673,12 +2674,12 @@ function makeLivePanel(prefix){
 
   function appendEntry(original, translated){
     entries.push({ original, translated, time: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) });
+    if(outputMode === 'audio') return;
     transcriptEl.querySelector('.live-empty')?.remove();
     const div = document.createElement('div');
     div.className = 'live-entry';
-    if(getOutputMode() === 'audio') div.classList.add('audio-only-entry');
     const timeLabel = entries[entries.length-1].time;
-    div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="orig">${original}</div><div class="trans">${translated}</div><div class="live-sep">────────</div>`;
+    div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans">${translated}</div><div class="live-sep">────────</div>`;
     transcriptEl.appendChild(div);
     transcriptEl.scrollTop = transcriptEl.scrollHeight;
   }
@@ -2688,8 +2689,9 @@ function makeLivePanel(prefix){
     speakerLang = LANGS.find(l => l.code === 'tr') || LANGS[1];
     myLang = LANGS.find(l => l.code === 'ar') || LANGS[0];
     syncSelects();
-    outputModeInputs[0].checked = true;
-    audioSourceInputs[0].checked = true;
+    outputMode = 'text';
+    outputModes?.querySelectorAll('.live-output-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === 'text'));
+    transcriptEl.classList.remove('audio-only');
     entries = [];
     transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
     statusEl.textContent = 'جاهز للاستماع';
@@ -2705,9 +2707,7 @@ function makeLivePanel(prefix){
     };
     rec.onend = () => {
       if(running){
-        const broadcastMode = getAudioSource() === 'broadcast';
-        const restartDelay = IS_IOS ? (broadcastMode ? 900 : 500) : (broadcastMode ? 450 : 150);
-        setTimeout(() => { if(running){ buildRec(); try{ rec.start(); }catch(e){} } }, restartDelay);
+        setTimeout(() => { if(running){ buildRec(); try{ rec.start(); }catch(e){} } }, IS_IOS ? 500 : 150);
       } else {
         statusEl.textContent = '';
       }
@@ -2719,8 +2719,7 @@ function makeLivePanel(prefix){
       try{
         const translated = await translateText(said, speakerLang.code, myLang.code);
         appendEntry(said, translated);
-        const mode = getOutputMode();
-        if(mode === 'audio' || mode === 'both') speak(translated, myLang.bcp47);
+        if(outputMode === 'audio' || outputMode === 'both') speak(translated, myLang.bcp47);
       }catch(err){ /* skip this segment, keep listening */ }
       if(running) statusEl.textContent = '🔎 يستمع...';
     };
@@ -2746,7 +2745,7 @@ function makeLivePanel(prefix){
   stopBtn.addEventListener('click', stop);
 
   function fullText(){
-    return entries.map(e => `🕒 ${e.time}\n${e.original}\n${e.translated}`).join('\n-------------------\n');
+    return entries.map(e => `🕒 ${e.time}\n${e.translated}`).join('\n-------------------\n');
   }
 
   document.getElementById(prefix + 'CopyBtn').addEventListener('click', (e) => {
@@ -2789,10 +2788,7 @@ function makeLivePanel(prefix){
       entries.forEach(en => {
         doc.setFontSize(9); doc.text(`Time: ${en.time}`, 15, y); y += 6;
         doc.setFontSize(11);
-        const origLines = doc.splitTextToSize(en.original, 180);
-        if(y + origLines.length*6 > 280){ doc.addPage(); y = 15; }
-        doc.text(origLines, 15, y); y += origLines.length*6 + 3;
-        const transLines = doc.splitTextToSize('-> ' + en.translated, 180);
+        const transLines = doc.splitTextToSize(en.translated, 180);
         if(y + transLines.length*6 > 280){ doc.addPage(); y = 15; }
         doc.text(transLines, 15, y); y += transLines.length*6 + 4;
         doc.setDrawColor(200); doc.line(15, y, 195, y); y += 8;
@@ -2805,7 +2801,6 @@ function makeLivePanel(prefix){
     if(entries.length === 0){ showBanner('لا يوجد نص للتصدير بعد.'); return; }
     const bodyHtml = entries.map(en =>
       `<p style="margin:0 0 2px;color:#a8710a;font-size:11px;font-weight:bold;">🕒 ${en.time}</p>
-       <p style="margin:0 0 4px;color:#666;font-size:12px;">${en.original}</p>
        <p style="margin:0 0 10px;font-size:15px;font-weight:bold;">${en.translated}</p>
        <hr style="border:none;border-top:1px dashed #ccc;margin:0 0 14px;">`
     ).join('');
