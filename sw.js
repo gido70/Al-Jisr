@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aljisr-v2026-07-31-CRITICAL-gate-fix';
+const CACHE_NAME = 'aljisr-v2026-08-01-home-hub';
 const CORE = ['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(CORE.map(u => cache.add(u)))).then(() => self.skipWaiting()));
