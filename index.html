@@ -1603,6 +1603,16 @@ body.ios-device .ios-help-note{display:block;}
       <label id="moreRefreshLbl">🔄 تحديث التطبيق (سحب آخر نسخة)</label>
       <button class="icon-btn" id="forceRefreshBtn">تحديث</button>
     </div>
+    <div class="live-mode-row" style="margin:14px 22px 0;">
+      <label class="live-mode-lbl">📱 نوع جهازك (لضبط سرعة الترجمة المستمرة)</label>
+      <div class="live-mode-options">
+        <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="" checked><span>⚙️ تلقائي</span></label>
+        <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="ios"><span>🍎 آيفون</span></label>
+        <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="android"><span>🤖 أندرويد</span></label>
+        <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="desktop"><span>💻 حاسوب</span></label>
+      </div>
+      <p class="live-mode-hint">اختر جهازك يدوياً فقط لو لاحظت إن الكشف التلقائي غير دقيق. "تلقائي" هو الخيار الأنسب لأغلب الناس.</p>
+    </div>
   </div>
 </div>
 
@@ -1897,10 +1907,33 @@ async function tryRedeemCode(code){
 })();
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const IS_ANDROID = /Android/.test(navigator.userAgent);
+let IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let IS_ANDROID = /Android/.test(navigator.userAgent);
 // neither IS_IOS nor IS_ANDROID => treated as desktop/laptop (fastest, most stable path)
 const IS_STANDALONE = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+// Manual device override — lets the user force a specific device profile
+// (iPhone / Android / Desktop) instead of relying only on auto-detection,
+// in case detection is ever wrong for their specific device/browser. This
+// updates IS_IOS/IS_ANDROID directly so every existing device-specific
+// timing in the app automatically respects the override.
+let DEVICE_OVERRIDE = '';
+function setDeviceOverride(val){
+  DEVICE_OVERRIDE = val;
+  try{ localStorage.setItem('aljisr_device_override', val); }catch(e){}
+  if(val === 'ios'){ IS_IOS = true; IS_ANDROID = false; }
+  else if(val === 'android'){ IS_IOS = false; IS_ANDROID = true; }
+  else if(val === 'desktop'){ IS_IOS = false; IS_ANDROID = false; }
+  else{ // 'auto' — re-detect from the real device
+    IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    IS_ANDROID = /Android/.test(navigator.userAgent);
+  }
+  document.body.classList.toggle('ios-device', IS_IOS);
+}
+try{
+  const savedOverride = localStorage.getItem('aljisr_device_override') || '';
+  if(savedOverride) setDeviceOverride(savedOverride);
+}catch(e){}
 if(IS_IOS) document.body.classList.add('ios-device');
 const banner = document.getElementById('banner');
 const statusLine = document.getElementById('statusLine');
@@ -2259,6 +2292,13 @@ async function forceRefreshApp(){
   window.location.reload();
 }
 document.getElementById('forceRefreshBtn').addEventListener('click', forceRefreshApp);
+
+document.getElementsByName('deviceOverride').forEach(radio => {
+  if(radio.value === DEVICE_OVERRIDE) radio.checked = true;
+  radio.addEventListener('change', (e) => {
+    if(e.target.checked) setDeviceOverride(e.target.value);
+  });
+});
 document.getElementById('forceRefreshBtnDesktop').addEventListener('click', forceRefreshApp);
 
 /* ---------------- Call Mode ---------------- */
@@ -2957,7 +2997,7 @@ function makeLivePanel(prefix){
         if(snapshot !== lastInterimSnapshot){
           lastInterimSnapshot = snapshot;
           clearTimeout(interimStableTimer);
-          const stableWait = IS_IOS ? 1000 : (IS_ANDROID ? 800 : 600); // iPhone / Android / Desktop
+          const stableWait = IS_IOS ? 900 : (IS_ANDROID ? 800 : 600); // iPhone / Android / Desktop
           interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot); }, stableWait);
         }
       }
