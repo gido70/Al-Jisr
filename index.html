@@ -2875,8 +2875,19 @@ function makeLivePanel(prefix){
         // (long silence, network hiccup) — not after every sentence — so a
         // short safety-net delay before reconnecting is enough.
         const broadcastMode = getAudioSource() === 'broadcast';
-        const restartDelay = IS_IOS ? (broadcastMode ? 400 : 200) : (broadcastMode ? 250 : 80);
-        setTimeout(() => { if(running){ buildRec(); try{ rec.start(); }catch(e){} } }, restartDelay);
+        const restartDelay = IS_IOS ? (broadcastMode ? 400 : 200) : IS_ANDROID ? (broadcastMode ? 300 : 100) : (broadcastMode ? 200 : 60);
+        setTimeout(() => {
+          if(!running) return;
+          // Only iOS actually needs a brand-new recognizer object here (a
+          // documented instability when the same instance is restarted).
+          // On Android/desktop, fully rebuilding on every single reconnect
+          // resets the engine's internal session each time — which is very
+          // likely the real cause of the "disconnects and restarts the
+          // conversation" feeling reported on Samsung. Just restarting the
+          // SAME object is lighter and keeps things feeling continuous.
+          if(IS_IOS){ buildRec(); try{ rec.start(); }catch(e){} }
+          else{ try{ rec.start(); }catch(e){ buildRec(); try{ rec.start(); }catch(e2){} } }
+        }, restartDelay);
       } else {
         statusEl.textContent = '';
       }
@@ -2946,7 +2957,8 @@ function makeLivePanel(prefix){
         if(snapshot !== lastInterimSnapshot){
           lastInterimSnapshot = snapshot;
           clearTimeout(interimStableTimer);
-          interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot); }, 900);
+          const stableWait = IS_IOS ? 1000 : (IS_ANDROID ? 800 : 600); // iPhone / Android / Desktop
+          interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot); }, stableWait);
         }
       }
     };
