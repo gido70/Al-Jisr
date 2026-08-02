@@ -1898,6 +1898,8 @@ async function tryRedeemCode(code){
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_ANDROID = /Android/.test(navigator.userAgent);
+// neither IS_IOS nor IS_ANDROID => treated as desktop/laptop (fastest, most stable path)
 const IS_STANDALONE = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
 if(IS_IOS) document.body.classList.add('ios-device');
 const banner = document.getElementById('banner');
@@ -2734,13 +2736,33 @@ function makeLivePanel(prefix){
   // yet. This queue speaks one sentence fully, THEN moves to the next.
   let speechQueue = [];
   let speaking = false;
+  let pausedForSpeech = false; // iOS-only: mic was deliberately paused to let audio play
   function queueSpeech(text, lang){
     speechQueue.push({ text, lang });
     if(!speaking) playNextInQueue();
   }
   function playNextInQueue(){
-    if(speechQueue.length === 0){ speaking = false; return; }
+    if(speechQueue.length === 0){
+      speaking = false;
+      // iOS: audio output can be silently blocked while the microphone is
+      // actively recording (a real device audio-session restriction) — so
+      // we paused listening just before speaking. Now that the whole queue
+      // has finished, resume listening.
+      if(IS_IOS && pausedForSpeech && running && rec){
+        pausedForSpeech = false;
+        try{ rec.start(); }catch(e){}
+      }
+      return;
+    }
     speaking = true;
+    // iOS: pause the mic right before the FIRST utterance of this batch so
+    // the device's audio session is free to actually play sound. We only
+    // do this on iOS — Android/desktop handle simultaneous mic+speaker fine
+    // and pausing there would just add an unnecessary gap.
+    if(IS_IOS && !pausedForSpeech && rec && running){
+      pausedForSpeech = true;
+      try{ rec.stop(); }catch(e){}
+    }
     const next = speechQueue.shift();
     try{
       const utter = new SpeechSynthesisUtterance(next.text);
@@ -2760,6 +2782,7 @@ function makeLivePanel(prefix){
   function clearSpeechQueue(){
     speechQueue = [];
     speaking = false;
+    pausedForSpeech = false;
     try{ window.speechSynthesis.cancel(); }catch(e){}
   }
 
@@ -2842,6 +2865,11 @@ function makeLivePanel(prefix){
       if(e.error === 'not-allowed'){ showBanner(t('micDenied')); running = false; }
     };
     rec.onend = () => {
+      if(pausedForSpeech){
+        // deliberate pause to let iOS play audio — playNextInQueue() will
+        // restart listening once the whole speech queue has finished
+        return;
+      }
       if(running){
         // With continuous mode, onend now only fires on a real disconnect
         // (long silence, network hiccup) — not after every sentence — so a
@@ -2863,19 +2891,25 @@ function makeLivePanel(prefix){
     // for the browser to officially mark it final. When the real final
     // result eventually arrives, we only process whatever NEW text wasn't
     // already committed, so nothing gets spoken twice.
+    //
+    // IMPORTANT FIX: comparing the old and new text character-for-character
+    // (startsWith) broke whenever the browser's final result capitalized a
+    // letter or added punctuation compared to the interim text — a single
+    // character mismatch made the WHOLE sentence look "new", so it got
+    // translated and spoken a second time (the repeating-sentence bug on
+    // Samsung). Comparing WORD COUNTS instead is immune to that.
     let committedText = '';
     let lastInterimSnapshot = '';
     let interimStableTimer = null;
+    const wordsOf = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
 
     async function commitNewPortion(fullText){
       const trimmed = (fullText || '').trim();
       if(!trimmed) return;
-      let newPart = trimmed;
-      if(committedText && trimmed.startsWith(committedText)){
-        newPart = trimmed.slice(committedText.length).trim();
-      } else if(committedText && trimmed === committedText){
-        newPart = '';
-      }
+      const allWords = wordsOf(trimmed);
+      const committedWords = wordsOf(committedText);
+      if(allWords.length <= committedWords.length) return; // nothing genuinely new
+      const newPart = allWords.slice(committedWords.length).join(' ');
       if(!newPart) return;
       committedText = trimmed;
       statusEl.textContent = '🌐 يترجم...';
@@ -2899,9 +2933,10 @@ function makeLivePanel(prefix){
 
       if(finalText.trim()){
         clearTimeout(interimStableTimer);
-        commitNewPortion(finalText.trim());
-        committedText = ''; // fresh start for the next sentence
-        lastInterimSnapshot = '';
+        commitNewPortion(finalText.trim()).then(() => {
+          committedText = ''; // fresh start for the next sentence, only AFTER this one's async work is done
+          lastInterimSnapshot = '';
+        });
         return;
       }
 
