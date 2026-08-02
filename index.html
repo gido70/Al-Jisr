@@ -804,6 +804,15 @@
     }
     .sheet-overlay.show{ display:flex; }
     .sheet-overlay.from-top{ align-items:flex-start; }
+    .more-close-btn{
+      position:sticky; top:0; z-index:5;
+      display:block; width:100%;
+      background:var(--danger); color:#fff;
+      border:none; border-radius:12px;
+      padding:12px; margin-bottom:14px;
+      font-family:'Tajawal',sans-serif; font-weight:800; font-size:14px;
+      cursor:pointer;
+    }
     .sheet-overlay.from-top .more-sheet{
       border-radius:0 0 20px 20px;
       padding-top:calc(18px + env(safe-area-inset-top));
@@ -1159,11 +1168,11 @@ body.ios-device .ios-help-note{display:block;}
 
 <nav class="services-bar" id="servicesBar">
   <button class="svc-link active" id="svcHome" data-target="home"><span class="svc-ic">🏠</span><span id="svcHomeLbl">الرئيسية</span></button>
-  <button class="svc-link" id="svcChat" data-target="chat"><span class="svc-ic">💬</span><span id="svcChatLbl">محادثة</span></button>
-  <button class="svc-link" id="svcCall" data-target="call"><span class="svc-ic">📞</span><span id="svcCallLbl">مكالمات</span></button>
-  <button class="svc-link" id="svcCamera" data-target="camera"><span class="svc-ic">📷</span><span id="svcCameraLbl">كاميرا</span></button>
-  <button class="svc-link" id="svcLecture" data-target="lecture"><span class="svc-ic">🕌</span><span id="svcLectureLbl">محاضرات</span></button>
-  <button class="svc-link" id="svcDialogue" data-target="dialogue"><span class="svc-ic">👥</span><span id="svcDialogueLbl">حوار</span></button>
+  <button class="svc-link" id="svcChat" data-target="chat" style="display:none;"><span class="svc-ic">💬</span><span id="svcChatLbl">محادثة</span></button>
+  <button class="svc-link" id="svcCall" data-target="call" style="display:none;"><span class="svc-ic">📞</span><span id="svcCallLbl">مكالمات</span></button>
+  <button class="svc-link" id="svcCamera" data-target="camera" style="display:none;"><span class="svc-ic">📷</span><span id="svcCameraLbl">كاميرا</span></button>
+  <button class="svc-link" id="svcLecture" data-target="lecture" style="display:none;"><span class="svc-ic">🕌</span><span id="svcLectureLbl">محاضرات</span></button>
+  <button class="svc-link" id="svcDialogue" data-target="dialogue" style="display:none;"><span class="svc-ic">👥</span><span id="svcDialogueLbl">حوار</span></button>
   <button class="svc-link" id="svcGuide" data-target="guide"><span class="svc-ic">📘</span><span id="svcGuideLbl">دليل الاستخدام</span></button>
   <button class="svc-link svc-lang" id="svcLang" data-target="lang"><span class="svc-ic">🌐</span><span id="svcLangLbl">اللغة</span></button>
   <button class="svc-link" id="svcMore" data-target="more"><span class="svc-ic">⋯</span><span id="svcMoreLbl">المزيد</span></button>
@@ -1571,6 +1580,7 @@ body.ios-device .ios-help-note{display:block;}
 
 <div class="sheet-overlay from-top" id="moreSheetOverlay">
   <div class="more-sheet">
+    <button class="more-close-btn" id="moreCloseBtn">✕ إغلاق</button>
     <div class="more-row">
       <label id="moreTextSizeLbl">Aa حجم الخط</label>
       <button class="icon-btn" id="textSizeMobile">تكبير</button>
@@ -3669,6 +3679,7 @@ document.getElementById('navAuto').addEventListener('click', () => {
 
 function openMoreSheet(){ document.getElementById('moreSheetOverlay').classList.add('show'); }
 function closeMoreSheet(){ document.getElementById('moreSheetOverlay').classList.remove('show'); }
+document.getElementById('moreCloseBtn').addEventListener('click', closeMoreSheet);
 document.getElementById('navMore').addEventListener('click', () => { openMoreSheet(); closeLangSheet(); });
 document.getElementById('moreSheetOverlay').addEventListener('click', (e) => {
   if(e.target.id === 'moreSheetOverlay') closeMoreSheet();
