@@ -132,6 +132,13 @@
       padding:20px 16px calc(20px + env(safe-area-inset-bottom));
     }
     .stage-bottombar .icon-btn{ font-size:13px; padding:12px 24px; }
+    .panel-bottombar{
+      display:flex; justify-content:center;
+      margin-top:24px;
+      padding:20px 16px calc(20px + env(safe-area-inset-bottom));
+      border-top:1px solid var(--line);
+    }
+    .panel-bottombar .icon-btn{ font-size:13px; padding:12px 24px; }
     .bridge-col{
       grid-row:2;
       height:44px;
@@ -1230,6 +1237,9 @@ body.ios-device .ios-help-note{display:block;}
       <button class="icon-btn" id="repeatBtn">🔁 كرّر آخر جملة</button>
     </div>
   </div>
+  <div class="panel-bottombar">
+    <button class="icon-btn" id="callBackBtnBottom">→ الرجوع للصفحة الرئيسية</button>
+  </div>
 </div>
 
 <div class="call-panel" id="ocrPanel">
@@ -1271,6 +1281,9 @@ body.ios-device .ios-help-note{display:block;}
     <h4 id="ocrTranslatedLabel" style="margin-top:14px;">🌐 الترجمة</h4>
     <div class="quick-result" id="ocrTranslatedText" style="font-weight:700;font-size:17px;"></div>
     <button class="icon-btn" id="ocrListenBtn" style="margin-top:10px;">🔊 استمع</button>
+  </div>
+  <div class="panel-bottombar">
+    <button class="icon-btn" id="ocrBackBtnBottom">→ الرجوع للصفحة الرئيسية</button>
   </div>
 </div>
 
@@ -1328,6 +1341,9 @@ body.ios-device .ios-help-note{display:block;}
     <button class="icon-btn" id="lectureWordBtn">📝 Word</button>
   </div>
   <button class="icon-btn" id="lectureNewSessionBtn" style="width:100%;justify-content:center;margin-top:10px;">🔄 جلسة جديدة</button>
+  <div class="panel-bottombar">
+    <button class="icon-btn" id="lectureBackBtnBottom">→ الرجوع للصفحة الرئيسية</button>
+  </div>
 </div>
 
 <div class="call-panel" id="dialoguePanel">
@@ -1384,6 +1400,9 @@ body.ios-device .ios-help-note{display:block;}
     <button class="icon-btn" id="dialogueWordBtn">📝 Word</button>
   </div>
   <button class="icon-btn" id="dialogueNewSessionBtn" style="width:100%;justify-content:center;margin-top:10px;">🔄 جلسة جديدة</button>
+  <div class="panel-bottombar">
+    <button class="icon-btn" id="dialogueBackBtnBottom">→ الرجوع للصفحة الرئيسية</button>
+  </div>
 </div>
 
 <section class="hub-section" id="hubSection">
@@ -2356,6 +2375,7 @@ document.getElementById('callModeToggle').addEventListener('click', () => {
   document.getElementById('callPanel').classList.contains('show') ? closeCallMode() : openCallMode();
 });
 document.getElementById('backHomeBtn').addEventListener('click', closeCallMode);
+document.getElementById('callBackBtnBottom').addEventListener('click', closeCallMode);
 
 
 // Phone-call assistant: the other person does not need the app.
@@ -2396,6 +2416,7 @@ function closeOcrPanel(){
 document.getElementById('ocrOpenBtn').addEventListener('click', openOcrPanel);
 document.getElementById('topQuickCamera').addEventListener('click', () => { openOcrPanel(); closeMoreSheet(); closeLangSheet(); setActiveTopQuick('topQuickCamera'); });
 document.getElementById('ocrBackBtn').addEventListener('click', closeOcrPanel);
+document.getElementById('ocrBackBtnBottom').addEventListener('click', closeOcrPanel);
 
 // Load the OCR engine with multiple CDN fallbacks. Safari sometimes blocks a worker from one CDN.
 let tesseractLoadPromise = null;
@@ -2950,14 +2971,16 @@ function makeLivePanel(prefix){
     URL.revokeObjectURL(url);
   });
 
-  document.getElementById(prefix + 'BackBtn').addEventListener('click', () => {
+  function goBackHome(){
     stop();
     panelEl.classList.remove('show');
     if(!document.getElementById('callPanel')?.classList.contains('show') && !document.getElementById('ocrPanel')?.classList.contains('show') && !document.getElementById('lecturePanel')?.classList.contains('show') && !document.getElementById('dialoguePanel')?.classList.contains('show')){
       document.getElementById('hubSection').style.display = '';
       setActiveSvc('svcHome');
     }
-  });
+  }
+  document.getElementById(prefix + 'BackBtn').addEventListener('click', goBackHome);
+  document.getElementById(prefix + 'BackBtnBottom').addEventListener('click', goBackHome);
 }
 
 makeLivePanel('lecture');
