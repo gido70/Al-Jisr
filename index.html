@@ -1170,6 +1170,54 @@ body.ios-device .ios-help-note{display:block;}
   }
   #svcDeviceSelect{ min-width:132px !important; font-size:11px !important; }
 }
+
+/* ===== targeted device selector + Samsung lecture + OCR camera fixes ===== */
+.svc-device-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:5px;
+  min-width:150px;
+}
+.svc-device-label{
+  font-family:'Tajawal',sans-serif;
+  font-size:11px;
+  font-weight:900;
+  color:var(--ink);
+  text-align:center;
+  white-space:nowrap;
+}
+.svc-device-wrap .svc-select{
+  width:100%;
+  min-width:0 !important;
+  margin:0;
+}
+#ocrStartLiveBtn{
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+@media(max-width:960px){
+  .svc-device-wrap{
+    flex:0 0 calc(40% - 8px);
+    min-width:170px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:8px 9px;
+  }
+  .svc-device-label{
+    font-size:12px;
+    color:#25324a;
+  }
+  .svc-device-wrap .svc-select{
+    border:0 !important;
+    background:transparent !important;
+    padding:5px 4px !important;
+    font-size:12px !important;
+    text-align:center;
+  }
+}
+
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -1306,12 +1354,15 @@ body.ios-device .ios-help-note{display:block;}
   <button class="svc-link" id="svcGuide" data-target="guide"><span class="svc-ic">📘</span><span id="svcGuideLbl">دليل الاستخدام</span></button>
   <button class="svc-link svc-lang" id="svcLang" data-target="lang"><span class="svc-ic">🌐</span><span id="svcLangLbl">اللغة</span></button>
   <button class="svc-link" id="svcTextSize"><span class="svc-ic">Aa</span><span id="svcTextSizeLbl">حجم الخط</span></button>
-  <select class="svc-link svc-select" id="svcDeviceSelect" title="نوع جهازك">
-    <option value="" id="svcDeviceAuto">⚙️ تلقائي</option>
-    <option value="ios" id="svcDeviceIos">🍎 آيفون</option>
-    <option value="android" id="svcDeviceAndroid">📱 سامسونج / أندرويد</option>
-    <option value="desktop" id="svcDeviceDesktop">💻 حاسوب</option>
-  </select>
+  <div class="svc-device-wrap" id="svcDeviceWrap">
+    <span class="svc-device-label" id="svcDeviceLabel">اختر نوع الجهاز</span>
+    <select class="svc-link svc-select" id="svcDeviceSelect" title="اختر نوع الجهاز">
+      <option value="" id="svcDeviceAuto">⚙️ تلقائي</option>
+      <option value="ios" id="svcDeviceIos">🍎 آيفون</option>
+      <option value="android" id="svcDeviceAndroid">📱 سامسونج</option>
+      <option value="desktop" id="svcDeviceDesktop">💻 لابتوب / كمبيوتر</option>
+    </select>
+  </div>
   <button class="svc-link" id="svcRefresh"><span class="svc-ic">🔄</span><span id="svcRefreshLbl">تحديث</span></button>
 </nav>
 
@@ -1410,7 +1461,7 @@ body.ios-device .ios-help-note{display:block;}
 
   <div class="ios-help-note">على الآيفون: افتح المنصة من Safari مباشرة، واسمح للكاميرا. ثبّت الهاتف لحظة أمام النص؛ زر «اقرأ الآن» يلتقط إطاراً واضحاً إذا تأخرت القراءة المباشرة.</div>
   <div class="ocr-mode-buttons">
-    <button class="big-btn" id="ocrStartLiveBtn">▶️ <span id="ocrStartLiveText">ابدأ الترجمة المباشرة</span></button>
+    <button type="button" class="big-btn" id="ocrStartLiveBtn">▶️ <span id="ocrStartLiveText">ابدأ الترجمة المباشرة</span></button>
     <button class="big-btn" id="ocrStopLiveBtn" style="display:none;background:var(--danger);">⏹ <span id="ocrStopLiveText">إيقاف</span></button>
     <label class="icon-btn ocr-capture-btn" id="ocrCaptureLabel" for="ocrCaptureInput">📸 <span>التقط صورة</span></label>
     <input type="file" id="ocrCaptureInput" accept="image/*" capture="environment" style="display:none;">
@@ -1854,7 +1905,7 @@ const STRINGS = {
     moreClear:'🗑️ مسح المحادثة', moreClearBtn:'مسح',
     confirmClearLog:'هل متأكد تبي تمسح سجل هذي المحادثة؟ لا يمكن التراجع.',
     moreVoice:'🎙️ صوت الترجمة', voiceAuto:'تلقائي', voiceFemale:'أنثوي', voiceMale:'ذكوري',
-    svcDeviceLbl:'📱 نوع جهازك', svcDeviceAutoTxt:'⚙️ تلقائي', svcDeviceIosTxt:'🍎 آيفون', svcDeviceAndroidTxt:'🤖 أندرويد', svcDeviceDesktopTxt:'💻 حاسوب',
+    svcDeviceLbl:'📱 نوع جهازك', deviceChoiceLabel:'اختر نوع الجهاز', svcDeviceAutoTxt:'⚙️ تلقائي', svcDeviceIosTxt:'🍎 آيفون', svcDeviceAndroidTxt:'📱 سامسونج', svcDeviceDesktopTxt:'💻 لابتوب / كمبيوتر',
     swapLangsLabel:'⇄ تبديل اللغتين', swapNowBtn:'تبديل', navLangLabel:'اللغة', navCameraLabel:'كاميرا',
     moreRefresh:'🔄 تحديث التطبيق (سحب آخر نسخة)', refreshBtn:'تحديث', refreshBtnDesktop:'🔄 تحديث',
   },
@@ -1920,7 +1971,7 @@ const STRINGS = {
     moreClear:'🗑️ Konuşmayı temizle', moreClearBtn:'Temizle',
     confirmClearLog:'Bu konuşma geçmişini silmek istediğinize emin misiniz? Geri alınamaz.',
     moreVoice:'🎙️ Çeviri sesi', voiceAuto:'Otomatik', voiceFemale:'Kadın', voiceMale:'Erkek',
-    svcDeviceLbl:'📱 Cihaz türünüz', svcDeviceAutoTxt:'⚙️ Otomatik', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'🤖 Android', svcDeviceDesktopTxt:'💻 Bilgisayar',
+    svcDeviceLbl:'📱 Cihaz türünüz', deviceChoiceLabel:'Cihaz türünü seçin', svcDeviceAutoTxt:'⚙️ Otomatik', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'📱 Samsung', svcDeviceDesktopTxt:'💻 Dizüstü / Bilgisayar',
     swapLangsLabel:'⇄ Dilleri değiştir', swapNowBtn:'Değiştir', navLangLabel:'Dil', navCameraLabel:'Kamera',
     moreRefresh:'🔄 Uygulamayı güncelle (son sürümü al)', refreshBtn:'Güncelle', refreshBtnDesktop:'🔄 Güncelle',
   },
@@ -1986,7 +2037,7 @@ const STRINGS = {
     moreClear:'🗑️ Clear conversation', moreClearBtn:'Clear',
     confirmClearLog:'Are you sure you want to clear this conversation history? This cannot be undone.',
     moreVoice:'🎙️ Translation voice', voiceAuto:'Automatic', voiceFemale:'Female', voiceMale:'Male',
-    svcDeviceLbl:'📱 Your device', svcDeviceAutoTxt:'⚙️ Automatic', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'🤖 Android', svcDeviceDesktopTxt:'💻 Computer',
+    svcDeviceLbl:'📱 Your device', deviceChoiceLabel:'Choose device type', svcDeviceAutoTxt:'⚙️ Automatic', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'📱 Samsung', svcDeviceDesktopTxt:'💻 Laptop / Computer',
     swapLangsLabel:'⇄ Swap languages', swapNowBtn:'Swap', navLangLabel:'Language', navCameraLabel:'Camera',
     moreRefresh:'🔄 Refresh app (pull latest version)', refreshBtn:'Refresh', refreshBtnDesktop:'🔄 Refresh',
   },
@@ -2765,24 +2816,43 @@ async function startLiveOcr(){
   document.getElementById('ocrPreview').style.display = 'none';
   document.getElementById('ocrStatus').style.display = 'none';
 
+  const ocrStatusBox = document.getElementById('ocrStatus');
+  ocrStatusBox.style.display = 'block';
+  ocrStatusBox.textContent = '📷 جارٍ طلب إذن استخدام الكاميرا…';
   try{
     if(!window.isSecureContext) throw new Error('secure context required');
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('camera unsupported');
     if(ocrStream){ ocrStream.getTracks().forEach(t=>t.stop()); ocrStream = null; }
-    const constraints = IS_IOS
-      ? { video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:24,max:30} }, audio:false }
-      : { video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:24,max:30} }, audio:false };
-    try{
-      ocrStream = await navigator.mediaDevices.getUserMedia(constraints);
-    }catch(firstErr){
-      // Some iPhones reject facingMode; retry with the simplest camera request.
-      ocrStream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+
+    // Try the rear camera in progressively simpler forms. Some Samsung
+    // browsers reject width/frameRate constraints even though the camera
+    // itself is available, so one failed constraint must not end the request.
+    const attempts = [
+      {video:{facingMode:{exact:'environment'}},audio:false},
+      {video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false},
+      {video:true,audio:false}
+    ];
+    let lastCameraError = null;
+    for(const request of attempts){
+      try{
+        ocrStream = await navigator.mediaDevices.getUserMedia(request);
+        if(ocrStream) break;
+      }catch(err){ lastCameraError = err; }
     }
+    if(!ocrStream) throw lastCameraError || new Error('camera unavailable');
   }catch(err){
-    const extra = IS_IOS ? ' افتح الموقع في Safari العادي، ثم الإعدادات > Safari > الكاميرا > سماح.' : '';
-    showBanner(t('ocrCameraDenied') + extra);
+    const androidHelp = IS_ANDROID
+      ? ' افتح إعدادات الموقع في Samsung Internet أو Chrome، ثم الأذونات > الكاميرا > سماح.'
+      : '';
+    const iosHelp = IS_IOS
+      ? ' افتح الموقع في Safari العادي، ثم إعدادات الموقع > الكاميرا > سماح.'
+      : '';
+    const msg = t('ocrCameraDenied') + androidHelp + iosHelp;
+    ocrStatusBox.textContent = '⚠️ ' + msg;
+    showBanner(msg);
     return;
   }
+  ocrStatusBox.style.display = 'none';
   video.setAttribute('playsinline','');
   video.setAttribute('webkit-playsinline','');
   video.muted = true;
@@ -2887,7 +2957,18 @@ async function captureAndTranslateFrame(){
   ocrBusy = false;
 }
 
-document.getElementById('ocrStartLiveBtn').addEventListener('click', startLiveOcr);
+document.getElementById('ocrStartLiveBtn').addEventListener('click', async (event) => {
+  event.preventDefault();
+  const btn = event.currentTarget;
+  if(btn.dataset.busy === '1') return;
+  btn.dataset.busy = '1';
+  btn.disabled = true;
+  try{ await startLiveOcr(); }
+  finally{
+    btn.dataset.busy = '0';
+    btn.disabled = false;
+  }
+});
 document.getElementById('ocrStopLiveBtn').addEventListener('click', stopLiveOcr);
 document.getElementById('ocrReadNowBtn').addEventListener('click', async () => {
   if(!ocrStream){ await startLiveOcr(); return; }
@@ -3066,6 +3147,32 @@ function makeLivePanel(prefix){
   let entries = []; // in-memory only: {original, translated, time}
   let lastActivityAt = 0; // updated on every onstart/onresult — used by the watchdog below
   let watchdogTimer = null;
+  // Prevent Samsung/Android from translating the same sentence twice when
+  // Chrome first emits it as interim text and then emits the same words again
+  // as a final or re-segmented result.
+  const recentCommittedSegments = [];
+  let committedResetTimer = null;
+  const normalizeLiveText = (s) => (s || '')
+    .toLocaleLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g,'')
+    .replace(/[.,!?؛،؟…:;'"“”()\[\]{}\-]+/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+  function isRecentDuplicate(segment){
+    const n = normalizeLiveText(segment);
+    if(!n) return true;
+    return recentCommittedSegments.some(prev =>
+      prev === n ||
+      (n.length > 18 && prev.includes(n)) ||
+      (prev.length > 18 && n.includes(prev))
+    );
+  }
+  function rememberCommitted(segment){
+    const n = normalizeLiveText(segment);
+    if(!n) return;
+    recentCommittedSegments.push(n);
+    if(recentCommittedSegments.length > 8) recentCommittedSegments.shift();
+  }
 
   // ---- Silent-stall watchdog ----
   // On some desktop/laptop Chrome installs, the recognizer can silently stop
@@ -3079,7 +3186,8 @@ function makeLivePanel(prefix){
     watchdogTimer = setInterval(() => {
       if(!running || pausedForSpeech) return;
       const idleFor = Date.now() - lastActivityAt;
-      if(idleFor > 6000){
+      const stallLimit = IS_ANDROID ? (getAudioSource() === 'broadcast' ? 12000 : 9000) : 6000;
+      if(idleFor > stallLimit){
         try{ rec && rec.stop(); }catch(e){}
         try{ buildRec(); if(running) rec.start(); }catch(e){}
         lastActivityAt = Date.now();
@@ -3111,6 +3219,10 @@ function makeLivePanel(prefix){
     outputModeInputs[2].checked = true; // "both" — text + audio, the new default
     audioSourceInputs[0].checked = true;
     entries = [];
+    recentCommittedSegments.length = 0;
+    committedText = '';
+    lastInterimSnapshot = '';
+    clearTimeout(committedResetTimer);
     transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
     statusEl.textContent = 'جاهز للاستماع';
     setTimeout(() => { statusEl.textContent = ''; }, 1500);
@@ -3205,7 +3317,17 @@ function makeLivePanel(prefix){
         ? allWords.slice(committedWords.length).join(' ')
         : trimmed; // re-segmented by the engine — treat as a new, whole chunk
       if(!newPart) return;
+      if(isRecentDuplicate(newPart)){
+        committedText = trimmed;
+        return;
+      }
       committedText = trimmed;
+      rememberCommitted(newPart);
+      clearTimeout(committedResetTimer);
+      committedResetTimer = setTimeout(() => {
+        committedText = '';
+        lastInterimSnapshot = '';
+      }, IS_ANDROID ? 2400 : 1700);
       statusEl.textContent = '🌐 يترجم...';
       try{
         const translated = await translateText(newPart, speakerLang.code, myLang.code);
@@ -3228,16 +3350,17 @@ function makeLivePanel(prefix){
 
       if(finalText.trim()){
         clearTimeout(interimStableTimer);
-        commitNewPortion(finalText.trim()).then(() => {
-          committedText = ''; // fresh start for the next sentence, only AFTER this one's async work is done
-          lastInterimSnapshot = '';
-        });
+        // Do not clear committedText immediately on Samsung. Chrome often
+        // sends the same sentence once as interim and again as final; keeping
+        // the committed prefix briefly lets commitNewPortion reject the repeat.
+        commitNewPortion(finalText.trim());
+        lastInterimSnapshot = '';
         return;
       }
 
       if(interimText.trim()){
         const snapshot = interimText.trim();
-        statusEl.textContent = '🎙️ ' + snapshot.slice(-60);
+        statusEl.textContent = '🎙️ يستمع الآن…';
         if(snapshot !== lastInterimSnapshot){
           lastInterimSnapshot = snapshot;
           clearTimeout(interimStableTimer);
@@ -3815,7 +3938,7 @@ const SIMPLE_I18N_MAP = {
   voiceLblDesktop:'moreVoice', voiceOptAutoD:'voiceAuto', voiceOptFemaleD:'voiceFemale', voiceOptMaleD:'voiceMale',
   voiceOptAutoStage:'voiceAuto', voiceOptFemaleStage:'voiceFemale', voiceOptMaleStage:'voiceMale',
   moreRefreshLbl:'moreRefresh', forceRefreshBtn:'refreshBtn', forceRefreshBtnDesktop:'refreshBtnDesktop',
-  svcTextSizeLbl:'moreTextSize', svcRefreshLbl:'moreRefresh',
+  svcTextSizeLbl:'moreTextSize', svcRefreshLbl:'moreRefresh', svcDeviceLabel:'deviceChoiceLabel',
   svcDeviceAuto:'svcDeviceAutoTxt', svcDeviceIos:'svcDeviceIosTxt', svcDeviceAndroid:'svcDeviceAndroidTxt', svcDeviceDesktop:'svcDeviceDesktopTxt',
   ocrTitle:'ocrTitle', ocrDesc:'ocrDesc', ocrCaptureText:'ocrCaptureText',
   ocrExtractedLabel:'ocrExtractedLabel', ocrTranslatedLabel:'ocrTranslatedLabel',
