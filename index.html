@@ -92,6 +92,8 @@
     align-items:center;
     gap:10px;
     flex-wrap:wrap;
+    width:100%;
+    justify-content:flex-start;
   }
   select, .icon-btn{
     background:var(--bg);
@@ -144,6 +146,13 @@
     animation:stageIn .4s ease;
   }
   .stage-topbar{ display:none; }
+  #stageTopbar2{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    grid-column:1/-1;
+    padding:14px 16px 6px;
+  }
+  #stageTopbar2 select{ font-size:13px; padding:7px 10px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--muted); font-family:'Tajawal',sans-serif; }
+  #stageTopbar2 .icon-btn{ font-size:13px; }
   @keyframes stageIn{
     from{ opacity:0; transform:translateY(8px); }
     to{ opacity:1; transform:translateY(0); }
@@ -151,13 +160,13 @@
   @media (max-width:960px){
     .stage{grid-template-columns:1fr; display:none;}
     .stage.show{display:grid;}
-    .stage-topbar{
+    #stageTopbarMobileOnly{
       display:flex; justify-content:space-between; align-items:center;
       grid-column:1/-1;
       padding:14px 16px 4px;
     }
-    .stage-topbar .icon-btn{ font-size:12.5px; }
-    #stageTopbar2{ flex-wrap:wrap; gap:6px; padding-top:0; }
+    #stageTopbarMobileOnly .icon-btn{ font-size:12.5px; }
+    #stageTopbar2{ flex-wrap:wrap; gap:6px; padding-top:6px; }
     #stageTopbar2 select{ font-size:12px; padding:6px 8px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--muted); }
     #stageAutoBtn.active{ background:var(--gold); color:#fff; border-color:var(--gold); }
     .stage-bottombar{
@@ -1105,6 +1114,8 @@ body.ios-device .ios-help-note{display:block;}
   .call-panel{ max-width:1400px; margin:0 auto; width:100%; box-sizing:border-box; }
   .log-wrap, .live-export-row, .log-toggle-row{ max-width:1400px; margin-inline:auto; width:100%; box-sizing:border-box; }
   footer{ max-width:1400px; margin-inline:auto; width:100%; box-sizing:border-box; }
+  .controls{ row-gap:14px; }
+  .controls .ctrl-group{ margin-inline-end:4px; }
 }
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -1541,7 +1552,7 @@ body.ios-device .ios-help-note{display:block;}
 </section>
 
 <div class="stage" id="stage">
-  <div class="stage-topbar">
+  <div class="stage-topbar" id="stageTopbarMobileOnly">
     <button class="icon-btn" id="stageBackBtn">→ الرجوع للرئيسية</button>
     <button class="icon-btn" id="stageClearBtn" title="مسح السجل">🗑️ مسح السجل</button>
     <button class="icon-btn auto-btn-highlight" id="stageAutoBtn" title="الميكروفون يتفاعل تلقائياً بين المتحدثَين بدون ضغط">↻ تلقائي</button>
