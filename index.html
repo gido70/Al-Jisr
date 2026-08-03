@@ -1117,6 +1117,59 @@ body.ios-device .ios-help-note{display:block;}
   .controls{ row-gap:14px; }
   .controls .ctrl-group{ margin-inline-end:4px; }
 }
+
+
+/* ===== 2026-08-03 targeted mobile repair — UI only, auth untouched ===== */
+@media (max-width:960px){
+  /* Prevent the translation divider from expanding into the large blue/gold overlay */
+  .stage .bridge-col{
+    grid-row:auto !important;
+    width:100% !important;
+    height:36px !important;
+    min-height:36px !important;
+    max-height:36px !important;
+    padding:0 18px !important;
+    margin:0 !important;
+    overflow:hidden !important;
+    background:transparent !important;
+    flex:none !important;
+  }
+  .stage .bridge-col .divider-line{
+    display:block !important;
+    width:100% !important;
+    height:3px !important;
+    min-height:3px !important;
+    max-height:3px !important;
+    flex:0 0 3px !important;
+    border-radius:999px !important;
+  }
+  .stage .bridge-col .divider-dot{
+    width:12px !important;
+    height:12px !important;
+    margin-top:-5px !important;
+  }
+
+  /* Keep the conversation itself above decorative layers and fully tappable */
+  .stage .side{ position:relative !important; z-index:2 !important; background:#fff !important; }
+  .stage.show{ overflow:visible !important; background:#fff !important; }
+
+  /* Device choice: readable, touch-friendly and never hidden */
+  .device-choice-row .live-mode-options,
+  #moreSheetOverlay .live-mode-options{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:9px !important;
+  }
+  .device-choice-row .live-mode-opt,
+  #moreSheetOverlay .live-mode-opt{
+    min-height:46px !important;
+    justify-content:center !important;
+    border-radius:12px !important;
+    padding:9px 7px !important;
+    text-align:center !important;
+  }
+  #svcDeviceSelect{ min-width:132px !important; font-size:11px !important; }
+}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -1256,7 +1309,7 @@ body.ios-device .ios-help-note{display:block;}
   <select class="svc-link svc-select" id="svcDeviceSelect" title="نوع جهازك">
     <option value="" id="svcDeviceAuto">⚙️ تلقائي</option>
     <option value="ios" id="svcDeviceIos">🍎 آيفون</option>
-    <option value="android" id="svcDeviceAndroid">🤖 أندرويد</option>
+    <option value="android" id="svcDeviceAndroid">📱 سامسونج / أندرويد</option>
     <option value="desktop" id="svcDeviceDesktop">💻 حاسوب</option>
   </select>
   <button class="svc-link" id="svcRefresh"><span class="svc-ic">🔄</span><span id="svcRefreshLbl">تحديث</span></button>
@@ -1707,12 +1760,12 @@ body.ios-device .ios-help-note{display:block;}
       <label id="moreRefreshLbl">🔄 تحديث التطبيق (سحب آخر نسخة)</label>
       <button class="icon-btn" id="forceRefreshBtn">تحديث</button>
     </div>
-    <div class="live-mode-row" style="margin:14px 22px 0;">
+    <div class="live-mode-row device-choice-row" style="margin:14px 22px 0;">
       <label class="live-mode-lbl">📱 نوع جهازك (لضبط سرعة الترجمة المستمرة)</label>
       <div class="live-mode-options">
         <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="" checked><span>⚙️ تلقائي</span></label>
         <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="ios"><span>🍎 آيفون</span></label>
-        <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="android"><span>🤖 أندرويد</span></label>
+        <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="android"><span>📱 سامسونج / أندرويد</span></label>
         <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="desktop"><span>💻 حاسوب</span></label>
       </div>
       <p class="live-mode-hint">اختر جهازك يدوياً فقط لو لاحظت إن الكشف التلقائي غير دقيق. "تلقائي" هو الخيار الأنسب لأغلب الناس.</p>
@@ -2216,7 +2269,8 @@ function speak(text, lang, onDone){
   const doSpeak = () => {
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = lang;
-    utter.rate = IS_IOS ? 0.90 : 0.95;
+    utter.rate = IS_IOS ? 0.90 : (IS_ANDROID ? 0.88 : 0.95);
+      if(IS_ANDROID){ try{ window.speechSynthesis.resume(); }catch(e){} }
     utter.volume = 1;
     const preferred = pickVoiceFor(lang.split('-')[0]);
     if(preferred) utter.voice = preferred;
@@ -2954,7 +3008,8 @@ function makeLivePanel(prefix){
     try{
       const utter = new SpeechSynthesisUtterance(next.text);
       utter.lang = next.lang;
-      utter.rate = IS_IOS ? 0.90 : 0.95;
+      utter.rate = IS_IOS ? 0.90 : (IS_ANDROID ? 0.88 : 0.95);
+      if(IS_ANDROID){ try{ window.speechSynthesis.resume(); }catch(e){} }
       utter.volume = 1;
       const preferred = (typeof pickVoiceFor === 'function') ? pickVoiceFor(next.lang.split('-')[0]) : null;
       if(preferred) utter.voice = preferred;
@@ -2963,7 +3018,7 @@ function makeLivePanel(prefix){
       utter.onend = finish;
       utter.onerror = finish;
       window.speechSynthesis.speak(utter);
-      setTimeout(finish, Math.max(4000, next.text.length * 180)); // safety net
+      setTimeout(finish, Math.max(IS_ANDROID ? 6500 : 4000, next.text.length * (IS_ANDROID ? 230 : 180))); // safety net
     }catch(e){ playNextInQueue(); }
   }
   function clearSpeechQueue(){
