@@ -53,7 +53,28 @@
     gap:12px;
     background:var(--bg2);
   }
-  .brand{display:flex;align-items:center;gap:10px;}
+  .brand{display:flex;align-items:center;gap:10px; display:none;}
+  .brand-hero{
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    padding:22px 16px 10px;
+    background:var(--bg2);
+    text-align:center;
+  }
+  .brand-mark-lg{ width:52px; height:52px; color:var(--gold); }
+  .brand-mark-lg svg{ width:100%; height:100%; }
+  #brandHeroTitle{
+    font-family:'Amiri',serif;
+    font-size:42px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:.5px;
+    color:var(--ink);
+  }
+  @media (max-width:640px){
+    .brand-hero{ padding:16px 12px 6px; gap:10px; }
+    .brand-mark-lg{ width:36px; height:36px; }
+    #brandHeroTitle{ font-size:28px; }
+  }
   .brand-mark{
     width:34px;height:34px;
     display:flex;align-items:center;justify-content:center;
@@ -88,6 +109,17 @@
   }
   .icon-btn:hover{color:var(--ink);border-color:var(--muted);}
   .icon-btn.active{color:var(--teal);border-color:var(--teal);}
+  .auto-btn-highlight{
+    border-color:var(--gold);
+    color:var(--gold);
+    font-weight:700;
+    box-shadow:0 0 0 1px var(--gold) inset;
+  }
+  .auto-btn-highlight.active{
+    background:var(--gold);
+    color:#fff;
+    border-color:var(--gold);
+  }
 
   .ctrl-group{
     display:flex; align-items:center; gap:6px;
@@ -125,6 +157,8 @@
       padding:14px 16px 4px;
     }
     .stage-topbar .icon-btn{ font-size:12.5px; }
+    #stageTopbar2{ flex-wrap:wrap; gap:6px; padding-top:0; }
+    #stageTopbar2 select{ font-size:12px; padding:6px 8px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--muted); }
     #stageAutoBtn.active{ background:var(--gold); color:#fff; border-color:var(--gold); }
     .stage-bottombar{
       grid-column:1/-1;
@@ -917,7 +951,11 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 .live-export-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
 .live-export-row .icon-btn{flex:1;min-width:100px;justify-content:center;}
 
-/* home hub */
+/* home hub — mobile-only strip; on desktop/laptop everything lives in the header + top utility bar instead */
+.services-bar{
+  display:none;
+}
+@media (max-width:960px){
 .services-bar{
   display:flex;
   gap:8px;
@@ -930,6 +968,7 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
   scrollbar-width:none;
   mask-image:linear-gradient(to left, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
   -webkit-mask-image:linear-gradient(to left, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+}
 }
 .services-bar::-webkit-scrollbar{ display:none; }
 .svc-link{
@@ -950,6 +989,16 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 .svc-link:active{ transform:scale(.95); }
 .svc-link.svc-lang{ border-color:#1447c9; color:#1447c9; }
 .svc-link.svc-lang.active{ background:#1447c9; border-color:#1447c9; color:#fff; }
+select.svc-select{
+  font-family:'Tajawal',sans-serif;
+  font-size:12.5px; font-weight:700;
+  color:var(--muted);
+  background:var(--bg);
+  border:1px solid var(--line);
+  padding:9px 10px;
+  border-radius:20px;
+  cursor:pointer;
+}
 @media(max-width:960px){
   .services-bar{
     padding:10px 10px;
@@ -1047,6 +1096,16 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 /* iPhone reliability indicators */
 .ios-help-note{display:none;background:#eef5ff;border:1px solid #9fc0ff;color:#123e78;padding:11px 13px;border-radius:12px;margin:10px 0;font-weight:700;line-height:1.55;}
 body.ios-device .ios-help-note{display:block;}
+
+/* -------- laptop / wide-desktop layout: contain width, don't stretch edge-to-edge -------- */
+@media (min-width:1201px){
+  header{ max-width:1400px; margin:0 auto; width:100%; box-sizing:border-box; }
+  .stage{ max-width:1400px; margin:0 auto; width:100%; }
+  .hub-section{ max-width:1400px; margin:0 auto; width:100%; }
+  .call-panel{ max-width:1400px; margin:0 auto; width:100%; box-sizing:border-box; }
+  .log-wrap, .live-export-row, .log-toggle-row{ max-width:1400px; margin-inline:auto; width:100%; box-sizing:border-box; }
+  footer{ max-width:1400px; margin-inline:auto; width:100%; box-sizing:border-box; }
+}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -1075,8 +1134,8 @@ body.ios-device .ios-help-note{display:block;}
 
     <div class="guide-step">
       <div class="num">1</div>
-      <div><h4 id="gS1T">📱 شريط التنقل بالأسفل (على الجوال)</h4>
-      <p id="gS1D">خمس أزرار كبيرة وواضحة بأسفل الشاشة: الرئيسية، مكالمة، تلقائي، مساعدة، والمزيد (فيه اللغة وحجم الخط والمسح). كل شي بلمسة وحدة، بدون تصفح قوائم.</p></div>
+      <div><h4 id="gS1T">📱 الشريط العلوي (على الجوال)</h4>
+      <p id="gS1D">شريط ثابت أعلى الشاشة: الرئيسية، الدليل، اللغة، حجم الخط، نوع جهازك، وتحديث التطبيق — كل شي بلمسة وحدة، بدون قائمة "مزيد" منفصلة.</p></div>
     </div>
 
     <div class="guide-step">
@@ -1087,8 +1146,8 @@ body.ios-device .ios-help-note{display:block;}
 
     <div class="guide-step">
       <div class="num">3</div>
-      <div><h4 id="gS3T">🌐 لاختيار اللغتين</h4>
-      <p id="gS3D">من القوائم أعلى الصفحة اختر لغة كل جهة (عربي، تركي، إنجليزي، روسي، فارسي، ألماني) — أي زوج لغتين تحتاجه، ليس فقط العربية.</p></div>
+      <div><h4 id="gS3T">🌐 لاختيار اللغتين وصوت الترجمة</h4>
+      <p id="gS3D">داخل صفحة المحادثة نفسها تجد قوائم اللغة لكل جهة (عربي، تركي، إنجليزي) وزر تبديل ⇄، وبجانبها اختيار صوت الترجمة (تلقائي / رجل / امرأة) — كلها بمتناول يدك بدون خروج من المحادثة.</p></div>
     </div>
 
     <div class="guide-step">
@@ -1118,19 +1177,26 @@ body.ios-device .ios-help-note{display:block;}
     <div class="guide-step">
       <div class="num">8</div>
       <div><h4 id="gS8T">📷 ترجمة الصور واللافتات</h4>
-      <p id="gS8D">من "📷 كاميرا" (بالأعلى أو داخل "المزيد")، صوّر أي نص (لافتة، قائمة طعام، ورقة) — الموقع يستخرج النص ويترجمه فوراً. تستغرق ثوانٍ لتحميل نظام القراءة أول مرة فقط.</p></div>
+      <p id="gS8D">من "📷 كاميرا" بالشريط العلوي، صوّر أي نص (لافتة، قائمة طعام، ورقة) — الموقع يستخرج النص ويترجمه فوراً. تستغرق ثوانٍ لتحميل نظام القراءة أول مرة فقط.</p></div>
     </div>
 
     <button class="guide-close" id="guideClose">فهمت، ابدأ الاستخدام</button>
   </div>
 </div>
 
+<div class="brand-hero" id="brandHero">
+  <div class="brand-mark brand-mark-lg">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 18c2-4 5-6 10-6s8 2 10 6"/><path d="M2 18h20"/><path d="M6 12V6M18 12V6"/><path d="M4 6h4M16 6h4"/></svg>
+  </div>
+  <h1 id="brandHeroTitle">الجسر</h1>
+</div>
+
 <header>
-  <div class="brand">
-    <div class="brand-mark">
+  <div class="brand" id="brandRow">
+    <div class="brand-mark brand-mark-lg">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 18c2-4 5-6 10-6s8 2 10 6"/><path d="M2 18h20"/><path d="M6 12V6M18 12V6"/><path d="M4 6h4M16 6h4"/></svg>
     </div>
-    <h1>الجسر</h1>
+    <h1 id="brandTitle">الجسر</h1>
   </div>
   <div class="controls">
     <span class="status-pill" id="statusLine">جاهز</span>
@@ -1151,7 +1217,7 @@ body.ios-device .ios-help-note{display:block;}
     </div>
     <button class="icon-btn" id="callModeToggle" title="أدوات المكالمات الهاتفية">📞 أثناء المكالمة</button>
     <button class="icon-btn" id="ocrOpenBtn" title="ترجمة بالكاميرا">📷 كاميرا</button>
-    <button class="icon-btn" id="convToggle" title="محادثة تلقائية متتابعة">↻ تلقائي</button>
+    <button class="icon-btn auto-btn-highlight" id="convToggle" title="الميكروفون يتفاعل تلقائياً بين المتحدثَين بدون ضغط">↻ تلقائي</button>
     <div class="ctrl-group">
       <span class="ctrl-label" id="voiceLblDesktop">🎙️ الصوت</span>
       <select id="voiceGenderSelectDesktop">
@@ -1175,7 +1241,14 @@ body.ios-device .ios-help-note{display:block;}
   <button class="svc-link" id="svcDialogue" data-target="dialogue" style="display:none;"><span class="svc-ic">👥</span><span id="svcDialogueLbl">حوار</span></button>
   <button class="svc-link" id="svcGuide" data-target="guide"><span class="svc-ic">📘</span><span id="svcGuideLbl">دليل الاستخدام</span></button>
   <button class="svc-link svc-lang" id="svcLang" data-target="lang"><span class="svc-ic">🌐</span><span id="svcLangLbl">اللغة</span></button>
-  <button class="svc-link" id="svcMore" data-target="more"><span class="svc-ic">⋯</span><span id="svcMoreLbl">المزيد</span></button>
+  <button class="svc-link" id="svcTextSize"><span class="svc-ic">Aa</span><span id="svcTextSizeLbl">حجم الخط</span></button>
+  <select class="svc-link svc-select" id="svcDeviceSelect" title="نوع جهازك">
+    <option value="" id="svcDeviceAuto">⚙️ تلقائي</option>
+    <option value="ios" id="svcDeviceIos">🍎 آيفون</option>
+    <option value="android" id="svcDeviceAndroid">🤖 أندرويد</option>
+    <option value="desktop" id="svcDeviceDesktop">💻 حاسوب</option>
+  </select>
+  <button class="svc-link" id="svcRefresh"><span class="svc-ic">🔄</span><span id="svcRefreshLbl">تحديث</span></button>
 </nav>
 
 <div class="top-quick-bar" id="topQuickBar">
@@ -1471,7 +1544,18 @@ body.ios-device .ios-help-note{display:block;}
   <div class="stage-topbar">
     <button class="icon-btn" id="stageBackBtn">→ الرجوع للرئيسية</button>
     <button class="icon-btn" id="stageClearBtn" title="مسح السجل">🗑️ مسح السجل</button>
-    <button class="icon-btn" id="stageAutoBtn">↻ تلقائي</button>
+    <button class="icon-btn auto-btn-highlight" id="stageAutoBtn" title="الميكروفون يتفاعل تلقائياً بين المتحدثَين بدون ضغط">↻ تلقائي</button>
+  </div>
+  <div class="stage-topbar" id="stageTopbar2">
+    <select id="langSelectAStage" title="اللغة الأولى"></select>
+    <button class="icon-btn" id="swapLangsStage" title="تبديل اللغتين">⇄</button>
+    <select id="langSelectBStage" title="اللغة الثانية"></select>
+    <select id="voiceGenderSelectStage" title="صوت الترجمة">
+      <option value="auto" id="voiceOptAutoStage">تلقائي</option>
+      <option value="female" id="voiceOptFemaleStage">أنثوي</option>
+      <option value="male" id="voiceOptMaleStage">ذكوري</option>
+    </select>
+    <button class="icon-btn" id="stageCopyBtn" title="نسخ المحادثة">📋 نسخ</button>
   </div>
   <div class="side left">
     <div class="lang-tag"><span class="dot"></span> <span id="langATagLabel">العربية</span></div>
@@ -1548,8 +1632,7 @@ body.ios-device .ios-help-note{display:block;}
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-btn active" id="navHome"><span class="nav-ic">🎤</span><span id="navHomeLbl">الرئيسية</span></button>
   <button class="nav-btn" id="navAuto"><span class="nav-ic">↻</span><span id="navAutoLbl">تلقائي</span></button>
-  <button class="nav-btn" id="navMore" style="display:none;"><span class="nav-ic">⋯</span><span id="navMoreLbl">المزيد</span></button>
-  <!-- المزيد انتقل لأعلى الصفحة بجانب المركز الرئيسي، هذا الزر مخفي بصرياً ومُبقى بالكود فقط لتفادي كسر أي منطق مرتبط به -->
+  <!-- زر المزيد حُذف نهائياً — حجم الخط ونوع الجهاز والتحديث انتقلت للشريط العلوي بجانب الرئيسية والدليل واللغة -->
 
 </nav>
 
@@ -1646,6 +1729,7 @@ function detectBrowserLang(){
 let UI_LANG = detectBrowserLang();
 const STRINGS = {
   ar: {
+    brandTitle:'الجسر',
     ready:'جاهز', translating:'يترجم…', speaking:'ينطق…', listeningIn:'يستمع بـ%s…',
     micDenied:'الرجاء السماح باستخدام الميكروفون.', translateFail:'تعذر الاتصال بخدمة الترجمة. تحقق من الإنترنت.',
     micBusy:'تعذر الوصول للميكروفون — قد يكون مستخدماً من تطبيق آخر (مثل المكالمة نفسها). جرّب مرة أخرى.',
@@ -1664,14 +1748,14 @@ const STRINGS = {
     voiceMissing:'صوت النطق للغة "%s" غير مثبّت على هذا الجهاز. من الإعدادات → تحويل النص إلى كلام → غيّر المحرك إلى Google ونزّل حزمة اللغة.',
     transcriptAPh:'اضغط الميكروفون وتكلم…', transcriptBPh:'…', noConvo:'لا يوجد محادثة بعد.',
     gTitle:'🌉 دليل استخدام الجسر', gSub:'سبع خطوات بسيطة، اقرأها مرة واحدة وتصير سهلة للأبد.',
-    gS1T:'📱 شريط الخدمات الثابت (أعلى الشاشة)', gS1D:'شريط قابل للسحب أعلى كل صفحة: الرئيسية، محادثة، مكالمات، كاميرا، محاضرات، حوار، الدليل، اللغة، والمزيد. اسحبه يميناً أو يساراً لرؤية كل الروابط — كل قسم يفتح بشاشته المستقلة الخاصة.',
+    gS1T:'📱 الشريط العلوي', gS1D:'شريط ثابت أعلى الشاشة: الرئيسية، الدليل، اللغة، حجم الخط، نوع جهازك، وتحديث التطبيق — كل شي بلمسة وحدة، بدون قائمة "مزيد" منفصلة.',
     gS2T:'🎤 للتكلم والترجمة العادية', gS2D:'اضغط الميكروفون تحت أي جهة وتكلم — تُترجم وتُنطق تلقائياً للجهة المقابلة. يشتغل بالاتجاهين.',
-    gS3T:'🌐 لاختيار اللغتين', gS3D:'من القوائم أعلى الصفحة اختر لغة كل جهة (عربي، تركي، إنجليزي، روسي، فارسي، ألماني) — أي زوج لغتين تحتاجه، ليس فقط العربية.',
+    gS3T:'🌐 لاختيار اللغتين وصوت الترجمة', gS3D:'داخل صفحة المحادثة نفسها تجد قوائم اللغة لكل جهة وزر تبديل ⇄، وبجانبها اختيار صوت الترجمة (تلقائي / رجل / امرأة) — كلها بمتناول يدك بدون خروج من المحادثة.',
     gS4T:'↻ للمحادثة المباشرة وجهاً لوجه', gS4D:'اضغط "تلقائي" ضغطة واحدة فقط — يبدأ يستمع بنفسه ويتبادل الاستماع بينكما بدون أي ضغط إضافي. مرّر الجوال بينكما بحرية.',
     gS5T:'📞 أثناء مكالمة هاتفية', gS5D:'مهم: أثناء مكالمة حقيقية، النظام يقفل الميكروفون وصوت الموقع (حتى قارئ العنوان والعبارات الجاهزة) عن هذا الجهاز — قيد من الجوال نفسه. الحل الوحيد بجهاز واحد: "⌨️ اكتب بدل الميكروفون" — تكتب جملتك، تطلع الترجمة نصاً مع دليل نطق تقريبي بحروف عربية، وتقرأها أنت بصوتك مباشرة للمتصل.',
     gS6T:'🔊 إذا ما سمعت صوت الترجمة', gS6D:'اضغط زر "استمع" الصغير الظاهر تحت النص المترجم — يشغّل الصوت يدوياً، يعمل دائماً حتى لو الصوت التلقائي ما اشتغل على جوالك.',
     gS7T:'📋 لنسخ النص أو إرساله في واتساب', gS7D:'تحت كل نص مترجم زران: "نسخ" يحفظ النص لتلصقه بأي مكان، و"مشاركة" يفتح واتساب مباشرة والنص جاهز — لا يمكن دمج الموقع داخل واتساب نفسه، لكن هذا أسرع طريقة بديلة.',
-    gS8T:'📷 ترجمة الصور واللافتات', gS8D:'من "📷 كاميرا" (بالأعلى أو داخل "المزيد")، صوّر أي نص (لافتة، قائمة طعام، ورقة) — الموقع يستخرج النص ويترجمه فوراً. تستغرق ثوانٍ لتحميل نظام القراءة أول مرة فقط.',
+    gS8T:'📷 ترجمة الصور واللافتات', gS8D:'من "📷 كاميرا" بالشريط العلوي، صوّر أي نص (لافتة، قائمة طعام، ورقة) — الموقع يستخرج النص ويترجمه فوراً. تستغرق ثوانٍ لتحميل نظام القراءة أول مرة فقط.',
     guideClose:'فهمت، ابدأ الاستخدام',
     guideBtn:'❓ كيف أستخدمه', callBtnOpen:'📞 أثناء المكالمة', callBtnClose:'⬅ الرئيسية', autoBtn:'↻ تلقائي', textSizeBtn:'Aa', clearBtn:'مسح',
     backHome:'→ الرجوع للصفحة الرئيسية',
@@ -1706,10 +1790,12 @@ const STRINGS = {
     moreClear:'🗑️ مسح المحادثة', moreClearBtn:'مسح',
     confirmClearLog:'هل متأكد تبي تمسح سجل هذي المحادثة؟ لا يمكن التراجع.',
     moreVoice:'🎙️ صوت الترجمة', voiceAuto:'تلقائي', voiceFemale:'أنثوي', voiceMale:'ذكوري',
+    svcDeviceLbl:'📱 نوع جهازك', svcDeviceAutoTxt:'⚙️ تلقائي', svcDeviceIosTxt:'🍎 آيفون', svcDeviceAndroidTxt:'🤖 أندرويد', svcDeviceDesktopTxt:'💻 حاسوب',
     swapLangsLabel:'⇄ تبديل اللغتين', swapNowBtn:'تبديل', navLangLabel:'اللغة', navCameraLabel:'كاميرا',
     moreRefresh:'🔄 تحديث التطبيق (سحب آخر نسخة)', refreshBtn:'تحديث', refreshBtnDesktop:'🔄 تحديث',
   },
   tr: {
+    brandTitle:'Al-Jisr',
     ready:'Hazır', translating:'Çevriliyor…', speaking:'Sesli okunuyor…', listeningIn:'%s dinleniyor…',
     micDenied:'Lütfen mikrofon kullanımına izin verin.', translateFail:'Çeviri servisine bağlanılamadı. İnterneti kontrol edin.',
     micBusy:'Mikrofona erişilemedi — başka bir uygulama (örneğin aramanın kendisi) kullanıyor olabilir. Tekrar deneyin.',
@@ -1728,14 +1814,14 @@ const STRINGS = {
     voiceMissing:'"%s" dili için ses paketi bu cihazda kurulu değil. Ayarlar → Metinden sese → Google motoruna geçin ve dili indirin.',
     transcriptAPh:'Mikrofona basın ve konuşun…', transcriptBPh:'…', noConvo:'Henüz konuşma yok.',
     gTitle:'🌉 Köprü Kullanım Kılavuzu', gSub:'Yedi basit adım, bir kez okuyun, sonsuza dek kolaylaşsın.',
-    gS1T:'📱 Sabit hizmet çubuğu (üstte)', gS1D:'Her sayfanın üstünde kaydırılabilir bir çubuk: Ana Sayfa, Sohbet, Aramalar, Kamera, Konuşmalar, Diyalog, Rehber, Dil ve Daha Fazla. Tüm bağlantıları görmek için sağa veya sola kaydırın — her bölüm kendi bağımsız ekranında açılır.',
+    gS1T:'📱 Üst çubuk', gS1D:'Ekranın üstünde sabit bir çubuk: Ana Sayfa, Rehber, Dil, yazı boyutu, cihaz türünüz ve uygulama güncellemesi — ayrı bir "Daha Fazla" menüsü olmadan, tek dokunuşla.',
     gS2T:'🎤 Normal konuşma ve çeviri', gS2D:'Herhangi bir tarafın altındaki mikrofona basıp konuşun — otomatik olarak çevrilip karşı tarafa seslendirilir. İki yönde de çalışır.',
-    gS3T:'🌐 İki dili seçmek için', gS3D:'Sayfanın üstündeki listelerden her tarafın dilini seçin (Arapça, Türkçe, İngilizce, Rusça, Farsça, Almanca) — sadece Arapça değil, ihtiyacınız olan herhangi bir dil çifti.',
+    gS3T:'🌐 İki dili ve çeviri sesini seçmek için', gS3D:'Sohbet sayfasının içinde her tarafın dil listesini ve ⇄ değiştirme düğmesini, yanında da çeviri sesini (otomatik / erkek / kadın) bulursunuz — sohbetten çıkmadan elinizin altında.',
     gS4T:'↻ Yüz yüze canlı sohbet için', gS4D:'"Otomatik" butonuna sadece bir kez basın — kendi kendine dinlemeye başlar ve aranızda ek dokunuş olmadan sırayla dinler. Telefonu aranızda özgürce geçirin.',
     gS5T:'📞 Telefon görüşmesi sırasında', gS5D:'Önemli: Gerçek bir görüşme sırasında sistem, mikrofonu ve site sesini (adres okuyucu ve hazır cümleler dahil) bu cihazda kapatır — telefonun kendi kısıtlaması. Tek cihazla tek çözüm: "⌨️ Mikrofon yerine yazın" — cümlenizi yazın, çeviri yaklaşık Arapça harfli telaffuz rehberiyle metin olarak görünür, kendi sesinizle arayana okursunuz.',
     gS6T:'🔊 Çeviri sesini duymuyorsanız', gS6D:'Çevrilen metnin altındaki küçük "Dinle" butonuna basın — sesi manuel olarak çalar, telefonunuzda otomatik ses çalışmasa bile her zaman çalışır.',
     gS7T:'📋 Metni kopyalamak veya WhatsApp’tan göndermek için', gS7D:'Her çevrilen metnin altında iki buton var: "Kopyala" metni herhangi bir yere yapıştırmanız için kaydeder, "Paylaş" WhatsApp’ı doğrudan açar ve metin hazırdır — site WhatsApp’ın içine entegre edilemez, ama bu en hızlı alternatif yoldur.',
-    gS8T:'📷 Fotoğraf ve tabela çevirisi', gS8D:'"📷 Kamera"dan (üstte veya "Daha Fazla" içinde) herhangi bir metni (tabela, menü, kağıt) fotoğraflayın — site metni çıkarır ve anında çevirir. İlk kullanımda okuma sistemi birkaç saniye içinde yüklenir.',
+    gS8T:'📷 Fotoğraf ve tabela çevirisi', gS8D:'Üst çubuktaki "📷 Kamera" ile herhangi bir metni (tabela, menü, kağıt) fotoğraflayın — site metni çıkarır ve anında çevirir. İlk kullanımda okuma sistemi birkaç saniye içinde yüklenir.',
     guideClose:'Anladım, kullanmaya başla',
     guideBtn:'❓ Nasıl kullanılır', callBtnOpen:'📞 Arama sırasında', callBtnClose:'⬅ Ana sayfa', autoBtn:'↻ Otomatik', textSizeBtn:'Aa', clearBtn:'Temizle',
     backHome:'→ Ana sayfaya dön',
@@ -1770,10 +1856,12 @@ const STRINGS = {
     moreClear:'🗑️ Konuşmayı temizle', moreClearBtn:'Temizle',
     confirmClearLog:'Bu konuşma geçmişini silmek istediğinize emin misiniz? Geri alınamaz.',
     moreVoice:'🎙️ Çeviri sesi', voiceAuto:'Otomatik', voiceFemale:'Kadın', voiceMale:'Erkek',
+    svcDeviceLbl:'📱 Cihaz türünüz', svcDeviceAutoTxt:'⚙️ Otomatik', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'🤖 Android', svcDeviceDesktopTxt:'💻 Bilgisayar',
     swapLangsLabel:'⇄ Dilleri değiştir', swapNowBtn:'Değiştir', navLangLabel:'Dil', navCameraLabel:'Kamera',
     moreRefresh:'🔄 Uygulamayı güncelle (son sürümü al)', refreshBtn:'Güncelle', refreshBtnDesktop:'🔄 Güncelle',
   },
   en: {
+    brandTitle:'Al-Jisr',
     ready:'Ready', translating:'Translating…', speaking:'Speaking…', listeningIn:'Listening in %s…',
     micDenied:'Please allow microphone access.', translateFail:'Could not reach the translation service. Check your internet.',
     micBusy:'Could not access the microphone — it may be in use by another app (like the call itself). Try again.',
@@ -1792,14 +1880,14 @@ const STRINGS = {
     voiceMissing:'A "%s" voice is not installed on this device. Go to Settings → Text-to-speech → switch engine to Google and download the language.',
     transcriptAPh:'Tap the mic and speak…', transcriptBPh:'…', noConvo:'No conversation yet.',
     gTitle:'🌉 Al-Jisr Usage Guide', gSub:'Seven simple steps — read once and it becomes easy forever.',
-    gS1T:'📱 Fixed services bar (at the top)', gS1D:'A scrollable bar at the top of every page: Home, Chat, Calls, Camera, Lectures, Dialogue, Guide, Language, and More. Swipe left or right to see all links — each section opens in its own independent screen.',
+    gS1T:'📱 Top bar', gS1D:'A fixed bar at the top of the screen: Home, Guide, Language, text size, your device type, and app update — all one tap away, with no separate "More" menu.',
     gS2T:'🎤 Regular talking and translation', gS2D:'Tap the mic under either side and speak — it is translated and spoken automatically to the other side. Works both ways.',
-    gS3T:'🌐 Choosing the two languages', gS3D:'From the dropdowns at the top of the page, pick each side\'s language (Arabic, Turkish, English, Russian, Persian, German) — any pair you need, not just Arabic.',
+    gS3T:'🌐 Choosing the two languages and translation voice', gS3D:'Inside the conversation screen itself you\'ll find each side\'s language dropdown and a ⇄ swap button, plus the translation voice choice (automatic / male / female) right next to them — all within reach, no need to leave the conversation.',
     gS4T:'↻ For a live face-to-face conversation', gS4D:'Tap "Auto" just once — it starts listening on its own and alternates listening between you both with no extra taps. Pass the phone freely between you.',
     gS5T:'📞 During a phone call', gS5D:'Important: during a real call, the system mutes the microphone and site audio (including the address reader and ready phrases) on this device — the phone\'s own restriction. The only single-device fix: "⌨️ Type instead of the microphone" — type your sentence, the translation appears as text with an approximate Arabic-letter pronunciation guide, and you read it aloud yourself to the caller.',
     gS6T:'🔊 If you don\'t hear the translation', gS6D:'Tap the small "Listen" button shown under the translated text — it plays the audio manually, and always works even if auto-play didn\'t on your phone.',
     gS7T:'📋 To copy the text or send it on WhatsApp', gS7D:'Under every translated text there are two buttons: "Copy" saves the text to paste anywhere, and "Share" opens WhatsApp directly with the text ready — the site can\'t be embedded inside WhatsApp itself, but this is the fastest alternative.',
-    gS8T:'📷 Photo and sign translation', gS8D:'From "📷 Camera" (at the top or inside "More"), photograph any text (a sign, menu, paper) — the site extracts the text and translates it instantly. The reading engine takes a few seconds to load the first time only.',
+    gS8T:'📷 Photo and sign translation', gS8D:'From "📷 Camera" in the top bar, photograph any text (a sign, menu, paper) — the site extracts the text and translates it instantly. The reading engine takes a few seconds to load the first time only.',
     guideClose:'Got it, start using it',
     guideBtn:'❓ How to use it', callBtnOpen:'📞 During a call', callBtnClose:'⬅ Home', autoBtn:'↻ Auto', textSizeBtn:'Aa', clearBtn:'Clear',
     backHome:'→ Back to home',
@@ -1834,6 +1922,7 @@ const STRINGS = {
     moreClear:'🗑️ Clear conversation', moreClearBtn:'Clear',
     confirmClearLog:'Are you sure you want to clear this conversation history? This cannot be undone.',
     moreVoice:'🎙️ Translation voice', voiceAuto:'Automatic', voiceFemale:'Female', voiceMale:'Male',
+    svcDeviceLbl:'📱 Your device', svcDeviceAutoTxt:'⚙️ Automatic', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'🤖 Android', svcDeviceDesktopTxt:'💻 Computer',
     swapLangsLabel:'⇄ Swap languages', swapNowBtn:'Swap', navLangLabel:'Language', navCameraLabel:'Camera',
     moreRefresh:'🔄 Refresh app (pull latest version)', refreshBtn:'Refresh', refreshBtnDesktop:'🔄 Refresh',
   },
@@ -2063,16 +2152,46 @@ function warnIfVoiceMissing(langCode){
 
 let voiceGenderPref = 'auto'; // 'auto' | 'female' | 'male'
 
+// Voice-name hints across the engines actually shipped on iOS/Android/Chrome/Edge
+// for ar / tr / en. Voice objects rarely expose gender directly (only Chrome's
+// SpeechSynthesisVoice sometimes does via non-standard fields), so we match on
+// known voice names per platform instead of relying on English words alone.
+const FEMALE_VOICE_HINTS = [
+  'female','woman','feminine',
+  // common named voices across platforms/languages
+  'samantha','karen','moira','tessa','fiona','victoria','susan','zira','salli','joanna','kendra','kimberly',
+  'yelda','filiz','ipek', // tr female
+  'laila','salma','fatima','hoda','naia',
+  'amira','nora','maryam'
+];
+const MALE_VOICE_HINTS = [
+  'male','man','masculine',
+  'alex','daniel','fred','thomas','david','mark','guy','matthew','justin','eric','brian',
+  'cem','ahmet','murat', // tr male
+  'majed','hamed','tariq','khalid'
+];
+
+function scoreVoiceGender(voice, wantFemale){
+  const name = (voice.name || '').toLowerCase();
+  const hints = wantFemale ? FEMALE_VOICE_HINTS : MALE_VOICE_HINTS;
+  const oppositeHints = wantFemale ? MALE_VOICE_HINTS : FEMALE_VOICE_HINTS;
+  if(hints.some(h => name.includes(h))) return 2; // explicit match
+  if(oppositeHints.some(h => name.includes(h))) return -1; // explicit mismatch, avoid
+  return 0; // unknown, neutral
+}
+
 function pickVoiceFor(langCode){
-  if(voiceGenderPref === 'auto') return null;
+  if(voiceGenderPref === 'auto') return null; // let the device/engine decide, untouched
   const voices = window.speechSynthesis.getVoices();
   const candidates = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(langCode.toLowerCase()));
   if(candidates.length === 0) return null;
-  const femaleHints = ['female','samantha','karen','moira','tessa','fiona','yelda','zira','susan','victoria'];
-  const maleHints = ['male','alex','daniel','fred','thomas','yusuf','david','mark'];
-  const hints = voiceGenderPref === 'female' ? femaleHints : maleHints;
-  const match = candidates.find(v => hints.some(h => v.name.toLowerCase().includes(h)));
-  return match || candidates[0];
+  const wantFemale = voiceGenderPref === 'female';
+  // rank candidates: explicit gender match first, unknowns next, explicit
+  // mismatches last — so we never force the opposite gender by accident.
+  const ranked = candidates
+    .map(v => ({ v, score: scoreVoiceGender(v, wantFemale) }))
+    .sort((a,b) => b.score - a.score);
+  return ranked[0].v;
 }
 
 function speak(text, lang, onDone){
@@ -2310,6 +2429,13 @@ document.getElementsByName('deviceOverride').forEach(radio => {
   });
 });
 document.getElementById('forceRefreshBtnDesktop').addEventListener('click', forceRefreshApp);
+document.getElementById('svcRefresh').addEventListener('click', forceRefreshApp);
+document.getElementById('svcTextSize').addEventListener('click', cycleTextSize);
+document.getElementById('svcDeviceSelect').value = DEVICE_OVERRIDE;
+document.getElementById('svcDeviceSelect').addEventListener('change', (e) => {
+  setDeviceOverride(e.target.value);
+  document.getElementsByName('deviceOverride').forEach(r => { r.checked = (r.value === e.target.value); });
+});
 
 /* ---------------- Call Mode ---------------- */
 // One canonical English phrase list, translated on the fly into whichever two
@@ -2872,6 +2998,29 @@ function makeLivePanel(prefix){
   let rec = null;
   let running = false;
   let entries = []; // in-memory only: {original, translated, time}
+  let lastActivityAt = 0; // updated on every onstart/onresult — used by the watchdog below
+  let watchdogTimer = null;
+
+  // ---- Silent-stall watchdog ----
+  // On some desktop/laptop Chrome installs, the recognizer can silently stop
+  // delivering onresult/onend for 15-17s (a hiccup talking to Google's speech
+  // service) without firing ANY event at all — so the normal onend-based
+  // restart logic below never triggers, because it never runs. This
+  // independent timer checks periodically for that silent stall and forces
+  // a fresh restart if too much time has passed with no activity at all.
+  function startWatchdog(){
+    clearInterval(watchdogTimer);
+    watchdogTimer = setInterval(() => {
+      if(!running || pausedForSpeech) return;
+      const idleFor = Date.now() - lastActivityAt;
+      if(idleFor > 6000){
+        try{ rec && rec.stop(); }catch(e){}
+        try{ buildRec(); if(running) rec.start(); }catch(e){}
+        lastActivityAt = Date.now();
+      }
+    }, 3000);
+  }
+  function stopWatchdog(){ clearInterval(watchdogTimer); watchdogTimer = null; }
 
   function appendEntry(original, translated){
     entries.push({ original, translated, time: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) });
@@ -2910,7 +3059,7 @@ function makeLivePanel(prefix){
     // before. This removes most of the perceived "waiting" the user reported.
     rec.continuous = true;
     rec.interimResults = true;
-    rec.onstart = () => { statusEl.textContent = '🔎 يستمع...'; };
+    rec.onstart = () => { statusEl.textContent = '🔎 يستمع...'; lastActivityAt = Date.now(); };
     rec.onerror = (e) => {
       if(e.error === 'not-allowed'){ showBanner(t('micDenied')); running = false; }
     };
@@ -2969,8 +3118,26 @@ function makeLivePanel(prefix){
       if(!trimmed) return;
       const allWords = wordsOf(trimmed);
       const committedWords = wordsOf(committedText);
-      if(allWords.length <= committedWords.length) return; // nothing genuinely new
-      const newPart = allWords.slice(committedWords.length).join(' ');
+      if(allWords.length <= committedWords.length && committedWords.length > 0){
+        // Not longer than what we already sent — but only trust that if the
+        // new text still starts the same way. Some Android/Samsung engines
+        // silently re-segment the whole running transcript (fixing
+        // capitalization/punctuation) between results, which can also make
+        // it briefly SHORTER by a word or two. In that case this is still
+        // just a revision of what we already spoke, so it's safe to skip.
+        return;
+      }
+      // Verify the new text actually starts with what we already committed —
+      // word for word, case/punctuation-insensitive. If it doesn't, Android's
+      // engine re-segmented the sentence rather than extending it, so
+      // slicing by word COUNT alone would cut from the wrong place and
+      // either repeat words we already spoke or skip words we didn't. When
+      // that happens, treat the whole thing as fresh instead of guessing.
+      const norm = (w) => w.toLowerCase().replace(/[.,!?؛،؟…]+$/,'');
+      const prefixMatches = committedWords.every((w,i) => norm(allWords[i] || '') === norm(w));
+      const newPart = prefixMatches
+        ? allWords.slice(committedWords.length).join(' ')
+        : trimmed; // re-segmented by the engine — treat as a new, whole chunk
       if(!newPart) return;
       committedText = trimmed;
       statusEl.textContent = '🌐 يترجم...';
@@ -2984,6 +3151,7 @@ function makeLivePanel(prefix){
     }
 
     rec.onresult = (event) => {
+      lastActivityAt = Date.now();
       let finalText = '';
       let interimText = '';
       for(let i = event.resultIndex; i < event.results.length; i++){
@@ -3014,7 +3182,6 @@ function makeLivePanel(prefix){
     };
   }
 
-  let restReminderTimer = null;
   function start(){
     if(!SR){ showBanner(t('noSTT')); return; }
     running = true;
@@ -3023,12 +3190,8 @@ function makeLivePanel(prefix){
     unlockSpeechOnce();
     buildRec();
     try{ rec.start(); }catch(e){}
-    // gentle rest reminder every 5 minutes for long lectures/dialogues —
-    // doesn't stop listening automatically, just nudges the user
-    clearInterval(restReminderTimer);
-    restReminderTimer = setInterval(() => {
-      if(running) showBanner('⏸️ مرّت 5 دقائق استماع متواصل — فكّر بأخذ استراحة قصيرة لو المحاضرة طويلة (الاستماع يستمر ما لم توقفه).');
-    }, 5 * 60 * 1000);
+    lastActivityAt = Date.now();
+    startWatchdog();
   }
   function stop(){
     running = false;
@@ -3036,7 +3199,7 @@ function makeLivePanel(prefix){
     stopBtn.style.display = 'none';
     statusEl.textContent = '';
     if(rec){ try{ rec.stop(); }catch(e){} }
-    clearInterval(restReminderTimer);
+    stopWatchdog();
     clearSpeechQueue();
   }
   startBtn.addEventListener('click', start);
@@ -3148,7 +3311,6 @@ document.getElementById('svcLecture').addEventListener('click', () => { openLect
 document.getElementById('svcDialogue').addEventListener('click', () => { openDialoguePanel(); setActiveSvc('svcDialogue'); });
 document.getElementById('svcGuide').addEventListener('click', openGuide);
 document.getElementById('svcLang').addEventListener('click', () => { openLangSheet(); closeMoreSheet(); });
-document.getElementById('svcMore').addEventListener('click', () => { openMoreSheet(); closeLangSheet(); });
 
 document.getElementById('lectureOpenBtn').addEventListener('click', openLecturePanel);
 document.getElementById('dialogueOpenBtn').addEventListener('click', openDialoguePanel);
@@ -3369,12 +3531,14 @@ const langSelectA = document.getElementById('langSelectA');
 const langSelectB = document.getElementById('langSelectB');
 const langSelectASheet = document.getElementById('langSelectASheet');
 const langSelectBSheet = document.getElementById('langSelectBSheet');
-[langSelectA, langSelectB, langSelectASheet, langSelectBSheet].forEach(populateLangSelect);
+const langSelectAStage = document.getElementById('langSelectAStage');
+const langSelectBStage = document.getElementById('langSelectBStage');
+[langSelectA, langSelectB, langSelectASheet, langSelectBSheet, langSelectAStage, langSelectBStage].forEach(populateLangSelect);
 
 function syncLangSelectUI(){
   const idxA = LANGS.indexOf(langA), idxB = LANGS.indexOf(langB);
-  langSelectA.value = idxA; langSelectASheet.value = idxA;
-  langSelectB.value = idxB; langSelectBSheet.value = idxB;
+  langSelectA.value = idxA; langSelectASheet.value = idxA; langSelectAStage.value = idxA;
+  langSelectB.value = idxB; langSelectBSheet.value = idxB; langSelectBStage.value = idxB;
   document.getElementById('langATagLabel').textContent = langA.label;
   document.getElementById('langBTagLabel').textContent = langB.label;
   const qA = document.getElementById('quickLabelA');
@@ -3434,6 +3598,8 @@ langSelectA.addEventListener('change', (e) => onLangAChange(Number(e.target.valu
 langSelectB.addEventListener('change', (e) => onLangBChange(Number(e.target.value)));
 langSelectASheet.addEventListener('change', (e) => onLangAChange(Number(e.target.value)));
 langSelectBSheet.addEventListener('change', (e) => onLangBChange(Number(e.target.value)));
+langSelectAStage.addEventListener('change', (e) => onLangAChange(Number(e.target.value)));
+langSelectBStage.addEventListener('change', (e) => onLangBChange(Number(e.target.value)));
 
 document.getElementById('swapLangs').addEventListener('click', () => {
   const oldA = langA;
@@ -3446,6 +3612,7 @@ document.getElementById('swapLangs').addEventListener('click', () => {
   sideB._rebuild();
   renderPhrases();
 });
+document.getElementById('swapLangsStage').addEventListener('click', () => document.getElementById('swapLangs').click());
 
 function toggleAutoMode(){
   convMode = !convMode;
@@ -3567,6 +3734,7 @@ const SIMPLE_I18N_MAP = {
   gS3T:'gS3T', gS3D:'gS3D', gS4T:'gS4T', gS4D:'gS4D', gS5T:'gS5T', gS5D:'gS5D',
   gS6T:'gS6T', gS6D:'gS6D', gS7T:'gS7T', gS7D:'gS7D', gS8T:'gS8T', gS8D:'gS8D', guideClose:'guideClose',
   guideBtn:'guideBtn', textSize:'textSizeBtn', clearBtn:'clearBtn', backHomeBtn:'backHome',
+  brandTitle:'brandTitle', brandHeroTitle:'brandHeroTitle',
   addrTitle:'addrTitle', addrDesc:'addrDesc', addrSpeak:'addrBtn',
   phrasesTitle:'phrasesTitle', tabSay:'tabSay', tabHear:'tabHear',
   catDelivery:'catDelivery', catAppt:'catAppt', catGeneral:'catGeneral', repeatBtn:'repeatBtn',
@@ -3579,7 +3747,10 @@ const SIMPLE_I18N_MAP = {
   moreClearLbl:'moreClear', clearBtnMobile:'moreClearBtn',
   moreVoiceLbl:'moreVoice', voiceOptAuto:'voiceAuto', voiceOptFemale:'voiceFemale', voiceOptMale:'voiceMale',
   voiceLblDesktop:'moreVoice', voiceOptAutoD:'voiceAuto', voiceOptFemaleD:'voiceFemale', voiceOptMaleD:'voiceMale',
+  voiceOptAutoStage:'voiceAuto', voiceOptFemaleStage:'voiceFemale', voiceOptMaleStage:'voiceMale',
   moreRefreshLbl:'moreRefresh', forceRefreshBtn:'refreshBtn', forceRefreshBtnDesktop:'refreshBtnDesktop',
+  svcTextSizeLbl:'moreTextSize', svcRefreshLbl:'moreRefresh',
+  svcDeviceAuto:'svcDeviceAutoTxt', svcDeviceIos:'svcDeviceIosTxt', svcDeviceAndroid:'svcDeviceAndroidTxt', svcDeviceDesktop:'svcDeviceDesktopTxt',
   ocrTitle:'ocrTitle', ocrDesc:'ocrDesc', ocrCaptureText:'ocrCaptureText',
   ocrExtractedLabel:'ocrExtractedLabel', ocrTranslatedLabel:'ocrTranslatedLabel',
   ocrStartLiveText:'ocrStartLive', ocrStopLiveText:'ocrStopLive', ocrUploadText:'ocrUpload', logHeading:'logHeading',
@@ -3680,7 +3851,7 @@ document.getElementById('navAuto').addEventListener('click', () => {
 function openMoreSheet(){ document.getElementById('moreSheetOverlay').classList.add('show'); }
 function closeMoreSheet(){ document.getElementById('moreSheetOverlay').classList.remove('show'); }
 document.getElementById('moreCloseBtn').addEventListener('click', closeMoreSheet);
-document.getElementById('navMore').addEventListener('click', () => { openMoreSheet(); closeLangSheet(); });
+document.getElementById('navMore')?.addEventListener('click', () => { openMoreSheet(); closeLangSheet(); });
 document.getElementById('moreSheetOverlay').addEventListener('click', (e) => {
   if(e.target.id === 'moreSheetOverlay') closeMoreSheet();
 });
@@ -3700,12 +3871,20 @@ document.getElementById('clearBtnMobile').addEventListener('click', () => { clea
 document.getElementById('voiceGenderSelect').addEventListener('change', (e) => {
   voiceGenderPref = e.target.value;
   document.getElementById('voiceGenderSelectDesktop').value = e.target.value;
+  document.getElementById('voiceGenderSelectStage').value = e.target.value;
 });
 document.getElementById('voiceGenderSelectDesktop').addEventListener('change', (e) => {
   voiceGenderPref = e.target.value;
   document.getElementById('voiceGenderSelect').value = e.target.value;
+  document.getElementById('voiceGenderSelectStage').value = e.target.value;
+});
+document.getElementById('voiceGenderSelectStage').addEventListener('change', (e) => {
+  voiceGenderPref = e.target.value;
+  document.getElementById('voiceGenderSelect').value = e.target.value;
+  document.getElementById('voiceGenderSelectDesktop').value = e.target.value;
 });
 document.getElementById('copyBtnMobile').addEventListener('click', (e) => copyConversation(e.currentTarget));
+document.getElementById('stageCopyBtn').addEventListener('click', (e) => copyConversation(e.currentTarget));
 </script>
 
 </body>
