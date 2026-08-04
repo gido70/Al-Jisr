@@ -1841,38 +1841,38 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
 
 <div class="call-panel" id="lecturePanel">
   <button class="icon-btn" id="lectureBackBtn" style="margin-bottom:16px;">→ الرجوع للصفحة الرئيسية</button>
-  <h3>🕌 خطبة / محاضرة</h3>
-  <p class="call-sub">استماع مستمر لمتحدث واحد (خطبة، محاضرة، درس) — النص يظهر أولاً بأول، ولا يُحفظ في أي مكان، فقط تقدر تنسخه أو تصدّره بعد الانتهاء.</p>
+  <h3 id="lectureTitle">🕌 خطبة / محاضرة</h3>
+  <p class="call-sub" id="lectureDesc">استماع مستمر لمتحدث واحد (خطبة، محاضرة، درس) — النص يظهر أولاً بأول، ولا يُحفظ في أي مكان، فقط تقدر تنسخه أو تصدّره بعد الانتهاء.</p>
 
   <div class="live-lang-row">
     <div class="live-lang-col">
-      <label>🗣️ لغة المتحدث</label>
+      <label id="lectureSpeakerLangLbl">🗣️ لغة المتحدث</label>
       <select id="lectureSpeakerLang"></select>
     </div>
     <button class="icon-btn" id="lectureSwapBtn">⇄</button>
     <div class="live-lang-col">
-      <label>👂 لغتي (الترجمة)</label>
+      <label id="lectureTargetLangLbl">👂 لغتي (الترجمة)</label>
       <select id="lectureMyLang"></select>
     </div>
   </div>
 
   <div class="live-mode-row">
-    <label class="live-mode-lbl">📋 طريقة العرض</label>
+    <label class="live-mode-lbl" id="lectureDisplayModeLbl">📋 طريقة العرض</label>
     <div class="live-mode-options">
-      <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="text"><span>📝 نص فقط</span></label>
-      <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="audio"><span>🎧 صوت فقط</span></label>
-      <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="both" checked><span>📝🎧 الاثنان معاً</span></label>
+      <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="text"><span id="lectureTextOnlyLbl">📝 نص فقط</span></label>
+      <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="audio"><span id="lectureAudioOnlyLbl">🎧 صوت فقط</span></label>
+      <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="both" checked><span id="lectureBothLbl">📝🎧 الاثنان معاً</span></label>
     </div>
-    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن أثناء الخطبة — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
+    <p class="live-mode-hint" id="lectureOutputHint">وضع "صوت فقط" مناسب لسماعة الأذن أثناء الخطبة — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
   </div>
 
   <div class="live-mode-row">
-    <label class="live-mode-lbl">🎙️ مصدر الصوت</label>
+    <label class="live-mode-lbl" id="lectureAudioSourceLbl">🎙️ مصدر الصوت</label>
     <div class="live-mode-options">
-      <label class="live-mode-opt"><input type="radio" name="lectureAudioSource" value="natural" checked><span>🗣️ طبيعي (وجهاً لوجه)</span></label>
-      <label class="live-mode-opt"><input type="radio" name="lectureAudioSource" value="broadcast"><span>📻 مذياع / تلفاز / يوتيوب</span></label>
+      <label class="live-mode-opt"><input type="radio" name="lectureAudioSource" value="natural" checked><span id="lectureNaturalLbl">🗣️ طبيعي (وجهاً لوجه)</span></label>
+      <label class="live-mode-opt"><input type="radio" name="lectureAudioSource" value="broadcast"><span id="lectureBroadcastLbl">📻 مذياع / تلفاز / يوتيوب</span></label>
     </div>
-    <p class="live-mode-hint">اختر "مذياع/تلفاز" لو الصوت آتٍ من جهاز آخر (سماعة خارجية) — يعطي وقتاً أطول بين الجمل بدل ما يقطع الاستماع بسرعة أثناء فواصل الإعلانات أو الموسيقى.</p>
+    <p class="live-mode-hint" id="lectureSourceHint">اختر "مذياع/تلفاز" لو الصوت آتٍ من جهاز آخر (سماعة خارجية) — يعطي وقتاً أطول بين الجمل بدل ما يقطع الاستماع بسرعة أثناء فواصل الإعلانات أو الموسيقى.</p>
   </div>
 
   <div class="live-controls">
@@ -1882,7 +1882,7 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   <div class="live-status" id="lectureStatus"></div>
 
   <div class="live-transcript" id="lectureTranscript">
-    <div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>
+    <div class="live-empty" id="lectureEmptyText">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>
   </div>
 
   <div class="live-export-row">
@@ -1900,38 +1900,38 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
 
 <div class="call-panel" id="dialoguePanel">
   <button class="icon-btn" id="dialogueBackBtn" style="margin-bottom:16px;">→ الرجوع للصفحة الرئيسية</button>
-  <h3>👥 حوار مباشر</h3>
-  <p class="call-sub">لفهم حديث بين شخصين قريبين منك بلغة ما تفهمها — استماع مستمر، والنص لا يُحفظ، فقط للنسخ أو التصدير.</p>
+  <h3 id="dialogueTitle">👥 حوار مباشر</h3>
+  <p class="call-sub" id="dialogueDesc">لفهم حديث بين شخصين قريبين منك بلغة ما تفهمها — استماع مستمر، والنص لا يُحفظ، فقط للنسخ أو التصدير.</p>
 
   <div class="live-lang-row">
     <div class="live-lang-col">
-      <label>🗣️ لغة حديثهم</label>
+      <label id="dialogueSpeakerLangLbl">🗣️ لغة حديثهم</label>
       <select id="dialogueSpeakerLang"></select>
     </div>
     <button class="icon-btn" id="dialogueSwapBtn">⇄</button>
     <div class="live-lang-col">
-      <label>👂 لغتي (الترجمة)</label>
+      <label id="dialogueTargetLangLbl">👂 لغتي (الترجمة)</label>
       <select id="dialogueMyLang"></select>
     </div>
   </div>
 
   <div class="live-mode-row">
-    <label class="live-mode-lbl">📋 طريقة العرض</label>
+    <label class="live-mode-lbl" id="dialogueDisplayModeLbl">📋 طريقة العرض</label>
     <div class="live-mode-options">
-      <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="text"><span>📝 نص فقط</span></label>
-      <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="audio"><span>🎧 صوت فقط</span></label>
-      <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="both" checked><span>📝🎧 الاثنان معاً</span></label>
+      <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="text"><span id="dialogueTextOnlyLbl">📝 نص فقط</span></label>
+      <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="audio"><span id="dialogueAudioOnlyLbl">🎧 صوت فقط</span></label>
+      <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="both" checked><span id="dialogueBothLbl">📝🎧 الاثنان معاً</span></label>
     </div>
-    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
+    <p class="live-mode-hint" id="dialogueOutputHint">وضع "صوت فقط" مناسب لسماعة الأذن — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
   </div>
 
   <div class="live-mode-row">
-    <label class="live-mode-lbl">🎙️ مصدر الصوت</label>
+    <label class="live-mode-lbl" id="dialogueAudioSourceLbl">🎙️ مصدر الصوت</label>
     <div class="live-mode-options">
-      <label class="live-mode-opt"><input type="radio" name="dialogueAudioSource" value="natural" checked><span>🗣️ طبيعي (وجهاً لوجه)</span></label>
-      <label class="live-mode-opt"><input type="radio" name="dialogueAudioSource" value="broadcast"><span>📻 مذياع / تلفاز / يوتيوب</span></label>
+      <label class="live-mode-opt"><input type="radio" name="dialogueAudioSource" value="natural" checked><span id="dialogueNaturalLbl">🗣️ طبيعي (وجهاً لوجه)</span></label>
+      <label class="live-mode-opt"><input type="radio" name="dialogueAudioSource" value="broadcast"><span id="dialogueBroadcastLbl">📻 مذياع / تلفاز / يوتيوب</span></label>
     </div>
-    <p class="live-mode-hint">اختر "مذياع/تلفاز" لو الصوت آتٍ من جهاز آخر — يعطي وقتاً أطول بين الجمل بدل ما يقطع الاستماع بسرعة.</p>
+    <p class="live-mode-hint" id="dialogueSourceHint">اختر "مذياع/تلفاز" لو الصوت آتٍ من جهاز آخر — يعطي وقتاً أطول بين الجمل بدل ما يقطع الاستماع بسرعة.</p>
   </div>
 
   <div class="live-controls">
@@ -1941,7 +1941,7 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   <div class="live-status" id="dialogueStatus"></div>
 
   <div class="live-transcript" id="dialogueTranscript">
-    <div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>
+    <div class="live-empty" id="dialogueEmptyText">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>
   </div>
 
   <div class="live-export-row">
@@ -2258,6 +2258,7 @@ const STRINGS = {
     svcDeviceLbl:'📱 نوع جهازك', svcDeviceAutoTxt:'⚙️ تلقائي', svcDeviceIosTxt:'🍎 آيفون', svcDeviceAndroidTxt:'🤖 أندرويد', svcDeviceDesktopTxt:'💻 حاسوب',
     swapLangsLabel:'⇄ تبديل اللغتين', swapNowBtn:'تبديل', navLangLabel:'اللغة', navCameraLabel:'كاميرا',
     moreRefresh:'🔄 تحديث التطبيق (سحب آخر نسخة)', refreshBtn:'تحديث', refreshBtnDesktop:'🔄 تحديث',
+    lectureTitle:'🕌 خطبة / محاضرة', lectureDesc:'استماع مستمر لمتحدث واحد (خطبة، محاضرة، درس) — يظهر النص أولاً بأول ولا يُحفظ في أي مكان، ويمكن نسخه أو تصديره بعد الانتهاء.', lectureSpeakerLang:'🗣️ لغة المتحدث', lectureTargetLang:'👂 لغتي (الترجمة)', displayMode:'📋 طريقة العرض', textOnly:'📝 نص فقط', audioOnly:'🎧 صوت فقط', bothMode:'📝🎧 الاثنان معاً', lectureOutputHint:'وضع «صوت فقط» مناسب لسماعة الأذن أثناء الخطبة — يبقى النص متاحاً في الخلفية للنسخ والتصدير لاحقاً حتى إن لم يظهر على الشاشة.', audioSource:'🎙️ مصدر الصوت', naturalSource:'🗣️ طبيعي (وجهاً لوجه)', broadcastSource:'📻 مذياع / تلفاز / يوتيوب', lectureSourceHint:'اختر «مذياع/تلفاز» إذا كان الصوت آتياً من جهاز آخر — يمنح وقتاً أطول بين الجمل ويقلل التقطيع.', startListening:'▶️ ابدأ الاستماع المستمر', stopListening:'⏹ إيقاف', liveEmpty:'سيظهر النص والترجمة هنا أولاً بأول بمجرد الضغط على «ابدأ»...', newSession:'🔄 جلسة جديدة', dialogueTitle:'👥 حوار مباشر', dialogueDesc:'لفهم حديث بين شخصين قريبين منك بلغة لا تفهمها — استماع مستمر، والنص لا يُحفظ إلا للنسخ أو التصدير.', dialogueSpeakerLang:'🗣️ لغة حديثهم', dialogueOutputHint:'وضع «صوت فقط» مناسب لسماعة الأذن — يبقى النص متاحاً في الخلفية للنسخ والتصدير لاحقاً حتى إن لم يظهر على الشاشة.', dialogueSourceHint:'اختر «مذياع/تلفاز» إذا كان الصوت آتياً من جهاز آخر — يمنح وقتاً أطول بين الجمل ويقلل التقطيع.', clearLog:'🗑️ مسح السجل', backMain:'→ الرجوع للصفحة الرئيسية', copyAction:'📋 نسخ', shareAction:'📤 مشاركة', clearAction:'🗑️ مسح',
   },
   tr: {
     brandTitle:'KÖPRÜ',
@@ -2328,6 +2329,7 @@ const STRINGS = {
     svcDeviceLbl:'📱 Cihaz türünüz', svcDeviceAutoTxt:'⚙️ Otomatik', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'🤖 Android', svcDeviceDesktopTxt:'💻 Bilgisayar',
     swapLangsLabel:'⇄ Dilleri değiştir', swapNowBtn:'Değiştir', navLangLabel:'Dil', navCameraLabel:'Kamera',
     moreRefresh:'🔄 Uygulamayı güncelle (son sürümü al)', refreshBtn:'Güncelle', refreshBtnDesktop:'🔄 Güncelle',
+    lectureTitle:'🕌 Hutbe / Ders', lectureDesc:'Tek bir konuşmacıyı sürekli dinleyin (hutbe, ders, konferans). Metin anlık görünür, hiçbir yerde kaydedilmez; bitince kopyalayabilir veya dışa aktarabilirsiniz.', lectureSpeakerLang:'🗣️ Konuşmacının dili', lectureTargetLang:'👂 Benim dilim (çeviri)', displayMode:'📋 Gösterim biçimi', textOnly:'📝 Yalnızca metin', audioOnly:'🎧 Yalnızca ses', bothMode:'📝🎧 Metin ve ses', lectureOutputHint:'«Yalnızca ses» modu hutbe sırasında kulaklık için uygundur — metin ekranda görünmese bile daha sonra kopyalama ve dışa aktarma için arka planda tutulur.', audioSource:'🎙️ Ses kaynağı', naturalSource:'🗣️ Doğal (yüz yüze)', broadcastSource:'📻 Radyo / TV / YouTube', lectureSourceHint:'Ses başka bir cihazdan geliyorsa «Radyo/TV»yi seçin — cümleler arasında daha uzun süre tanır ve kesilmeyi azaltır.', startListening:'▶️ Sürekli dinlemeyi başlat', stopListening:'⏹ Durdur', liveEmpty:'«Başlat»a bastığınızda metin ve çeviri burada anlık olarak görünecek...', newSession:'🔄 Yeni oturum', dialogueTitle:'👥 Canlı diyalog', dialogueDesc:'Yakınınızdaki iki kişinin konuşmasını anlamak için sürekli dinleme. Metin yalnızca kopyalama veya dışa aktarma için kullanılır.', dialogueSpeakerLang:'🗣️ Konuştukları dil', dialogueOutputHint:'«Yalnızca ses» modu kulaklık için uygundur — metin ekranda görünmese bile daha sonra kopyalama ve dışa aktarma için arka planda tutulur.', dialogueSourceHint:'Ses başka bir cihazdan geliyorsa «Radyo/TV»yi seçin — cümleler arasında daha uzun süre tanır ve kesilmeyi azaltır.', clearLog:'🗑️ Geçmişi temizle', backMain:'→ Ana sayfaya dön', copyAction:'📋 Kopyala', shareAction:'📤 Paylaş', clearAction:'🗑️ Temizle',
   },
   en: {
     brandTitle:'THE BRIDGE',
@@ -4240,7 +4242,7 @@ const SIMPLE_I18N_MAP = {
   gTitle:'gTitle', gSub:'gSub', gS1T:'gS1T', gS1D:'gS1D', gS2T:'gS2T', gS2D:'gS2D',
   gS3T:'gS3T', gS3D:'gS3D', gS4T:'gS4T', gS4D:'gS4D', gS5T:'gS5T', gS5D:'gS5D',
   gS6T:'gS6T', gS6D:'gS6D', gS7T:'gS7T', gS7D:'gS7D', gS8T:'gS8T', gS8D:'gS8D', guideClose:'guideClose',
-  guideBtn:'guideBtn', textSize:'textSizeBtn', clearBtn:'clearBtn', backHomeBtn:'backHome',
+  guideBtn:'guideBtn', textSize:'textSizeBtn', clearBtn:'clearBtn', backHomeBtn:'backMain',
   brandTitle:'brandTitle', brandHeroTitle:'brandTitle', gateTitle:'brandTitle',
   hubKicker:'hubKicker', hubHeroTitle:'hubHeroTitle', hubHeroSub:'hubHeroSub',
   hubChatTitle:'hubChatTitle', hubChatSub:'hubChatSub', hubCallTitle:'hubCallTitle', hubCallSub:'hubCallSub',
@@ -4273,6 +4275,10 @@ const SIMPLE_I18N_MAP = {
   sideAHeading:'you', sideBHeading:'otherParty', hintA:'hint', hintB:'hint',
   replayA:'listenLabel', replayB:'listenLabel', editA:'editLabel', editB:'editLabel',
   clearA:'clearOneLabel', clearB:'clearOneLabel',
+  callBackBtnBottom:'backMain', ocrBackBtn:'backMain', ocrBackBtnBottom:'backMain', lectureBackBtn:'backMain', lectureBackBtnBottom:'backMain', dialogueBackBtn:'backMain', dialogueBackBtnBottom:'backMain', stageBackBtn:'backMain', stageBackBtnBottom:'backMain',
+  callClearBtn:'clearLog', stageClearBtn:'clearLog',
+  lectureTitle:'lectureTitle', lectureDesc:'lectureDesc', lectureSpeakerLangLbl:'lectureSpeakerLang', lectureTargetLangLbl:'lectureTargetLang', lectureDisplayModeLbl:'displayMode', lectureTextOnlyLbl:'textOnly', lectureAudioOnlyLbl:'audioOnly', lectureBothLbl:'bothMode', lectureOutputHint:'lectureOutputHint', lectureAudioSourceLbl:'audioSource', lectureNaturalLbl:'naturalSource', lectureBroadcastLbl:'broadcastSource', lectureSourceHint:'lectureSourceHint', lectureStartBtn:'startListening', lectureStopBtn:'stopListening', lectureEmptyText:'liveEmpty', lectureClearBtn:'clearAction', lectureCopyBtn:'copyAction', lectureShareBtn:'shareAction', lectureNewSessionBtn:'newSession',
+  dialogueTitle:'dialogueTitle', dialogueDesc:'dialogueDesc', dialogueSpeakerLangLbl:'dialogueSpeakerLang', dialogueTargetLangLbl:'lectureTargetLang', dialogueDisplayModeLbl:'displayMode', dialogueTextOnlyLbl:'textOnly', dialogueAudioOnlyLbl:'audioOnly', dialogueBothLbl:'bothMode', dialogueOutputHint:'dialogueOutputHint', dialogueAudioSourceLbl:'audioSource', dialogueNaturalLbl:'naturalSource', dialogueBroadcastLbl:'broadcastSource', dialogueSourceHint:'dialogueSourceHint', dialogueStartBtn:'startListening', dialogueStopBtn:'stopListening', dialogueEmptyText:'liveEmpty', dialogueClearBtn:'clearAction', dialogueCopyBtn:'copyAction', dialogueShareBtn:'shareAction', dialogueNewSessionBtn:'newSession',
 };
 
 function applyUILang(lang){
