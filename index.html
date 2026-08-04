@@ -1655,7 +1655,7 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
     <h1 id="brandTitle">الجسر</h1>
   </div>
   <div class="controls">
-    <span class="status-pill" id="statusLine">جاهز</span>
+    <span class="status-pill" id="statusLine" style="display:none;" aria-live="polite"></span>
     <div class="ctrl-group">
       <span class="ctrl-label" id="displayLangLbl">🖥️ لغة العرض</span>
       <select id="uiLangSelect" title="لغة الواجهة">
@@ -2523,7 +2523,11 @@ let log = [];
 
 
 function showBanner(msg){ banner.textContent = msg; banner.classList.add('show'); }
-function setStatus(msg){ statusLine.textContent = msg; }
+function setStatus(msg){
+  statusLine.textContent = msg || '';
+  const isReady = !msg || msg === t('ready');
+  statusLine.style.display = isReady ? 'none' : 'inline-flex';
+}
 
 function animateCross(fromGold){
   crossDot.classList.remove('go','back');
@@ -2647,17 +2651,47 @@ function scoreVoiceGender(voice, wantFemale){
   return 0; // unknown, neutral
 }
 
+// Prefer clear, natural voices that are already installed on the user's device.
+// Browsers do not expose a reliable universal "voice quality" or gender field,
+// so this ranking uses language match, local availability, engine/name hints,
+// and the user's male/female preference when it can be identified safely.
+const NATURAL_VOICE_HINTS = [
+  'enhanced','premium','natural','neural','online natural',
+  'google','microsoft','apple','siri'
+];
+const LANGUAGE_VOICE_HINTS = {
+  ar: ['majed','maged','tarik','tariq','laila','layla','salma','amira','maryam','hoda','naayf','zeina'],
+  tr: ['yelda','filiz','ipek','cem','ahmet','murat','emel'],
+  en: ['samantha','karen','daniel','alex','moira','tessa','fiona','victoria','zira','aria','jenny','guy','david','mark']
+};
+
+function scoreVoiceQuality(voice, langCode){
+  const name = (voice.name || '').toLowerCase();
+  const voiceLang = (voice.lang || '').toLowerCase();
+  const code = langCode.toLowerCase();
+  let score = 0;
+  if(voiceLang === code || voiceLang === code + '-' + code.toUpperCase()) score += 4;
+  if(voiceLang.startsWith(code + '-')) score += 3;
+  if(voice.localService) score += 2; // usually faster and more reliable offline
+  if(voice.default) score += 1;
+  if(NATURAL_VOICE_HINTS.some(h => name.includes(h))) score += 3;
+  if((LANGUAGE_VOICE_HINTS[code] || []).some(h => name.includes(h))) score += 2;
+  return score;
+}
+
 function pickVoiceFor(langCode){
-  if(voiceGenderPref === 'auto') return null; // let the device/engine decide, untouched
   const voices = window.speechSynthesis.getVoices();
-  const candidates = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(langCode.toLowerCase()));
+  const code = langCode.toLowerCase();
+  const candidates = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(code));
   if(candidates.length === 0) return null;
-  const wantFemale = voiceGenderPref === 'female';
-  // rank candidates: explicit gender match first, unknowns next, explicit
-  // mismatches last — so we never force the opposite gender by accident.
-  const ranked = candidates
-    .map(v => ({ v, score: scoreVoiceGender(v, wantFemale) }))
-    .sort((a,b) => b.score - a.score);
+
+  const ranked = candidates.map(v => {
+    let score = scoreVoiceQuality(v, code);
+    if(voiceGenderPref === 'female') score += scoreVoiceGender(v, true) * 5;
+    else if(voiceGenderPref === 'male') score += scoreVoiceGender(v, false) * 5;
+    return { v, score };
+  }).sort((a,b) => b.score - a.score);
+
   return ranked[0].v;
 }
 
