@@ -148,7 +148,6 @@
   .stage-topbar{ display:none; }
   #stageTopbar2{
     display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-    grid-column:1/-1;
     padding:14px 16px 6px;
   }
   #stageTopbar2 select{ font-size:13px; padding:7px 10px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--muted); font-family:'Tajawal',sans-serif; }
@@ -165,7 +164,8 @@
       padding:14px 16px 4px;
     }
     #stageTopbarMobileOnly .icon-btn{ font-size:12.5px; }
-    #stageTopbar2{ flex-wrap:wrap; gap:6px; padding-top:6px; display:flex; }
+    #stageTopbar2{ display:none; }
+    #stageTopbar2.show{ flex-wrap:wrap; gap:6px; padding-top:6px; display:flex; }
     #stageTopbar2 select{ font-size:12px; padding:6px 8px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--muted); }
     #stageAutoBtn.active{ background:var(--gold); color:#fff; border-color:var(--gold); }
     .side{ width:100%; }
@@ -1283,7 +1283,7 @@ header select,header .icon-btn,header .ctrl-group{
 .hub-scroll-hint{margin-top:24px;color:var(--ui-muted);font-family:'Tajawal',sans-serif;font-weight:700;}
 
 /* dedicated pages/cards */
-.call-panel,.stage,.log-wrap,.log-toggle-row,footer,.app-signature{
+.call-panel,.stage,#stageTopbar2,.log-wrap,.log-toggle-row,footer,.app-signature{
   max-width:1180px!important;
   width:calc(100% - 28px)!important;
   margin-inline:auto!important;
@@ -1562,19 +1562,68 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   .brand-hero .brand-mark-lg{width:390px!important;}
   .brand-hero .brand-logo-image{max-height:130px!important;}
 }
-/* Safety net: guarantee the live-conversation mic buttons and side panels
-   are always visible and laid out, regardless of any other rule that may
-   have accidentally affected them. Does not change colors, sizes, or any
-   other styling — only ensures display/visibility are never suppressed. */
-.stage.show{ display:flex!important; flex-direction:column!important; }
-.stage.show .side{ display:flex!important; visibility:visible!important; opacity:1!important; }
-.stage.show .mic-row{ display:flex!important; visibility:visible!important; opacity:1!important; }
-.stage.show .mic-btn{ display:flex!important; visibility:visible!important; opacity:1!important; }
+/* Safety net: guarantee the live-conversation boxes and mic buttons are
+   always visible with their proper full-width layout, regardless of any
+   other rule that may have accidentally affected them. This forces the
+   complete box model explicitly instead of relying on inherited/default
+   values that another edit may have overridden. */
+.stage.show{
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
+}
+.stage.show .side{
+  display:flex!important;
+  flex-direction:column!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  min-height:220px!important;
+  padding:20px!important;
+  box-sizing:border-box!important;
+}
+.stage.show .mic-row{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  align-items:center!important;
+  gap:14px!important;
+  margin-top:16px!important;
+}
+.stage.show .mic-btn{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:60px!important;
+  height:60px!important;
+  flex-shrink:0!important;
+}
+.stage.show .transcript{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  min-height:60px!important;
+  box-sizing:border-box!important;
+}
+.stage.show .lang-tag,
+.stage.show h2{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
 @media(min-width:961px){
   .stage{ display:grid!important; }
-  .stage .side{ display:flex!important; visibility:visible!important; opacity:1!important; }
-  .stage .mic-row{ display:flex!important; visibility:visible!important; opacity:1!important; }
-  .stage .mic-btn{ display:flex!important; visibility:visible!important; opacity:1!important; }
+  .stage .side{
+    display:flex!important; flex-direction:column!important;
+    visibility:visible!important; opacity:1!important;
+    width:100%!important; min-height:220px!important; box-sizing:border-box!important;
+  }
+  .stage .mic-row{ display:flex!important; visibility:visible!important; opacity:1!important; align-items:center!important; gap:14px!important; }
+  .stage .mic-btn{ display:flex!important; visibility:visible!important; opacity:1!important; width:60px!important; height:60px!important; flex-shrink:0!important; }
+  .stage .transcript{ display:block!important; visibility:visible!important; opacity:1!important; width:100%!important; box-sizing:border-box!important; }
 }
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -2015,22 +2064,22 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   <div class="hub-scroll-hint" id="hubScrollHint">💬 أو اضغط هنا لفتح المترجم السريع مباشرة</div>
 </section>
 
+<div class="stage-topbar" id="stageTopbar2">
+  <select id="langSelectAStage" title="اللغة الأولى"></select>
+  <button class="icon-btn" id="swapLangsStage" title="تبديل اللغتين">⇄</button>
+  <select id="langSelectBStage" title="اللغة الثانية"></select>
+  <select id="voiceGenderSelectStage" title="صوت الترجمة">
+    <option value="auto" id="voiceOptAutoStage">تلقائي</option>
+    <option value="female" id="voiceOptFemaleStage">أنثوي</option>
+    <option value="male" id="voiceOptMaleStage">ذكوري</option>
+  </select>
+  <button class="icon-btn" id="stageCopyBtn" title="نسخ المحادثة">📋 نسخ</button>
+</div>
 <div class="stage" id="stage">
   <div class="stage-topbar" id="stageTopbarMobileOnly">
     <button class="icon-btn" id="stageBackBtn">→ الرجوع للرئيسية</button>
     <button class="icon-btn" id="stageClearBtn" title="مسح السجل">🗑️ مسح السجل</button>
     <button class="icon-btn auto-btn-highlight" id="stageAutoBtn" title="الميكروفون يتفاعل تلقائياً بين المتحدثَين بدون ضغط">↻ تلقائي</button>
-  </div>
-  <div class="stage-topbar" id="stageTopbar2">
-    <select id="langSelectAStage" title="اللغة الأولى"></select>
-    <button class="icon-btn" id="swapLangsStage" title="تبديل اللغتين">⇄</button>
-    <select id="langSelectBStage" title="اللغة الثانية"></select>
-    <select id="voiceGenderSelectStage" title="صوت الترجمة">
-      <option value="auto" id="voiceOptAutoStage">تلقائي</option>
-      <option value="female" id="voiceOptFemaleStage">أنثوي</option>
-      <option value="male" id="voiceOptMaleStage">ذكوري</option>
-    </select>
-    <button class="icon-btn" id="stageCopyBtn" title="نسخ المحادثة">📋 نسخ</button>
   </div>
   <div class="side left">
     <div class="lang-tag"><span class="dot"></span> <span id="langATagLabel">العربية</span></div>
@@ -3934,10 +3983,12 @@ function showChatPanel(){
   closeMoreSheet(); closeLangSheet();
   document.getElementById('hubSection').style.display = 'none';
   document.getElementById('stage').classList.add('show');
+  document.getElementById('stageTopbar2').classList.add('show');
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 function showHubHome(){
   document.getElementById('stage').classList.remove('show');
+  document.getElementById('stageTopbar2').classList.remove('show');
   document.getElementById('hubSection').style.display = '';
   window.scrollTo({ top:0, behavior:'smooth' });
   setActiveSvc('svcHome');
