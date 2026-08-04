@@ -4415,5 +4415,103 @@ document.getElementById('copyBtnMobile').addEventListener('click', (e) => copyCo
 document.getElementById('stageCopyBtn').addEventListener('click', (e) => copyConversation(e.currentTarget));
 </script>
 
+<script id="completeLanguageAuditPatch">
+/* Complete interface-language audit patch.
+   UI text only: no microphone, translation, OCR, login, database, or PWA logic is changed. */
+(function(){
+  const FULL_UI = {
+    en: {
+      backHomeBtn:'← Back to Home', callBackBtnBottom:'← Back to Home', ocrBackBtn:'← Back to Home', ocrBackBtnBottom:'← Back to Home', lectureBackBtn:'← Back to Home', lectureBackBtnBottom:'← Back to Home', dialogueBackBtn:'← Back to Home', dialogueBackBtnBottom:'← Back to Home', stageBackBtn:'← Back to Home', stageBackBtnBottom:'← Back to Home',
+      callClearBtn:'🗑️ Clear history', stageClearBtn:'🗑️ Clear history',
+      quickCallTitle:'⚡ Quick Translation', quickCallSub:'Ideal for face-to-face conversation. During a real phone call, use the typing section below instead of the microphone.',
+      quickLabelA:'I am speaking', quickLabelB:'The other person is speaking',
+      typeDuringCallTitle:'⌨️ During a real call: type instead of using the microphone',
+      typeDuringCallHint:'The phone system may block the microphone and website audio during a real call. Type your sentence, then read the displayed translation aloud to the caller.',
+      quickTypeBtn:'Translate', quickTypeSpeak:'🔊 Play translated reply', quickTypeCopy:'📋 Copy translation',
+      toggleMoreTools:'🧰 More tools (address and ready-made phrases)', callReminderB:'Reminder:',
+      callReminder:'The phrases below are for common urgent situations. For free conversation during a call, use Quick Translation above.',
+      addrTitle:'🏠 Address Reader', addrDesc:'Paste your Turkish address and the app will read it aloud clearly for the courier.', addrSpeak:'🔊 Read the address',
+      phrasesTitle:'💬 Ready-made Phrases', phraseHint:'Tap any phrase to play it immediately in Turkish.', tabSay:'🗣️ I speak', tabHear:'👂 I may hear', catDelivery:'Delivery', catAppt:'Appointments', catGeneral:'General', repeatBtn:'🔁 Repeat last sentence',
+      ocrTitle:'📷 Camera Translation', ocrDesc:'Point the camera at any text and see the translation, or upload an existing image.',
+      ocrStartLiveText:'Start live translation', ocrStopLiveText:'Stop', ocrReadNowBtn:'📖 Read now', ocrExtractedLabel:'📝 Extracted text', ocrTranslatedLabel:'🌐 Translation', ocrListenBtn:'🔊 Listen',
+      lectureTitle:'🕌 Sermon / Lecture', lectureDesc:'Continuous listening to one speaker (sermon, lecture, or lesson). Text appears progressively and is not stored online; you may copy or export it after finishing.',
+      lectureSpeakerLangLbl:'🗣️ Speaker language', lectureTargetLangLbl:'👂 My language (translation)', lectureDisplayModeLbl:'📋 Output mode', lectureTextOnlyLbl:'📝 Text only', lectureAudioOnlyLbl:'🎧 Audio only', lectureBothLbl:'📝🎧 Text and audio',
+      lectureOutputHint:'Audio-only mode is suitable for earphones. The transcript remains available in the session for copying or export even when hidden.',
+      lectureAudioSourceLbl:'🎙️ Audio source', lectureNaturalLbl:'🗣️ Nearby speaker', lectureBroadcastLbl:'📻 Radio / TV / YouTube', lectureSourceHint:'Choose Radio / TV / YouTube when the sound comes from another device.',
+      lectureStartBtn:'▶️ Start continuous listening', lectureStopBtn:'⏹ Stop', lectureEmptyText:'The text and translation will appear here after you press Start.', lectureClearBtn:'🗑️ Clear', lectureCopyBtn:'📋 Copy', lectureShareBtn:'📤 Share', lectureNewSessionBtn:'🔄 New session',
+      dialogueTitle:'👥 Live Dialogue', dialogueDesc:'Understand a nearby conversation in a language you do not know. The session is temporary and can be copied or exported.',
+      dialogueSpeakerLangLbl:'🗣️ Conversation language', dialogueTargetLangLbl:'👂 My language (translation)', dialogueDisplayModeLbl:'📋 Output mode', dialogueTextOnlyLbl:'📝 Text only', dialogueAudioOnlyLbl:'🎧 Audio only', dialogueBothLbl:'📝🎧 Text and audio',
+      dialogueOutputHint:'Audio-only mode is suitable for earphones. The transcript remains available in the session for copying or export even when hidden.', dialogueAudioSourceLbl:'🎙️ Audio source', dialogueNaturalLbl:'🗣️ Nearby conversation', dialogueBroadcastLbl:'📻 Radio / TV / YouTube', dialogueSourceHint:'Choose Radio / TV / YouTube when the sound comes from another device.',
+      dialogueStartBtn:'▶️ Start continuous listening', dialogueStopBtn:'⏹ Stop', dialogueEmptyText:'The text and translation will appear here after you press Start.', dialogueClearBtn:'🗑️ Clear', dialogueCopyBtn:'📋 Copy', dialogueShareBtn:'📤 Share', dialogueNewSessionBtn:'🔄 New session',
+      guideBannerTitle:'User Guide', guideBannerSub:'A simple guide to every feature — open it before your first use',
+      stageAutoBtn:'↻ Automatic', stageCopyBtn:'📋 Copy', sideAHeading:'You', sideBHeading:'Other person', transcriptA:'Press the microphone and speak…', replayA:'🔊 Listen', replayB:'🔊 Listen', editA:'✏️ Edit', editB:'✏️ Edit', copyA:'📋 Copy', copyB:'📋 Copy', shareA:'📤 Share', shareB:'📤 Share', clearA:'🗑️ Clear', clearB:'🗑️ Clear', hintA:'Translated and spoken to the other person', hintB:'Translated and spoken to the other person',
+      logToggleBtn:'📜 View saved conversation history', logHeading:'📜 Conversation history (saved on this device)', logEmpty:'Your conversation history will appear here…', logClearBtn2:'🗑️ Clear', logCopyBtn2:'📋 Copy', logShareBtn2:'📤 Share', footerTip:'Earphones reduce echo · Short sentences improve accuracy', copyBtn:'Copy conversation',
+      navHomeLbl:'Home', navAutoLbl:'Automatic', langSheetUILbl:'🗣️ Interface language', langSheetALbl:'🌐 First language', langSheetBLbl:'🌐 Second language', langSheetSwapLbl:'⇄ Swap languages', langSheetSwapBtn:'Swap', moreCloseBtn:'✕ Close', moreTextSizeLbl:'Aa Font size', textSizeMobile:'Enlarge', moreCopyAllLbl:'📋 Copy full conversation', copyBtnMobile:'Copy', moreClearLbl:'🗑️ Clear conversation', clearBtnMobile:'Clear', moreVoiceLbl:'🎙️ Translation voice', moreRefreshLbl:'🔄 Update app', forceRefreshBtn:'Update'
+    },
+    tr: {
+      backHomeBtn:'← Ana Sayfaya Dön', callBackBtnBottom:'← Ana Sayfaya Dön', ocrBackBtn:'← Ana Sayfaya Dön', ocrBackBtnBottom:'← Ana Sayfaya Dön', lectureBackBtn:'← Ana Sayfaya Dön', lectureBackBtnBottom:'← Ana Sayfaya Dön', dialogueBackBtn:'← Ana Sayfaya Dön', dialogueBackBtnBottom:'← Ana Sayfaya Dön', stageBackBtn:'← Ana Sayfaya Dön', stageBackBtnBottom:'← Ana Sayfaya Dön',
+      callClearBtn:'🗑️ Geçmişi Temizle', stageClearBtn:'🗑️ Geçmişi Temizle',
+      quickCallTitle:'⚡ Hızlı Çeviri', quickCallSub:'Yüz yüze konuşmalar için idealdir. Gerçek bir telefon görüşmesinde mikrofon yerine aşağıdaki yazma bölümünü kullanın.',
+      quickLabelA:'Ben konuşuyorum', quickLabelB:'Karşı taraf konuşuyor',
+      typeDuringCallTitle:'⌨️ Gerçek aramada: mikrofon yerine yazın', typeDuringCallHint:'Telefon sistemi gerçek arama sırasında mikrofonu ve web sitesi sesini engelleyebilir. Cümlenizi yazın ve ekrandaki çeviriyi arayan kişiye okuyun.',
+      quickTypeBtn:'Çevir', quickTypeSpeak:'🔊 Çevrilmiş yanıtı dinlet', quickTypeCopy:'📋 Çeviriyi kopyala', toggleMoreTools:'🧰 Diğer araçlar (adres ve hazır ifadeler)', callReminderB:'Hatırlatma:', callReminder:'Aşağıdaki ifadeler yaygın acil durumlar içindir. Serbest konuşma için yukarıdaki Hızlı Çeviri bölümünü kullanın.',
+      addrTitle:'🏠 Adres Okuyucu', addrDesc:'Türkçe adresinizi yapıştırın; uygulama kuryeye anlaşılır biçimde seslendirsin.', addrSpeak:'🔊 Adresi oku', phrasesTitle:'💬 Hazır İfadeler', phraseHint:'Türkçe olarak hemen seslendirmek için bir ifadeye dokunun.', tabSay:'🗣️ Ben söylerim', tabHear:'👂 Duyabileceğim ifadeler', catDelivery:'Teslimat', catAppt:'Randevular', catGeneral:'Genel', repeatBtn:'🔁 Son cümleyi tekrarla',
+      ocrTitle:'📷 Kamera ile Çeviri', ocrDesc:'Kamerayı herhangi bir metne doğrultup çeviriyi görün veya mevcut bir görsel yükleyin.', ocrStartLiveText:'Canlı çeviriyi başlat', ocrStopLiveText:'Durdur', ocrReadNowBtn:'📖 Şimdi oku', ocrExtractedLabel:'📝 Çıkarılan metin', ocrTranslatedLabel:'🌐 Çeviri', ocrListenBtn:'🔊 Dinle',
+      lectureTitle:'🕌 Hutbe / Konferans', lectureDesc:'Tek bir konuşmacıyı (hutbe, konferans veya ders) sürekli dinler. Metin aşamalı görünür ve çevrimiçi kaydedilmez; bitince kopyalayabilir veya dışa aktarabilirsiniz.', lectureSpeakerLangLbl:'🗣️ Konuşmacının dili', lectureTargetLangLbl:'👂 Benim dilim (çeviri)', lectureDisplayModeLbl:'📋 Çıktı biçimi', lectureTextOnlyLbl:'📝 Yalnızca metin', lectureAudioOnlyLbl:'🎧 Yalnızca ses', lectureBothLbl:'📝🎧 Metin ve ses', lectureOutputHint:'Yalnızca ses modu kulaklık için uygundur. Metin görünmese bile oturum içinde kopyalama ve dışa aktarma için tutulur.', lectureAudioSourceLbl:'🎙️ Ses kaynağı', lectureNaturalLbl:'🗣️ Yakındaki konuşmacı', lectureBroadcastLbl:'📻 Radyo / TV / YouTube', lectureSourceHint:'Ses başka bir cihazdan geliyorsa Radyo / TV / YouTube seçeneğini seçin.', lectureStartBtn:'▶️ Sürekli dinlemeyi başlat', lectureStopBtn:'⏹ Durdur', lectureEmptyText:'Başlat düğmesine bastığınızda metin ve çeviri burada görünecek.', lectureClearBtn:'🗑️ Temizle', lectureCopyBtn:'📋 Kopyala', lectureShareBtn:'📤 Paylaş', lectureNewSessionBtn:'🔄 Yeni oturum',
+      dialogueTitle:'👥 Canlı Diyalog', dialogueDesc:'Anlamadığınız bir dilde yakınınızdaki konuşmayı takip edin. Oturum geçicidir; kopyalanabilir veya dışa aktarılabilir.', dialogueSpeakerLangLbl:'🗣️ Konuşma dili', dialogueTargetLangLbl:'👂 Benim dilim (çeviri)', dialogueDisplayModeLbl:'📋 Çıktı biçimi', dialogueTextOnlyLbl:'📝 Yalnızca metin', dialogueAudioOnlyLbl:'🎧 Yalnızca ses', dialogueBothLbl:'📝🎧 Metin ve ses', dialogueOutputHint:'Yalnızca ses modu kulaklık için uygundur. Metin görünmese bile oturum içinde kopyalama ve dışa aktarma için tutulur.', dialogueAudioSourceLbl:'🎙️ Ses kaynağı', dialogueNaturalLbl:'🗣️ Yakındaki konuşma', dialogueBroadcastLbl:'📻 Radyo / TV / YouTube', dialogueSourceHint:'Ses başka bir cihazdan geliyorsa Radyo / TV / YouTube seçeneğini seçin.', dialogueStartBtn:'▶️ Sürekli dinlemeyi başlat', dialogueStopBtn:'⏹ Durdur', dialogueEmptyText:'Başlat düğmesine bastığınızda metin ve çeviri burada görünecek.', dialogueClearBtn:'🗑️ Temizle', dialogueCopyBtn:'📋 Kopyala', dialogueShareBtn:'📤 Paylaş', dialogueNewSessionBtn:'🔄 Yeni oturum',
+      guideBannerTitle:'Kullanım Kılavuzu', guideBannerSub:'Tüm özellikleri basit adımlarla öğrenin — ilk kullanımdan önce açın', stageAutoBtn:'↻ Otomatik', stageCopyBtn:'📋 Kopyala', sideAHeading:'Siz', sideBHeading:'Karşı taraf', transcriptA:'Mikrofona basın ve konuşun…', replayA:'🔊 Dinle', replayB:'🔊 Dinle', editA:'✏️ Düzenle', editB:'✏️ Düzenle', copyA:'📋 Kopyala', copyB:'📋 Kopyala', shareA:'📤 Paylaş', shareB:'📤 Paylaş', clearA:'🗑️ Temizle', clearB:'🗑️ Temizle', hintA:'Çevrilir ve karşı tarafa seslendirilir', hintB:'Çevrilir ve karşı tarafa seslendirilir',
+      logToggleBtn:'📜 Kaydedilmiş konuşma geçmişini göster', logHeading:'📜 Konuşma geçmişi (bu cihazda kayıtlı)', logEmpty:'Konuşma geçmişiniz burada görünecek…', logClearBtn2:'🗑️ Temizle', logCopyBtn2:'📋 Kopyala', logShareBtn2:'📤 Paylaş', footerTip:'Kulaklık yankıyı azaltır · Kısa cümleler doğruluğu artırır', copyBtn:'Konuşmayı kopyala', navHomeLbl:'Ana Sayfa', navAutoLbl:'Otomatik', langSheetUILbl:'🗣️ Arayüz dili', langSheetALbl:'🌐 Birinci dil', langSheetBLbl:'🌐 İkinci dil', langSheetSwapLbl:'⇄ Dilleri değiştir', langSheetSwapBtn:'Değiştir', moreCloseBtn:'✕ Kapat', moreTextSizeLbl:'Aa Yazı boyutu', textSizeMobile:'Büyüt', moreCopyAllLbl:'📋 Tüm konuşmayı kopyala', copyBtnMobile:'Kopyala', moreClearLbl:'🗑️ Konuşmayı temizle', clearBtnMobile:'Temizle', moreVoiceLbl:'🎙️ Çeviri sesi', moreRefreshLbl:'🔄 Uygulamayı güncelle', forceRefreshBtn:'Güncelle'
+    }
+  };
+
+  const residual = {
+    en: {
+      'على الآيفون تمت إضافة إعادة تشغيل تلقائية للمحادثة بين الطرفين. عند توقف Safari مؤقتاً، اضغط زر «تلقائي» مرة واحدة لإعادة الدورة.':'On iPhone, automatic conversation restart is enabled. If Safari pauses, tap Automatic once to restart the cycle.',
+      'على الآيفون: افتح المنصة من Safari مباشرة، واسمح للكاميرا. ثبّت الهاتف لحظة أمام النص؛ زر «اقرأ الآن» يلتقط إطاراً واضحاً إذا تأخرت القراءة المباشرة.':'On iPhone, open the platform directly in Safari and allow camera access. Hold the phone steady; Read now captures a clear frame if live reading is delayed.',
+      'التقط صورة':'Take a photo', 'اختر صورة':'Choose an image', '📖 اقرأ الآن':'📖 Read now',
+      '🕌 خطبة / محاضرة':'🕌 Sermon / Lecture', '👥 حوار مباشر (أفهم اثنين يتكلمون)':'👥 Live Dialogue', 'فتح':'Open',
+      '📱 نوع جهازك (لضبط سرعة الترجمة المستمرة)':'📱 Device type', '⚙️ تلقائي':'⚙️ Automatic', '🍎 آيفون':'🍎 iPhone', '🤖 أندرويد':'🤖 Android', '💻 حاسوب':'💻 Computer',
+      'اختر جهازك يدوياً فقط لو لاحظت إن الكشف التلقائي غير دقيق. "تلقائي" هو الخيار الأنسب لأغلب الناس.':'Choose your device manually only if automatic detection is inaccurate. Automatic is best for most users.',
+      'إعداد أبو الهيثم':'Prepared by Abu Al-Haytham',
+      'اختر نوع الجهاز':'Choose device type',
+      'زر المزيد حُذف نهائياً — حجم الخط ونوع الجهاز والتحديث انتقلت للشريط العلوي بجانب الرئيسية والدليل واللغة':'The More button has been removed; font size, device type, and update controls are available in the top bar.'
+    },
+    tr: {
+      'على الآيفون تمت إضافة إعادة تشغيل تلقائية للمحادثة بين الطرفين. عند توقف Safari مؤقتاً، اضغط زر «تلقائي» مرة واحدة لإعادة الدورة.':'iPhone’da otomatik konuşma yeniden başlatma etkinleştirildi. Safari duraklarsa döngüyü yeniden başlatmak için Otomatik’e bir kez dokunun.',
+      'على الآيفون: افتح المنصة من Safari مباشرة، واسمح للكاميرا. ثبّت الهاتف لحظة أمام النص؛ زر «اقرأ الآن» يلتقط إطاراً واضحاً إذا تأخرت القراءة المباشرة.':'iPhone’da platformu doğrudan Safari’den açın ve kamera izni verin. Telefonu sabit tutun; canlı okuma gecikirse Şimdi oku net bir kare yakalar.',
+      'التقط صورة':'Fotoğraf çek', 'اختر صورة':'Görsel seç', '📖 اقرأ الآن':'📖 Şimdi oku',
+      '🕌 خطبة / محاضرة':'🕌 Hutbe / Konferans', '👥 حوار مباشر (أفهم اثنين يتكلمون)':'👥 Canlı Diyalog', 'فتح':'Aç',
+      '📱 نوع جهازك (لضبط سرعة الترجمة المستمرة)':'📱 Cihaz türü', '⚙️ تلقائي':'⚙️ Otomatik', '🍎 آيفون':'🍎 iPhone', '🤖 أندرويد':'🤖 Android', '💻 حاسوب':'💻 Bilgisayar',
+      'اختر جهازك يدوياً فقط لو لاحظت إن الكشف التلقائي غير دقيق. "تلقائي" هو الخيار الأنسب لأغلب الناس.':'Otomatik algılama doğru değilse cihazınızı elle seçin. Çoğu kullanıcı için Otomatik en iyi seçenektir.',
+      'إعداد أبو الهيثم':'Hazırlayan: Abu Al-Haytham',
+      'اختر نوع الجهاز':'Cihaz türünü seçin',
+      'زر المزيد حُذف نهائياً — حجم الخط ونوع الجهاز والتحديث انتقلت للشريط العلوي بجانب الرئيسية والدليل واللغة':'Daha Fazla düğmesi kaldırıldı; yazı boyutu, cihaz türü ve güncelleme seçenekleri üst çubuktadır.'
+    }
+  };
+
+  const originalResidualText = new WeakMap();
+  function applyFullLanguageAudit(lang){
+    const d = FULL_UI[lang];
+    if(d){ Object.entries(d).forEach(([id,txt])=>{ const el=document.getElementById(id); if(el) el.textContent=txt; }); }
+    const map = residual[lang] || {};
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n=>{
+      const p=n.parentElement; if(!p || ['SCRIPT','STYLE','TEXTAREA'].includes(p.tagName)) return;
+      if(p.closest('.transcript,.log-list,.live-transcript,#ocrExtracted,#ocrTranslated,input,textarea')) return;
+      const raw=n.nodeValue; const current=raw.trim();
+      let base=originalResidualText.get(n);
+      if(!base && ((residual.en && residual.en[current]) || (residual.tr && residual.tr[current]))){ base=current; originalResidualText.set(n,base); }
+      if(!base) return;
+      const target = lang==='ar' ? base : (map[base] || base);
+      n.nodeValue=raw.replace(current,target);
+    });
+  }
+
+  const previousApply = window.applyUILang || applyUILang;
+  window.applyUILang = function(lang){ previousApply(lang); applyFullLanguageAudit(lang); };
+  applyFullLanguageAudit(window.UI_LANG || UI_LANG || 'ar');
+})();
+</script>
 </body>
 </html>
