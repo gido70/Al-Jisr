@@ -1573,7 +1573,7 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
     <div class="brand-mark">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 18c2-4 5-6 10-6s8 2 10 6"/><path d="M2 18h20"/><path d="M6 12V6M18 12V6"/><path d="M4 6h4M16 6h4"/></svg>
     </div>
-    <h2>الجسر</h2>
+    <h2 id="gateTitle">الجسر</h2>
     <p id="gateSub">هذا الموقع خاص — أدخل رمز الدخول اللي أُعطيته لك.</p>
     <input type="text" id="gateInput" placeholder="ادخل الرمز" autocomplete="off" autocapitalize="characters">
     <button id="gateSubmit">دخول</button>
@@ -1967,35 +1967,35 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
     <span class="guide-banner-arrow">←</span>
   </button>
   <div class="hub-hero">
-    <span class="hub-kicker">🌉 الجسر — مساعدك اللغوي في تركيا</span>
+    <span class="hub-kicker" id="hubKicker">🌉 الجسر — مساعدك اللغوي في تركيا</span>
     <h2 id="hubHeroTitle">اختر الخدمة اللي تحتاجها الآن</h2>
     <p id="hubHeroSub">ترجمة صوتية، مكالمات، كاميرا، خطب ومحاضرات، وحوارات مباشرة — كل خدمة تفتح بشاشتها المستقلة.</p>
   </div>
   <div class="hub-grid">
     <button class="hub-tile tile-chat" id="hubTileChat">
       <span class="hub-tile-ic">💬</span>
-      <b>المحادثة المباشرة</b>
-      <small>تحدث وترجم بين شخصين فوراً</small>
+      <b id="hubChatTitle">المحادثة المباشرة</b>
+      <small id="hubChatSub">تحدث وترجم بين شخصين فوراً</small>
     </button>
     <button class="hub-tile tile-call" id="hubTileCall">
       <span class="hub-tile-ic">📞</span>
-      <b>أثناء المكالمة</b>
-      <small>ترجمة سريعة وعبارات جاهزة</small>
+      <b id="hubCallTitle">أثناء المكالمة</b>
+      <small id="hubCallSub">ترجمة سريعة وعبارات جاهزة</small>
     </button>
     <button class="hub-tile tile-camera" id="hubTileCamera">
       <span class="hub-tile-ic">📷</span>
-      <b>عدسة الترجمة</b>
-      <small>ترجمة اللافتات والصور فوراً</small>
+      <b id="hubCameraTitle">عدسة الترجمة</b>
+      <small id="hubCameraSub">ترجمة اللافتات والصور فوراً</small>
     </button>
     <button class="hub-tile tile-lecture" id="hubTileLecture">
       <span class="hub-tile-ic">🕌</span>
-      <b>خطبة / محاضرة</b>
-      <small>استماع مستمر بلغتك</small>
+      <b id="hubLectureTitle">خطبة / محاضرة</b>
+      <small id="hubLectureSub">استماع مستمر بلغتك</small>
     </button>
     <button class="hub-tile tile-dialogue" id="hubTileDialogue">
       <span class="hub-tile-ic">👥</span>
-      <b>حوار مباشر</b>
-      <small>افهم حديث من حولك</small>
+      <b id="hubDialogueTitle">حوار مباشر</b>
+      <small id="hubDialogueSub">افهم حديث من حولك</small>
     </button>
   </div>
   <div class="hub-scroll-hint" id="hubScrollHint">💬 أو اضغط هنا لفتح المترجم السريع مباشرة</div>
@@ -2190,7 +2190,9 @@ function detectBrowserLang(){
 let UI_LANG = detectBrowserLang();
 const STRINGS = {
   ar: {
-    brandTitle:'جسر',
+    brandTitle:'الجسر',
+    hubKicker:'🌉 الجسر — مساعدك اللغوي في تركيا', hubHeroTitle:'اختر الخدمة التي تحتاجها الآن', hubHeroSub:'ترجمة صوتية، ومكالمات، وكاميرا، وخطب ومحاضرات، وحوارات مباشرة — كل خدمة تفتح في شاشة مستقلة.',
+    hubChatTitle:'المحادثة المباشرة', hubChatSub:'تحدث وترجم بين شخصين فوراً', hubCallTitle:'أثناء المكالمة', hubCallSub:'ترجمة سريعة وعبارات جاهزة', hubCameraTitle:'عدسة الترجمة', hubCameraSub:'ترجمة اللافتات والصور فوراً', hubLectureTitle:'خطبة / محاضرة', hubLectureSub:'استماع مستمر بلغتك', hubDialogueTitle:'حوار مباشر', hubDialogueSub:'افهم حديث من حولك', hubScrollHint:'💬 أو اضغط هنا لفتح المترجم السريع مباشرة', guideBannerTitle:'دليل الاستخدام', guideBannerSub:'تعرف على جميع وظائف التطبيق خطوة بخطوة',
     ready:'جاهز', translating:'يترجم…', speaking:'ينطق…', listeningIn:'يستمع بـ%s…',
     micDenied:'الرجاء السماح باستخدام الميكروفون.', translateFail:'تعذر الاتصال بخدمة الترجمة. تحقق من الإنترنت.',
     micBusy:'تعذر الوصول للميكروفون — قد يكون مستخدماً من تطبيق آخر (مثل المكالمة نفسها). جرّب مرة أخرى.',
@@ -2257,6 +2259,8 @@ const STRINGS = {
   },
   tr: {
     brandTitle:'KÖPRÜ',
+    hubKicker:'🌉 Köprü — Türkiye’deki dil yardımcınız', hubHeroTitle:'Şimdi ihtiyacınız olan hizmeti seçin', hubHeroSub:'Sesli çeviri, aramalar, kamera, vaazlar ve dersler, canlı diyaloglar — her hizmet kendi bağımsız ekranında açılır.',
+    hubChatTitle:'Canlı konuşma', hubChatSub:'İki kişi arasında anında konuşun ve çevirin', hubCallTitle:'Arama sırasında', hubCallSub:'Hızlı çeviri ve hazır ifadeler', hubCameraTitle:'Çeviri kamerası', hubCameraSub:'Tabelaları ve görselleri anında çevirin', hubLectureTitle:'Vaaz / Ders', hubLectureSub:'Kendi dilinizde kesintisiz dinleyin', hubDialogueTitle:'Canlı diyalog', hubDialogueSub:'Çevrenizdeki konuşmaları anlayın', hubScrollHint:'💬 Hızlı çevirmeni doğrudan açmak için buraya dokunun', guideBannerTitle:'Kullanım kılavuzu', guideBannerSub:'Uygulamanın tüm özelliklerini adım adım öğrenin',
     ready:'Hazır', translating:'Çevriliyor…', speaking:'Sesli okunuyor…', listeningIn:'%s dinleniyor…',
     micDenied:'Lütfen mikrofon kullanımına izin verin.', translateFail:'Çeviri servisine bağlanılamadı. İnterneti kontrol edin.',
     micBusy:'Mikrofona erişilemedi — başka bir uygulama (örneğin aramanın kendisi) kullanıyor olabilir. Tekrar deneyin.',
@@ -2322,7 +2326,9 @@ const STRINGS = {
     moreRefresh:'🔄 Uygulamayı güncelle (son sürümü al)', refreshBtn:'Güncelle', refreshBtnDesktop:'🔄 Güncelle',
   },
   en: {
-    brandTitle:'JISR',
+    brandTitle:'THE BRIDGE',
+    hubKicker:'🌉 The Bridge — Your language assistant in Türkiye', hubHeroTitle:'Choose the service you need now', hubHeroSub:'Voice translation, calls, camera, sermons and lectures, and live dialogue — each service opens in its own screen.',
+    hubChatTitle:'Live conversation', hubChatSub:'Speak and translate instantly between two people', hubCallTitle:'During a call', hubCallSub:'Quick translation and ready-made phrases', hubCameraTitle:'Translation lens', hubCameraSub:'Translate signs and images instantly', hubLectureTitle:'Sermon / Lecture', hubLectureSub:'Listen continuously in your language', hubDialogueTitle:'Live dialogue', hubDialogueSub:'Understand conversations around you', hubScrollHint:'💬 Tap here to open the quick translator directly', guideBannerTitle:'User guide', guideBannerSub:'Learn every feature of the app step by step',
     ready:'Ready', translating:'Translating…', speaking:'Speaking…', listeningIn:'Listening in %s…',
     micDenied:'Please allow microphone access.', translateFail:'Could not reach the translation service. Check your internet.',
     micBusy:'Could not access the microphone — it may be in use by another app (like the call itself). Try again.',
@@ -4195,7 +4201,12 @@ const SIMPLE_I18N_MAP = {
   gS3T:'gS3T', gS3D:'gS3D', gS4T:'gS4T', gS4D:'gS4D', gS5T:'gS5T', gS5D:'gS5D',
   gS6T:'gS6T', gS6D:'gS6D', gS7T:'gS7T', gS7D:'gS7D', gS8T:'gS8T', gS8D:'gS8D', guideClose:'guideClose',
   guideBtn:'guideBtn', textSize:'textSizeBtn', clearBtn:'clearBtn', backHomeBtn:'backHome',
-  brandTitle:'brandTitle', brandHeroTitle:'brandTitle',
+  brandTitle:'brandTitle', brandHeroTitle:'brandTitle', gateTitle:'brandTitle',
+  hubKicker:'hubKicker', hubHeroTitle:'hubHeroTitle', hubHeroSub:'hubHeroSub',
+  hubChatTitle:'hubChatTitle', hubChatSub:'hubChatSub', hubCallTitle:'hubCallTitle', hubCallSub:'hubCallSub',
+  hubCameraTitle:'hubCameraTitle', hubCameraSub:'hubCameraSub', hubLectureTitle:'hubLectureTitle', hubLectureSub:'hubLectureSub',
+  hubDialogueTitle:'hubDialogueTitle', hubDialogueSub:'hubDialogueSub', hubScrollHint:'hubScrollHint',
+  guideBannerTitle:'guideBannerTitle', guideBannerSub:'guideBannerSub',
   addrTitle:'addrTitle', addrDesc:'addrDesc', addrSpeak:'addrBtn',
   phrasesTitle:'phrasesTitle', tabSay:'tabSay', tabHear:'tabHear',
   catDelivery:'catDelivery', catAppt:'catAppt', catGeneral:'catGeneral', repeatBtn:'repeatBtn',
@@ -4227,6 +4238,9 @@ function applyUILang(lang){
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.body.classList.toggle('latin-ui', lang !== 'ar');
+  document.title = lang === 'ar' ? 'الجسر — مترجم صوتي فوري' : (lang === 'tr' ? 'Köprü — Anlık Sesli Çeviri' : 'The Bridge — Instant Voice Translator');
+  const logoImg = document.querySelector('.brand-logo-image');
+  if(logoImg) logoImg.alt = lang === 'ar' ? 'شعار الجسر' : (lang === 'tr' ? 'Köprü logosu' : 'The Bridge logo');
 
   Object.entries(SIMPLE_I18N_MAP).forEach(([id,key]) => {
     const el = document.getElementById(id);
