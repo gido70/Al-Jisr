@@ -1593,7 +1593,7 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
 .stage.show .transcript{ order:3!important; display:block!important; width:100%!important; box-sizing:border-box!important; }
 .stage.show .side .icon-btn#replayA,
 .stage.show .side .icon-btn#replayB{ order:4!important; }
-.stage.show .btn-row{ order:5!important; flex-wrap:wrap!important; }
+.stage.show .btn-row{ order:5!important; flex-wrap:wrap!important; gap:8px!important; margin-bottom:12px!important; width:100%!important; }
 .stage.show .btn-row.show-actions{ display:flex!important; }
 .stage.show .mic-row{
   order:6!important;
@@ -1603,6 +1603,8 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   align-items:center!important;
   gap:14px!important;
   margin-top:16px!important;
+  margin-bottom:24px!important;
+  width:100%!important;
 }
 .stage.show .mic-btn{
   display:flex!important;
@@ -4584,6 +4586,30 @@ document.getElementById('stageCopyBtn').addEventListener('click', (e) => copyCon
    UI text only: no microphone, translation, OCR, login, database, or PWA logic is changed. */
 (function(){
   const FULL_UI = {
+    ar: {
+      addrDesc:'الصق عنوانك بالتركية (من خرائط جوجل مثلاً) والموقع يقرأه بصوت واضح للمندوب — بدون ترجمة، لأن العنوان أصلاً مكتوب بالتركية.', addrSpeak:'🔊 اقرأ العنوان', addrTitle:'🏠 قارئ العنوان', backHomeBtn:'→ الرجوع للصفحة الرئيسية', callBackBtnBottom:'→ الرجوع للصفحة الرئيسية', callClearBtn:'🗑️ مسح السجل',
+      callReminderB:'تذكير:', catAppt:'مواعيد', catDelivery:'توصيل', catGeneral:'عام', clearA:'🗑️ مسح',
+      clearB:'🗑️ مسح', clearBtnMobile:'مسح', copyA:'📋 نسخ', copyB:'📋 نسخ', copyBtn:'نسخ المحادثة', copyBtnMobile:'نسخ',
+      dialogueAudioOnlyLbl:'🎧 صوت فقط', dialogueAudioSourceLbl:'🎙️ مصدر الصوت', dialogueBackBtn:'→ الرجوع للصفحة الرئيسية', dialogueBackBtnBottom:'→ الرجوع للصفحة الرئيسية', dialogueBothLbl:'📝🎧 الاثنان معاً', dialogueBroadcastLbl:'📻 مذياع / تلفاز / يوتيوب',
+      dialogueClearBtn:'🗑️ مسح', dialogueCopyBtn:'📋 نسخ', dialogueDesc:'لفهم حديث بين شخصين قريبين منك بلغة ما تفهمها — استماع مستمر، والنص لا يُحفظ، فقط للنسخ أو التصدير.', dialogueDisplayModeLbl:'📋 طريقة العرض', dialogueEmptyText:'سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...', dialogueNaturalLbl:'🗣️ طبيعي (وجهاً لوجه)',
+      dialogueNewSessionBtn:'🔄 جلسة جديدة', dialogueOutputHint:'وضع "صوت فقط" مناسب لسماعة الأذن — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.', dialogueShareBtn:'📤 مشاركة', dialogueSourceHint:'اختر "مذياع/تلفاز" لو الصوت آتٍ من جهاز آخر — يعطي وقتاً أطول بين الجمل بدل ما يقطع الاستماع بسرعة.', dialogueSpeakerLangLbl:'🗣️ لغة حديثهم', dialogueStartBtn:'▶️ ابدأ الاستماع المستمر',
+      dialogueStopBtn:'⏹ إيقاف', dialogueTargetLangLbl:'👂 لغتي (الترجمة)', dialogueTextOnlyLbl:'📝 نص فقط', dialogueTitle:'👥 حوار مباشر', editA:'✏️ تعديل', editB:'✏️ تعديل',
+      footerTip:'سماعات = بدون صدى · جمل قصيرة = ترجمة أدق', forceRefreshBtn:'تحديث', guideBannerSub:'كل خطوات التطبيق ببساطة — اضغط هنا أول مرة', guideBannerTitle:'دليل الاستخدام', hintA:'تُترجم وتُنطق للجهة المقابلة', hintB:'تُترجم وتُنطق للجهة المقابلة',
+      langSheetALbl:'🌐 اللغة الأولى', langSheetBLbl:'🌐 اللغة الثانية', langSheetSwapBtn:'تبديل', langSheetSwapLbl:'⇄ تبديل اللغتين', langSheetUILbl:'🗣️ لغة الواجهة', lectureAudioOnlyLbl:'🎧 صوت فقط',
+      lectureAudioSourceLbl:'🎙️ مصدر الصوت', lectureBackBtn:'→ الرجوع للصفحة الرئيسية', lectureBackBtnBottom:'→ الرجوع للصفحة الرئيسية', lectureBothLbl:'📝🎧 الاثنان معاً', lectureBroadcastLbl:'📻 مذياع / تلفاز / يوتيوب', lectureClearBtn:'🗑️ مسح',
+      lectureCopyBtn:'📋 نسخ', lectureDesc:'استماع مستمر لمتحدث واحد (خطبة، محاضرة، درس) — النص يظهر أولاً بأول، ولا يُحفظ في أي مكان، فقط تقدر تنسخه أو تصدّره بعد الانتهاء.', lectureDisplayModeLbl:'📋 طريقة العرض', lectureEmptyText:'سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...', lectureNaturalLbl:'🗣️ طبيعي (وجهاً لوجه)', lectureNewSessionBtn:'🔄 جلسة جديدة',
+      lectureOutputHint:'وضع "صوت فقط" مناسب لسماعة الأذن أثناء الخطبة — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.', lectureShareBtn:'📤 مشاركة', lectureSourceHint:'اختر "مذياع/تلفاز" لو الصوت آتٍ من جهاز آخر (سماعة خارجية) — يعطي وقتاً أطول بين الجمل بدل ما يقطع الاستماع بسرعة أثناء فواصل الإعلانات أو الموسيقى.', lectureSpeakerLangLbl:'🗣️ لغة المتحدث', lectureStartBtn:'▶️ ابدأ الاستماع المستمر', lectureStopBtn:'⏹ إيقاف',
+      lectureTargetLangLbl:'👂 لغتي (الترجمة)', lectureTextOnlyLbl:'📝 نص فقط', lectureTitle:'🕌 خطبة / محاضرة', logClearBtn2:'🗑️ مسح', logCopyBtn2:'📋 نسخ', logEmpty:'سجل المحادثة يظهر هنا…',
+      logHeading:'📜 سجل المحادثة (محفوظ تلقائياً بجهازك)', logShareBtn2:'📤 مشاركة', logToggleBtn:'📜 عرض سجل المحادثة المحفوظ', moreClearLbl:'🗑️ مسح المحادثة', moreCloseBtn:'✕ إغلاق', moreCopyAllLbl:'📋 نسخ كل المحادثة',
+      moreRefreshLbl:'🔄 تحديث التطبيق (سحب آخر نسخة)', moreTextSizeLbl:'Aa حجم الخط', moreVoiceLbl:'🎙️ صوت الترجمة', navAutoLbl:'تلقائي', navHomeLbl:'الرئيسية', ocrBackBtn:'→ الرجوع للصفحة الرئيسية',
+      ocrBackBtnBottom:'→ الرجوع للصفحة الرئيسية', ocrDesc:'وجّه الكاميرا نحو أي نص (لافتة، قائمة طعام) وشوف الترجمة تظهر مباشرة، أو ارفع صورة جاهزة.', ocrExtractedLabel:'📝 النص المستخرج', ocrListenBtn:'🔊 استمع', ocrReadNowBtn:'📖 اقرأ الآن', ocrStartLiveText:'ابدأ الترجمة المباشرة',
+      ocrStopLiveText:'إيقاف', ocrTitle:'📷 ترجمة بالكاميرا', ocrTranslatedLabel:'🌐 الترجمة', phraseHint:'اضغط أي عبارة لتُنطق فوراً بالتركية — بدون انتظار أو مخاطرة سوء فهم من الميكروفون وسط ضجيج المكالمة.', phrasesTitle:'💬 عبارات جاهزة', quickCallSub:'مثالية للمحادثة المباشرة وجهاً لوجه. لمكالمة هاتفية حقيقية، استخدم القسم أدناه بدل الميكروفون.',
+      quickCallTitle:'⚡ ترجمة سريعة', quickLabelA:'أنا أتكلم', quickLabelB:'هو يتكلم', quickTypeBtn:'ترجم', quickTypeCopy:'📋 نسخ التركية', quickTypeSpeak:'🔊 حاول نطق الرد',
+      repeatBtn:'🔁 كرّر آخر جملة', replayA:'🔊 استمع', replayB:'🔊 استمع', shareA:'📤 مشاركة', shareB:'📤 مشاركة', sideAHeading:'أنت',
+      sideBHeading:'الطرف الآخر', stageAutoBtn:'↻ تلقائي', stageBackBtn:'→ الرجوع للرئيسية', stageBackBtnBottom:'→ الرجوع للصفحة الرئيسية', stageClearBtn:'🗑️ مسح السجل', stageCopyBtn:'📋 نسخ',
+      tabHear:'👂 قد أسمع منه', tabSay:'🗣️ أنا أتكلم', textSizeMobile:'تكبير', toggleMoreTools:'🧰 أدوات إضافية (عنوان، عبارات جاهزة)', transcriptA:'اضغط الميكروفون وتكلم…', typeDuringCallHint:'النظام يقفل الميكروفون وصوت الموقع أثناء أي مكالمة فعلية — هذا قيد من الجوال نفسه. الحل: اكتب جملتك، وبعدها اقرأ الترجمة الظاهرة بصوتك أنت مباشرة للمتصل.',
+      typeDuringCallTitle:'⌨️ أثناء مكالمة حقيقية: اكتب بدل الميكروفون',
+    },
     en: {
       backHomeBtn:'← Back to Home', callBackBtnBottom:'← Back to Home', ocrBackBtn:'← Back to Home', ocrBackBtnBottom:'← Back to Home', lectureBackBtn:'← Back to Home', lectureBackBtnBottom:'← Back to Home', dialogueBackBtn:'← Back to Home', dialogueBackBtnBottom:'← Back to Home', stageBackBtn:'← Back to Home', stageBackBtnBottom:'← Back to Home',
       callClearBtn:'🗑️ Clear history', stageClearBtn:'🗑️ Clear history',
@@ -4634,7 +4660,7 @@ document.getElementById('stageCopyBtn').addEventListener('click', (e) => copyCon
       'على الآيفون: افتح المنصة من Safari مباشرة، واسمح للكاميرا. ثبّت الهاتف لحظة أمام النص؛ زر «اقرأ الآن» يلتقط إطاراً واضحاً إذا تأخرت القراءة المباشرة.':'On iPhone, open the platform directly in Safari and allow camera access. Hold the phone steady; Read now captures a clear frame if live reading is delayed.',
       'التقط صورة':'Take a photo', 'اختر صورة':'Choose an image', '📖 اقرأ الآن':'📖 Read now',
       '🕌 خطبة / محاضرة':'🕌 Sermon / Lecture', '👥 حوار مباشر (أفهم اثنين يتكلمون)':'👥 Live Dialogue', 'فتح':'Open',
-      '📱 نوع جهازك (لضبط سرعة الترجمة المستمرة)':'📱 Device type', '⚙️ تلقائي':'⚙️ Automatic', '🍎 آيفون':'🍎 iPhone', '🤖 أندرويد':'🤖 Android', '💻 حاسوب':'💻 Computer',
+      '📱 نوع جهازك (لضبط سرعة الترجمة المستمرة)':'📱 Device type', '🍎 آيفون':'🍎 iPhone', '🤖 أندرويد':'🤖 Android', '💻 حاسوب':'💻 Computer',
       'اختر جهازك يدوياً فقط لو لاحظت إن الكشف التلقائي غير دقيق. "تلقائي" هو الخيار الأنسب لأغلب الناس.':'Choose your device manually only if automatic detection is inaccurate. Automatic is best for most users.',
       'إعداد أبو الهيثم':'Prepared by Abu Al-Haytham',
       'اختر نوع الجهاز':'Choose device type',
@@ -4645,7 +4671,7 @@ document.getElementById('stageCopyBtn').addEventListener('click', (e) => copyCon
       'على الآيفون: افتح المنصة من Safari مباشرة، واسمح للكاميرا. ثبّت الهاتف لحظة أمام النص؛ زر «اقرأ الآن» يلتقط إطاراً واضحاً إذا تأخرت القراءة المباشرة.':'iPhone’da platformu doğrudan Safari’den açın ve kamera izni verin. Telefonu sabit tutun; canlı okuma gecikirse Şimdi oku net bir kare yakalar.',
       'التقط صورة':'Fotoğraf çek', 'اختر صورة':'Görsel seç', '📖 اقرأ الآن':'📖 Şimdi oku',
       '🕌 خطبة / محاضرة':'🕌 Hutbe / Konferans', '👥 حوار مباشر (أفهم اثنين يتكلمون)':'👥 Canlı Diyalog', 'فتح':'Aç',
-      '📱 نوع جهازك (لضبط سرعة الترجمة المستمرة)':'📱 Cihaz türü', '⚙️ تلقائي':'⚙️ Otomatik', '🍎 آيفون':'🍎 iPhone', '🤖 أندرويد':'🤖 Android', '💻 حاسوب':'💻 Bilgisayar',
+      '📱 نوع جهازك (لضبط سرعة الترجمة المستمرة)':'📱 Cihaz türü', '🍎 آيفون':'🍎 iPhone', '🤖 أندرويد':'🤖 Android', '💻 حاسوب':'💻 Bilgisayar',
       'اختر جهازك يدوياً فقط لو لاحظت إن الكشف التلقائي غير دقيق. "تلقائي" هو الخيار الأنسب لأغلب الناس.':'Otomatik algılama doğru değilse cihazınızı elle seçin. Çoğu kullanıcı için Otomatik en iyi seçenektir.',
       'إعداد أبو الهيثم':'Hazırlayan: Abu Al-Haytham',
       'اختر نوع الجهاز':'Cihaz türünü seçin',
