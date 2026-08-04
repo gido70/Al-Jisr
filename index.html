@@ -1118,104 +1118,369 @@ body.ios-device .ios-help-note{display:block;}
   .controls .ctrl-group{ margin-inline-end:4px; }
 }
 
+/* =====================================================================
+   AL-JISR — VISUAL REFINEMENT ONLY (2026-08-04)
+   CSS-only layer. No functional JavaScript, authentication, OCR, audio,
+   translation, Supabase or service-worker logic is changed.
+   ===================================================================== */
+:root{
+  --ui-navy:#0f2f66;
+  --ui-blue:#2563eb;
+  --ui-sky:#eaf3ff;
+  --ui-cyan:#0891b2;
+  --ui-green:#0f9f76;
+  --ui-orange:#ea7a16;
+  --ui-purple:#7253d6;
+  --ui-red:#d94b3d;
+  --ui-ink:#172033;
+  --ui-muted:#667085;
+  --ui-line:#dce5f0;
+  --ui-surface:#ffffff;
+  --ui-canvas:#f5f9ff;
+  --ui-radius:22px;
+  --ui-shadow:0 12px 34px rgba(23,45,78,.10);
+  --ui-shadow-soft:0 6px 20px rgba(23,45,78,.075);
+}
 
-/* ===== 2026-08-03 targeted mobile repair — UI only, auth untouched ===== */
+html{background:var(--ui-canvas);scroll-behavior:smooth;}
+body{
+  background:
+    radial-gradient(circle at 15% 0%, rgba(37,99,235,.09), transparent 28rem),
+    radial-gradient(circle at 95% 10%, rgba(8,145,178,.07), transparent 24rem),
+    var(--ui-canvas);
+  color:var(--ui-ink);
+  overflow-x:hidden;
+}
+button,select,input{font:inherit;}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+
+/* compact, premium top identity */
+.brand-hero{
+  max-width:1180px;
+  width:calc(100% - 28px);
+  margin:14px auto 0;
+  min-height:88px;
+  padding:16px 22px;
+  justify-content:flex-start;
+  border:1px solid rgba(255,255,255,.75);
+  border-radius:26px;
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(234,243,255,.92));
+  box-shadow:var(--ui-shadow-soft);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.brand-mark-lg{
+  width:52px;height:52px;
+  display:grid;place-items:center;
+  padding:9px;
+  border-radius:18px;
+  background:linear-gradient(145deg,var(--ui-blue),var(--ui-navy));
+  color:#fff;
+  box-shadow:0 10px 25px rgba(37,99,235,.25);
+  overflow:hidden;
+}
+.brand-mark-lg img,.brand-mark-lg svg{width:100%;height:100%;object-fit:contain;filter:brightness(0) invert(1);}
+#brandHeroTitle{font-family:'Tajawal',sans-serif;font-size:32px;line-height:1.1;color:var(--ui-navy);font-weight:900;}
+
+header{
+  max-width:1180px!important;
+  width:calc(100% - 28px)!important;
+  margin:10px auto 0!important;
+  padding:10px 14px!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  border-radius:20px!important;
+  background:rgba(255,255,255,.9)!important;
+  color:var(--ui-ink)!important;
+  box-shadow:var(--ui-shadow-soft)!important;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+header select,header .icon-btn,header .ctrl-group{
+  background:#fff!important;
+  border-color:var(--ui-line)!important;
+  color:var(--ui-ink)!important;
+}
+.status-pill{background:#eef7ff;border-color:#c8dfff;color:var(--ui-navy);font-weight:800;}
+
+/* mobile service navigation */
+.services-bar{
+  max-width:1180px;
+  width:calc(100% - 28px);
+  margin:10px auto 0;
+  padding:8px;
+  border:1px solid rgba(255,255,255,.78);
+  border-radius:22px;
+  background:rgba(255,255,255,.92);
+  box-shadow:var(--ui-shadow-soft);
+  gap:8px;
+  z-index:40;
+}
+.svc-link,select.svc-select{
+  min-height:58px;
+  border:0;
+  border-radius:16px;
+  background:#f5f8fc;
+  color:#4b5870;
+  box-shadow:inset 0 0 0 1px #e8eef6;
+  transition:transform .14s ease,background .18s ease,color .18s ease,box-shadow .18s ease;
+}
+.svc-link:hover{background:#edf4ff;color:var(--ui-blue);}
+.svc-link:active{transform:scale(.96);}
+.svc-link.active{
+  background:linear-gradient(145deg,var(--ui-blue),var(--ui-navy));
+  color:#fff;
+  box-shadow:0 8px 18px rgba(37,99,235,.24);
+}
+.svc-link.svc-lang{color:var(--ui-cyan);box-shadow:inset 0 0 0 1px rgba(8,145,178,.22);}
+.svc-link.svc-lang.active{background:linear-gradient(145deg,#08a0bf,#087c99);color:#fff;}
+.svc-link .svc-ic{font-size:22px;}
+
+/* home: calm, focused app launcher */
+.hub-section{
+  max-width:1180px;
+  width:calc(100% - 28px);
+  margin:12px auto 18px;
+  padding:30px;
+  border:1px solid rgba(255,255,255,.82);
+  border-radius:28px;
+  background:rgba(255,255,255,.93);
+  box-shadow:var(--ui-shadow);
+}
+.hub-hero{max-width:650px;margin-bottom:26px;}
+.hub-kicker{background:#eef5ff;border-color:#d3e4ff;color:var(--ui-blue);font-family:'Tajawal',sans-serif;font-weight:800;}
+.hub-hero h2{font-family:'Tajawal',sans-serif;font-size:30px;color:var(--ui-navy);font-weight:900;letter-spacing:-.4px;}
+.hub-hero p{font-size:15px;color:var(--ui-muted);max-width:580px;margin-inline:auto;}
+.hub-grid{max-width:900px;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;}
+.hub-tile{
+  position:relative;
+  min-height:150px;
+  padding:20px 12px;
+  border:0;
+  border-radius:24px;
+  overflow:hidden;
+  isolation:isolate;
+  box-shadow:0 12px 28px rgba(23,45,78,.14);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.hub-tile::before{
+  content:'';position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(150deg,rgba(255,255,255,.22),transparent 55%);
+}
+.hub-tile::after{
+  content:'';position:absolute;width:90px;height:90px;border-radius:50%;
+  background:rgba(255,255,255,.12);inset:auto -24px -30px auto;z-index:-1;
+}
+.hub-tile:hover{transform:translateY(-4px);box-shadow:0 18px 35px rgba(23,45,78,.18);}
+.hub-tile:active{transform:scale(.975);}
+.hub-tile-ic{font-size:34px;filter:drop-shadow(0 5px 10px rgba(0,0,0,.12));}
+.hub-tile b{font-size:15px;font-weight:900;}
+.hub-tile small{font-size:11.5px;line-height:1.4;opacity:.92;}
+.tile-chat{background:linear-gradient(145deg,#3478ef,#174fb3);}
+.tile-call{background:linear-gradient(145deg,#27a77c,#08765a);}
+.tile-camera{background:linear-gradient(145deg,#f39a3d,#db6510);}
+.tile-lecture{background:linear-gradient(145deg,#8368e8,#5d42bf);}
+.tile-dialogue{background:linear-gradient(145deg,#e16355,#b53a30);}
+.hub-scroll-hint{margin-top:24px;color:var(--ui-muted);font-family:'Tajawal',sans-serif;font-weight:700;}
+
+/* dedicated pages/cards */
+.call-panel,.stage,.log-wrap,.log-toggle-row,footer,.app-signature{
+  max-width:1180px!important;
+  width:calc(100% - 28px)!important;
+  margin-inline:auto!important;
+}
+.call-panel{
+  margin-top:12px!important;
+  margin-bottom:20px!important;
+  padding:26px!important;
+  border:1px solid rgba(255,255,255,.85)!important;
+  border-radius:28px!important;
+  background:rgba(255,255,255,.96)!important;
+  box-shadow:var(--ui-shadow)!important;
+}
+.call-panel h3{font-family:'Tajawal',sans-serif;font-size:24px;color:var(--ui-navy);font-weight:900;}
+.call-sub{font-size:14px;color:var(--ui-muted);line-height:1.7;}
+
+/* clearer forms */
+select,.icon-btn,input[type=text]{min-height:44px;}
+select,input[type=text]{border-color:var(--ui-line);background:#fff;color:var(--ui-ink);}
+select:focus,input:focus{outline:3px solid rgba(37,99,235,.14);border-color:var(--ui-blue);}
+.icon-btn{
+  border-color:var(--ui-line);
+  background:#fff;
+  color:#44516a;
+  font-weight:800;
+  transition:background .15s ease,border-color .15s ease,transform .12s ease;
+}
+.icon-btn:hover{background:#f3f7fd;border-color:#c6d8ef;color:var(--ui-navy);}
+.icon-btn:active{transform:scale(.97);}
+.big-btn{
+  min-height:52px;
+  border-radius:16px;
+  background:linear-gradient(145deg,var(--ui-blue),var(--ui-navy));
+  box-shadow:0 10px 22px rgba(37,99,235,.2);
+}
+
+.live-lang-row,.live-mode-row,.type-during-call,.quick-call{
+  border:1px solid var(--ui-line);
+  border-radius:20px;
+  background:#fbfdff;
+  padding:16px;
+}
+.live-lang-row{align-items:stretch;}
+.live-lang-col label,.live-mode-lbl{color:var(--ui-navy);font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;}
+.live-mode-options{gap:10px;}
+.live-mode-opt{
+  min-height:44px;
+  border-radius:14px;
+  padding:9px 12px;
+  background:#fff;
+  border-color:var(--ui-line);
+}
+.live-mode-opt:has(input:checked){background:linear-gradient(145deg,var(--ui-blue),var(--ui-navy));border-color:transparent;color:#fff;box-shadow:0 7px 16px rgba(37,99,235,.18);}
+.live-transcript{
+  border-radius:20px;
+  border-color:var(--ui-line);
+  background:linear-gradient(180deg,#fbfdff,#f4f8fd);
+  box-shadow:inset 0 1px 0 #fff;
+}
+.live-entry{background:#fff;border:1px solid #e8eef6;border-radius:14px;padding:12px;margin-bottom:9px;box-shadow:0 5px 14px rgba(23,45,78,.045);}
+.live-entry:last-child{margin-bottom:0;border-bottom:1px solid #e8eef6;}
+.live-export-row{gap:8px;}
+.live-export-row .icon-btn{min-height:48px;border-radius:14px;}
+
+/* conversation screen */
+.stage{
+  margin-top:12px!important;
+  margin-bottom:18px!important;
+  border:1px solid rgba(255,255,255,.82);
+  border-radius:28px;
+  overflow:hidden;
+  background:rgba(255,255,255,.96);
+  box-shadow:var(--ui-shadow);
+}
+.stage-topbar{background:#f7faff;border-bottom:1px solid var(--ui-line);}
+#stageTopbar2{background:#fbfdff;border-bottom:1px solid var(--ui-line);}
+.side{background:#fff;padding:26px;}
+.side h2{font-family:'Tajawal',sans-serif;color:var(--ui-navy);font-weight:900;}
+.transcript{border:1px solid #e6edf7;border-radius:18px;padding:18px;background:#fbfdff;line-height:1.8;}
+.transcript.placeholder{color:#8b96a9;}
+.mic-btn{width:68px;height:68px;border-width:0;background:#edf4ff;color:var(--ui-blue);box-shadow:inset 0 0 0 2px rgba(37,99,235,.2),0 8px 18px rgba(37,99,235,.12);}
+.side.right .mic-btn{background:#ecfbf7;color:var(--ui-green);box-shadow:inset 0 0 0 2px rgba(15,159,118,.22),0 8px 18px rgba(15,159,118,.12);}
+.mic-btn.listening{background:var(--ui-blue);color:#fff;}
+.side.right .mic-btn.listening{background:var(--ui-green);color:#fff;}
+.bridge-col{background:transparent;}
+.divider-line{background:linear-gradient(180deg,var(--ui-blue),#d6e0ed 45%,#d6e0ed 55%,var(--ui-green));}
+
+/* camera */
+.ocr-video-wrap{border-radius:24px;border:5px solid #fff;box-shadow:0 18px 42px rgba(15,47,102,.22);}
+.ocr-live-status{left:14px;right:14px;top:14px;border-radius:14px;background:rgba(15,47,102,.88);}
+.ocr-live-overlay{left:14px;right:14px;bottom:14px;border-radius:16px;background:rgba(15,32,54,.88);}
+
+.log-toggle-row{border:1px solid var(--ui-line);border-radius:18px;background:#fff;margin-bottom:10px!important;padding:10px;}
+.log-wrap{border:1px solid var(--ui-line);border-radius:20px;background:#fff;box-shadow:var(--ui-shadow-soft);}
+footer{margin-top:10px!important;border:1px solid var(--ui-line);border-radius:18px;background:rgba(255,255,255,.9);}
+.app-signature{background:transparent;color:#8490a4;}
+
+/* guide */
+.guide-overlay{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.guide-card{background:#fff;border-color:#e4eaf2;border-radius:26px;box-shadow:0 28px 80px rgba(12,29,55,.26);}
+.guide-card h2{font-family:'Tajawal',sans-serif;color:var(--ui-navy);font-weight:900;}
+.guide-step .num{background:#eef5ff;border-color:#c7dcff;color:var(--ui-blue);font-weight:900;}
+.guide-close{border-radius:16px;background:linear-gradient(145deg,var(--ui-blue),var(--ui-navy));}
+
+/* phone-first layout */
 @media (max-width:960px){
-  /* Prevent the translation divider from expanding into the large blue/gold overlay */
-  .stage .bridge-col{
-    grid-row:auto !important;
-    width:100% !important;
-    height:36px !important;
-    min-height:36px !important;
-    max-height:36px !important;
-    padding:0 18px !important;
-    margin:0 !important;
-    overflow:hidden !important;
-    background:transparent !important;
-    flex:none !important;
-  }
-  .stage .bridge-col .divider-line{
-    display:block !important;
-    width:100% !important;
-    height:3px !important;
-    min-height:3px !important;
-    max-height:3px !important;
-    flex:0 0 3px !important;
-    border-radius:999px !important;
-  }
-  .stage .bridge-col .divider-dot{
-    width:12px !important;
-    height:12px !important;
-    margin-top:-5px !important;
-  }
+  body{padding-bottom:calc(18px + env(safe-area-inset-bottom));}
+  .brand-hero{width:calc(100% - 20px);margin-top:10px;min-height:72px;padding:12px 14px;border-radius:22px;}
+  .brand-mark-lg{width:44px;height:44px;border-radius:15px;}
+  #brandHeroTitle{font-size:27px;}
+  header{width:calc(100% - 20px)!important;margin-top:8px!important;border-radius:18px!important;padding:9px!important;}
+  .controls{justify-content:center;gap:7px;}
+  .status-pill{width:100%;text-align:center;}
 
-  /* Keep the conversation itself above decorative layers and fully tappable */
-  .stage .side{ position:relative !important; z-index:2 !important; background:#fff !important; }
-  .stage.show{ overflow:visible !important; background:#fff !important; }
+  .services-bar{
+    width:calc(100% - 20px);
+    margin-top:8px;
+    padding:7px;
+    border-radius:20px;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    position:sticky;
+    top:max(6px,env(safe-area-inset-top));
+    gap:6px;
+  }
+  .svc-link,select.svc-select{min-width:0!important;min-height:62px;padding:7px 3px!important;border-radius:14px!important;}
+  .svc-link{display:flex;flex-direction:column;justify-content:center;gap:3px;}
+  .svc-link .svc-ic{font-size:23px;}
+  .svc-link span:not(.svc-ic){display:block!important;font-size:9.5px!important;line-height:1.15;white-space:normal!important;text-overflow:clip!important;overflow:visible!important;text-align:center;}
 
-  /* Device choice: readable, touch-friendly and never hidden */
-  .device-choice-row .live-mode-options,
-  #moreSheetOverlay .live-mode-options{
-    display:grid !important;
-    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-    gap:9px !important;
+  .hub-section{width:calc(100% - 20px);margin:10px auto 14px;padding:22px 14px;border-radius:24px;}
+  .hub-hero{margin-bottom:18px;}
+  .hub-kicker{font-size:10.5px;}
+  .hub-hero h2{font-size:23px;line-height:1.35;}
+  .hub-hero p{font-size:13.5px;}
+  .hub-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .hub-tile{min-height:142px;border-radius:20px;padding:16px 9px;}
+  .hub-tile:last-child:nth-child(odd){grid-column:1/-1;min-height:110px;}
+  .hub-tile-ic{font-size:31px;}
+  .hub-tile b{font-size:14px;}
+  .hub-tile small{font-size:10.5px;}
+
+  .call-panel,.stage,.log-wrap,.log-toggle-row,footer,.app-signature{width:calc(100% - 20px)!important;}
+  .call-panel{
+    inset:0!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:calc(16px + env(safe-area-inset-top)) 12px calc(26px + env(safe-area-inset-bottom))!important;
+    border:0!important;
+    border-radius:0!important;
+    background:#f7faff!important;
   }
-  .device-choice-row .live-mode-opt,
-  #moreSheetOverlay .live-mode-opt{
-    min-height:46px !important;
-    justify-content:center !important;
-    border-radius:12px !important;
-    padding:9px 7px !important;
-    text-align:center !important;
-  }
-  #svcDeviceSelect{ min-width:132px !important; font-size:11px !important; }
+  .call-panel > *{max-width:720px;margin-inline:auto;}
+  .call-panel h3{font-size:22px;margin-top:6px;}
+  .live-lang-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:12px;}
+  .live-mode-row,.type-during-call,.quick-call{padding:13px;border-radius:18px;}
+  .live-mode-options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .live-mode-opt{justify-content:center;padding:8px 4px;font-size:11px;text-align:center;}
+  .live-transcript{min-height:240px;max-height:48dvh;padding:12px;}
+  .live-export-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .live-export-row .icon-btn{min-width:0!important;padding:8px 2px;font-size:10.5px;flex-direction:column;gap:2px;}
+
+  .stage{width:calc(100% - 20px)!important;margin:10px auto 14px!important;border-radius:24px;}
+  .stage-topbar{padding:10px!important;gap:6px;}
+  #stageTopbar2{display:grid!important;grid-template-columns:1fr auto 1fr;gap:6px;padding:10px!important;}
+  #stageTopbar2 select{min-width:0;width:100%;}
+  #voiceGenderSelectStage,#stageCopyBtn{grid-column:auto;}
+  .side{padding:18px 14px;min-height:300px;}
+  .side h2{font-size:23px;margin-bottom:12px;}
+  .transcript{font-size:17px;min-height:110px;padding:15px;}
+  .mic-row{justify-content:center;flex-direction:column;text-align:center;gap:9px;}
+  .mic-btn{width:76px;height:76px;}
+  .hint{font-size:11px;}
+  .bridge-col{height:34px!important;padding:0 18px!important;}
+  .divider-line{height:3px;width:100%;min-height:3px;background:linear-gradient(90deg,var(--ui-blue),#d6e0ed 45%,#d6e0ed 55%,var(--ui-green));}
+
+  .guide-card{border-radius:26px 26px 0 0;padding:20px 16px calc(18px + env(safe-area-inset-bottom));}
 }
 
-/* ===== targeted device selector + Samsung lecture + OCR camera fixes ===== */
-.svc-device-wrap{
-  display:flex;
-  flex-direction:column;
-  align-items:stretch;
-  gap:5px;
-  min-width:150px;
+@media (max-width:430px){
+  .services-bar{grid-template-columns:repeat(5,minmax(0,1fr));}
+  .svc-link .svc-ic{font-size:21px;}
+  .svc-link span:not(.svc-ic){font-size:8.6px!important;}
+  .hub-tile{min-height:132px;}
+  .live-mode-opt span{font-size:10px;}
+  .live-export-row .icon-btn{font-size:9.5px;}
 }
-.svc-device-label{
-  font-family:'Tajawal',sans-serif;
-  font-size:11px;
-  font-weight:900;
-  color:var(--ink);
-  text-align:center;
-  white-space:nowrap;
+
+@media (min-width:961px){
+  .services-bar{display:none!important;}
+  .hub-grid{grid-template-columns:repeat(5,1fr);}
+  .call-panel{position:relative!important;inset:auto!important;height:auto!important;max-height:none!important;transform:none!important;}
 }
-.svc-device-wrap .svc-select{
-  width:100%;
-  min-width:0 !important;
-  margin:0;
-}
-#ocrStartLiveBtn{
-  touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;
-}
-@media(max-width:960px){
-  .svc-device-wrap{
-    flex:0 0 calc(40% - 8px);
-    min-width:170px;
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:8px 9px;
-  }
-  .svc-device-label{
-    font-size:12px;
-    color:#25324a;
-  }
-  .svc-device-wrap .svc-select{
-    border:0 !important;
-    background:transparent !important;
-    padding:5px 4px !important;
-    font-size:12px !important;
-    text-align:center;
-  }
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
 }
 
 </style>
@@ -1354,15 +1619,12 @@ body.ios-device .ios-help-note{display:block;}
   <button class="svc-link" id="svcGuide" data-target="guide"><span class="svc-ic">📘</span><span id="svcGuideLbl">دليل الاستخدام</span></button>
   <button class="svc-link svc-lang" id="svcLang" data-target="lang"><span class="svc-ic">🌐</span><span id="svcLangLbl">اللغة</span></button>
   <button class="svc-link" id="svcTextSize"><span class="svc-ic">Aa</span><span id="svcTextSizeLbl">حجم الخط</span></button>
-  <div class="svc-device-wrap" id="svcDeviceWrap">
-    <span class="svc-device-label" id="svcDeviceLabel">اختر نوع الجهاز</span>
-    <select class="svc-link svc-select" id="svcDeviceSelect" title="اختر نوع الجهاز">
-      <option value="" id="svcDeviceAuto">⚙️ تلقائي</option>
-      <option value="ios" id="svcDeviceIos">🍎 آيفون</option>
-      <option value="android" id="svcDeviceAndroid">📱 سامسونج</option>
-      <option value="desktop" id="svcDeviceDesktop">💻 لابتوب / كمبيوتر</option>
-    </select>
-  </div>
+  <select class="svc-link svc-select" id="svcDeviceSelect" title="نوع جهازك">
+    <option value="" id="svcDeviceAuto">⚙️ تلقائي</option>
+    <option value="ios" id="svcDeviceIos">🍎 آيفون</option>
+    <option value="android" id="svcDeviceAndroid">🤖 أندرويد</option>
+    <option value="desktop" id="svcDeviceDesktop">💻 حاسوب</option>
+  </select>
   <button class="svc-link" id="svcRefresh"><span class="svc-ic">🔄</span><span id="svcRefreshLbl">تحديث</span></button>
 </nav>
 
@@ -1461,7 +1723,7 @@ body.ios-device .ios-help-note{display:block;}
 
   <div class="ios-help-note">على الآيفون: افتح المنصة من Safari مباشرة، واسمح للكاميرا. ثبّت الهاتف لحظة أمام النص؛ زر «اقرأ الآن» يلتقط إطاراً واضحاً إذا تأخرت القراءة المباشرة.</div>
   <div class="ocr-mode-buttons">
-    <button type="button" class="big-btn" id="ocrStartLiveBtn">▶️ <span id="ocrStartLiveText">ابدأ الترجمة المباشرة</span></button>
+    <button class="big-btn" id="ocrStartLiveBtn">▶️ <span id="ocrStartLiveText">ابدأ الترجمة المباشرة</span></button>
     <button class="big-btn" id="ocrStopLiveBtn" style="display:none;background:var(--danger);">⏹ <span id="ocrStopLiveText">إيقاف</span></button>
     <label class="icon-btn ocr-capture-btn" id="ocrCaptureLabel" for="ocrCaptureInput">📸 <span>التقط صورة</span></label>
     <input type="file" id="ocrCaptureInput" accept="image/*" capture="environment" style="display:none;">
@@ -1517,7 +1779,7 @@ body.ios-device .ios-help-note{display:block;}
       <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="audio"><span>🎧 صوت فقط</span></label>
       <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="both" checked><span>📝🎧 الاثنان معاً</span></label>
     </div>
-    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن أثناء الخطبة — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة. ملاحظة: مع سماعات البلوتوث (AirPods) قد يخرج الصوت أحياناً من مكبر الهاتف بدل السماعة بسبب تبديل النظام التلقائي بين وضعي البلوتوث أثناء تسجيل الميكروفون — سماعة سلكية (جاك) أكثر ثباتاً في هذا الاستخدام.</p>
+    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن أثناء الخطبة — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
   </div>
 
   <div class="live-mode-row">
@@ -1576,7 +1838,7 @@ body.ios-device .ios-help-note{display:block;}
       <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="audio"><span>🎧 صوت فقط</span></label>
       <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="both" checked><span>📝🎧 الاثنان معاً</span></label>
     </div>
-    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة. ملاحظة: مع سماعات البلوتوث (AirPods) قد يخرج الصوت أحياناً من مكبر الهاتف بدل السماعة بسبب تبديل النظام التلقائي بين وضعي البلوتوث أثناء تسجيل الميكروفون — سماعة سلكية (جاك) أكثر ثباتاً في هذا الاستخدام.</p>
+    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
   </div>
 
   <div class="live-mode-row">
@@ -1811,12 +2073,12 @@ body.ios-device .ios-help-note{display:block;}
       <label id="moreRefreshLbl">🔄 تحديث التطبيق (سحب آخر نسخة)</label>
       <button class="icon-btn" id="forceRefreshBtn">تحديث</button>
     </div>
-    <div class="live-mode-row device-choice-row" style="margin:14px 22px 0;">
+    <div class="live-mode-row" style="margin:14px 22px 0;">
       <label class="live-mode-lbl">📱 نوع جهازك (لضبط سرعة الترجمة المستمرة)</label>
       <div class="live-mode-options">
         <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="" checked><span>⚙️ تلقائي</span></label>
         <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="ios"><span>🍎 آيفون</span></label>
-        <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="android"><span>📱 سامسونج / أندرويد</span></label>
+        <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="android"><span>🤖 أندرويد</span></label>
         <label class="live-mode-opt"><input type="radio" name="deviceOverride" value="desktop"><span>💻 حاسوب</span></label>
       </div>
       <p class="live-mode-hint">اختر جهازك يدوياً فقط لو لاحظت إن الكشف التلقائي غير دقيق. "تلقائي" هو الخيار الأنسب لأغلب الناس.</p>
@@ -1905,7 +2167,7 @@ const STRINGS = {
     moreClear:'🗑️ مسح المحادثة', moreClearBtn:'مسح',
     confirmClearLog:'هل متأكد تبي تمسح سجل هذي المحادثة؟ لا يمكن التراجع.',
     moreVoice:'🎙️ صوت الترجمة', voiceAuto:'تلقائي', voiceFemale:'أنثوي', voiceMale:'ذكوري',
-    svcDeviceLbl:'📱 نوع جهازك', deviceChoiceLabel:'اختر نوع الجهاز', svcDeviceAutoTxt:'⚙️ تلقائي', svcDeviceIosTxt:'🍎 آيفون', svcDeviceAndroidTxt:'📱 سامسونج', svcDeviceDesktopTxt:'💻 لابتوب / كمبيوتر',
+    svcDeviceLbl:'📱 نوع جهازك', svcDeviceAutoTxt:'⚙️ تلقائي', svcDeviceIosTxt:'🍎 آيفون', svcDeviceAndroidTxt:'🤖 أندرويد', svcDeviceDesktopTxt:'💻 حاسوب',
     swapLangsLabel:'⇄ تبديل اللغتين', swapNowBtn:'تبديل', navLangLabel:'اللغة', navCameraLabel:'كاميرا',
     moreRefresh:'🔄 تحديث التطبيق (سحب آخر نسخة)', refreshBtn:'تحديث', refreshBtnDesktop:'🔄 تحديث',
   },
@@ -1971,7 +2233,7 @@ const STRINGS = {
     moreClear:'🗑️ Konuşmayı temizle', moreClearBtn:'Temizle',
     confirmClearLog:'Bu konuşma geçmişini silmek istediğinize emin misiniz? Geri alınamaz.',
     moreVoice:'🎙️ Çeviri sesi', voiceAuto:'Otomatik', voiceFemale:'Kadın', voiceMale:'Erkek',
-    svcDeviceLbl:'📱 Cihaz türünüz', deviceChoiceLabel:'Cihaz türünü seçin', svcDeviceAutoTxt:'⚙️ Otomatik', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'📱 Samsung', svcDeviceDesktopTxt:'💻 Dizüstü / Bilgisayar',
+    svcDeviceLbl:'📱 Cihaz türünüz', svcDeviceAutoTxt:'⚙️ Otomatik', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'🤖 Android', svcDeviceDesktopTxt:'💻 Bilgisayar',
     swapLangsLabel:'⇄ Dilleri değiştir', swapNowBtn:'Değiştir', navLangLabel:'Dil', navCameraLabel:'Kamera',
     moreRefresh:'🔄 Uygulamayı güncelle (son sürümü al)', refreshBtn:'Güncelle', refreshBtnDesktop:'🔄 Güncelle',
   },
@@ -2037,7 +2299,7 @@ const STRINGS = {
     moreClear:'🗑️ Clear conversation', moreClearBtn:'Clear',
     confirmClearLog:'Are you sure you want to clear this conversation history? This cannot be undone.',
     moreVoice:'🎙️ Translation voice', voiceAuto:'Automatic', voiceFemale:'Female', voiceMale:'Male',
-    svcDeviceLbl:'📱 Your device', deviceChoiceLabel:'Choose device type', svcDeviceAutoTxt:'⚙️ Automatic', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'📱 Samsung', svcDeviceDesktopTxt:'💻 Laptop / Computer',
+    svcDeviceLbl:'📱 Your device', svcDeviceAutoTxt:'⚙️ Automatic', svcDeviceIosTxt:'🍎 iPhone', svcDeviceAndroidTxt:'🤖 Android', svcDeviceDesktopTxt:'💻 Computer',
     swapLangsLabel:'⇄ Swap languages', swapNowBtn:'Swap', navLangLabel:'Language', navCameraLabel:'Camera',
     moreRefresh:'🔄 Refresh app (pull latest version)', refreshBtn:'Refresh', refreshBtnDesktop:'🔄 Refresh',
   },
@@ -2320,8 +2582,7 @@ function speak(text, lang, onDone){
   const doSpeak = () => {
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = lang;
-    utter.rate = IS_IOS ? 0.90 : (IS_ANDROID ? 0.88 : 0.95);
-      if(IS_ANDROID){ try{ window.speechSynthesis.resume(); }catch(e){} }
+    utter.rate = IS_IOS ? 0.90 : 0.95;
     utter.volume = 1;
     const preferred = pickVoiceFor(lang.split('-')[0]);
     if(preferred) utter.voice = preferred;
@@ -2816,43 +3077,24 @@ async function startLiveOcr(){
   document.getElementById('ocrPreview').style.display = 'none';
   document.getElementById('ocrStatus').style.display = 'none';
 
-  const ocrStatusBox = document.getElementById('ocrStatus');
-  ocrStatusBox.style.display = 'block';
-  ocrStatusBox.textContent = '📷 جارٍ طلب إذن استخدام الكاميرا…';
   try{
     if(!window.isSecureContext) throw new Error('secure context required');
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('camera unsupported');
     if(ocrStream){ ocrStream.getTracks().forEach(t=>t.stop()); ocrStream = null; }
-
-    // Try the rear camera in progressively simpler forms. Some Samsung
-    // browsers reject width/frameRate constraints even though the camera
-    // itself is available, so one failed constraint must not end the request.
-    const attempts = [
-      {video:{facingMode:{exact:'environment'}},audio:false},
-      {video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false},
-      {video:true,audio:false}
-    ];
-    let lastCameraError = null;
-    for(const request of attempts){
-      try{
-        ocrStream = await navigator.mediaDevices.getUserMedia(request);
-        if(ocrStream) break;
-      }catch(err){ lastCameraError = err; }
+    const constraints = IS_IOS
+      ? { video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:24,max:30} }, audio:false }
+      : { video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:24,max:30} }, audio:false };
+    try{
+      ocrStream = await navigator.mediaDevices.getUserMedia(constraints);
+    }catch(firstErr){
+      // Some iPhones reject facingMode; retry with the simplest camera request.
+      ocrStream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
     }
-    if(!ocrStream) throw lastCameraError || new Error('camera unavailable');
   }catch(err){
-    const androidHelp = IS_ANDROID
-      ? ' افتح إعدادات الموقع في Samsung Internet أو Chrome، ثم الأذونات > الكاميرا > سماح.'
-      : '';
-    const iosHelp = IS_IOS
-      ? ' افتح الموقع في Safari العادي، ثم إعدادات الموقع > الكاميرا > سماح.'
-      : '';
-    const msg = t('ocrCameraDenied') + androidHelp + iosHelp;
-    ocrStatusBox.textContent = '⚠️ ' + msg;
-    showBanner(msg);
+    const extra = IS_IOS ? ' افتح الموقع في Safari العادي، ثم الإعدادات > Safari > الكاميرا > سماح.' : '';
+    showBanner(t('ocrCameraDenied') + extra);
     return;
   }
-  ocrStatusBox.style.display = 'none';
   video.setAttribute('playsinline','');
   video.setAttribute('webkit-playsinline','');
   video.muted = true;
@@ -2957,18 +3199,7 @@ async function captureAndTranslateFrame(){
   ocrBusy = false;
 }
 
-document.getElementById('ocrStartLiveBtn').addEventListener('click', async (event) => {
-  event.preventDefault();
-  const btn = event.currentTarget;
-  if(btn.dataset.busy === '1') return;
-  btn.dataset.busy = '1';
-  btn.disabled = true;
-  try{ await startLiveOcr(); }
-  finally{
-    btn.dataset.busy = '0';
-    btn.disabled = false;
-  }
-});
+document.getElementById('ocrStartLiveBtn').addEventListener('click', startLiveOcr);
 document.getElementById('ocrStopLiveBtn').addEventListener('click', stopLiveOcr);
 document.getElementById('ocrReadNowBtn').addEventListener('click', async () => {
   if(!ocrStream){ await startLiveOcr(); return; }
@@ -3048,23 +3279,6 @@ function makeLivePanel(prefix){
     for(const r of audioSourceInputs) if(r.checked) return r.value;
     return 'natural';
   }
-  // Broadcast/TV/YouTube sources are loud enough that the mic can pick the
-  // translated speech right back up as if it were new input — a feedback
-  // loop that both sounds garbled and re-translates itself. We never change
-  // the person's chosen output mode automatically — headphones make audio
-  // output perfectly safe even in broadcast mode, and that's the person's
-  // call to make. We just make sure they know the risk if they're not
-  // using headphones, once per change, without being pushy about it.
-  audioSourceInputs.forEach(r => r.addEventListener('change', () => {
-    if(r.checked && r.value === 'broadcast' && getOutputMode() !== 'text'){
-      showBanner('📻 وضع البث/التلفاز مفعّل: يُفضَّل استخدام سماعة رأس عند تشغيل صوت الترجمة، حتى لا يلتقط الميكروفون صوت الترجمة نفسه ويكرره. بدون سماعة، يمكنك اختيار "نص فقط" بدلاً من ذلك.');
-    }
-  }));
-  outputModeInputs.forEach(r => r.addEventListener('change', () => {
-    if(r.checked && r.value !== 'text' && getAudioSource() === 'broadcast'){
-      showBanner('🎧 تذكير: أنت بوضع البث/التلفاز مع تشغيل الصوت — استخدم سماعة رأس لتفادي التقاط الميكروفون لصوت الترجمة نفسه.');
-    }
-  }));
 
   // A real speech QUEUE — this is the actual fix for the "cutting off"
   // problem: speak() elsewhere in the app always cancels whatever is
@@ -3075,7 +3289,7 @@ function makeLivePanel(prefix){
   // yet. This queue speaks one sentence fully, THEN moves to the next.
   let speechQueue = [];
   let speaking = false;
-  let pausedForSpeech = false; // iOS/Android: mic was deliberately paused to let audio play cleanly
+  let pausedForSpeech = false; // iOS-only: mic was deliberately paused to let audio play
   function queueSpeech(text, lang){
     speechQueue.push({ text, lang });
     if(!speaking) playNextInQueue();
@@ -3083,29 +3297,22 @@ function makeLivePanel(prefix){
   function playNextInQueue(){
     if(speechQueue.length === 0){
       speaking = false;
-      // Audio output can be silently blocked (iOS) or picked back up by the
-      // mic as feedback (Android/Samsung) while actively recording — so we
-      // paused listening just before speaking. Now that the whole queue has
-      // finished, resume listening.
-      if((IS_IOS || IS_ANDROID) && pausedForSpeech && running && rec){
+      // iOS: audio output can be silently blocked while the microphone is
+      // actively recording (a real device audio-session restriction) — so
+      // we paused listening just before speaking. Now that the whole queue
+      // has finished, resume listening.
+      if(IS_IOS && pausedForSpeech && running && rec){
         pausedForSpeech = false;
         try{ rec.start(); }catch(e){}
       }
       return;
     }
     speaking = true;
-    // Pause the mic right before the FIRST utterance of this batch so the
-    // translated speech doesn't get picked back up by the microphone as if
-    // it were new input (a feedback loop that re-translates its own voice)
-    // and so the device's audio session doesn't fight itself.
-    // iOS needs this because audio output can be silently blocked while the
-    // mic is actively recording. Android/Samsung need it too — despite the
-    // old assumption that they "handle simultaneous mic+speaker fine", in
-    // practice this is exactly what produced the garbled/interrupted sound
-    // and repeat-translation reports on Samsung: the mic hears the TTS
-    // output. Desktop mic/speaker are physically separate (headset/room
-    // setup varies) so it's left alone there to avoid an unnecessary gap.
-    if((IS_IOS || IS_ANDROID) && !pausedForSpeech && rec && running){
+    // iOS: pause the mic right before the FIRST utterance of this batch so
+    // the device's audio session is free to actually play sound. We only
+    // do this on iOS — Android/desktop handle simultaneous mic+speaker fine
+    // and pausing there would just add an unnecessary gap.
+    if(IS_IOS && !pausedForSpeech && rec && running){
       pausedForSpeech = true;
       try{ rec.stop(); }catch(e){}
     }
@@ -3113,8 +3320,7 @@ function makeLivePanel(prefix){
     try{
       const utter = new SpeechSynthesisUtterance(next.text);
       utter.lang = next.lang;
-      utter.rate = IS_IOS ? 0.90 : (IS_ANDROID ? 0.88 : 0.95);
-      if(IS_ANDROID){ try{ window.speechSynthesis.resume(); }catch(e){} }
+      utter.rate = IS_IOS ? 0.90 : 0.95;
       utter.volume = 1;
       const preferred = (typeof pickVoiceFor === 'function') ? pickVoiceFor(next.lang.split('-')[0]) : null;
       if(preferred) utter.voice = preferred;
@@ -3123,7 +3329,7 @@ function makeLivePanel(prefix){
       utter.onend = finish;
       utter.onerror = finish;
       window.speechSynthesis.speak(utter);
-      setTimeout(finish, Math.max(IS_ANDROID ? 6500 : 4000, next.text.length * (IS_ANDROID ? 230 : 180))); // safety net
+      setTimeout(finish, Math.max(4000, next.text.length * 180)); // safety net
     }catch(e){ playNextInQueue(); }
   }
   function clearSpeechQueue(){
@@ -3171,32 +3377,6 @@ function makeLivePanel(prefix){
   let entries = []; // in-memory only: {original, translated, time}
   let lastActivityAt = 0; // updated on every onstart/onresult — used by the watchdog below
   let watchdogTimer = null;
-  // Prevent Samsung/Android from translating the same sentence twice when
-  // Chrome first emits it as interim text and then emits the same words again
-  // as a final or re-segmented result.
-  const recentCommittedSegments = [];
-  let committedResetTimer = null;
-  const normalizeLiveText = (s) => (s || '')
-    .toLocaleLowerCase()
-    .replace(/[\u064B-\u065F\u0670]/g,'')
-    .replace(/[.,!?؛،؟…:;'"“”()\[\]{}\-]+/g,' ')
-    .replace(/\s+/g,' ')
-    .trim();
-  function isRecentDuplicate(segment){
-    const n = normalizeLiveText(segment);
-    if(!n) return true;
-    return recentCommittedSegments.some(prev =>
-      prev === n ||
-      (n.length > 18 && prev.includes(n)) ||
-      (prev.length > 18 && n.includes(prev))
-    );
-  }
-  function rememberCommitted(segment){
-    const n = normalizeLiveText(segment);
-    if(!n) return;
-    recentCommittedSegments.push(n);
-    if(recentCommittedSegments.length > 8) recentCommittedSegments.shift();
-  }
 
   // ---- Silent-stall watchdog ----
   // On some desktop/laptop Chrome installs, the recognizer can silently stop
@@ -3210,8 +3390,7 @@ function makeLivePanel(prefix){
     watchdogTimer = setInterval(() => {
       if(!running || pausedForSpeech) return;
       const idleFor = Date.now() - lastActivityAt;
-      const stallLimit = IS_ANDROID ? (getAudioSource() === 'broadcast' ? 12000 : 9000) : 6000;
-      if(idleFor > stallLimit){
+      if(idleFor > 6000){
         try{ rec && rec.stop(); }catch(e){}
         try{ buildRec(); if(running) rec.start(); }catch(e){}
         lastActivityAt = Date.now();
@@ -3220,23 +3399,7 @@ function makeLivePanel(prefix){
   }
   function stopWatchdog(){ clearInterval(watchdogTimer); watchdogTimer = null; }
 
-  let openEntryDiv = null; // the last <div> still being built up (not yet finalized by a real isFinal)
-  function appendEntry(original, translated, isFinalCommit){
-    if(openEntryDiv){
-      // newPart is always an incremental new chunk (never a full corrected
-      // sentence) whether it came from an early interim guess or the real
-      // isFinal result — so we always extend the open line with it. The
-      // only difference is whether we keep the line open for more (still
-      // mid-sentence) or close it now that a real isFinal confirmed the
-      // sentence is complete.
-      const last = entries[entries.length - 1];
-      last.original = (last.original + ' ' + original).trim();
-      last.translated = (last.translated + ' ' + translated).trim();
-      openEntryDiv.querySelector('.trans').textContent = last.translated;
-      transcriptEl.scrollTop = transcriptEl.scrollHeight;
-      if(isFinalCommit) openEntryDiv = null; // next segment starts a fresh line
-      return;
-    }
+  function appendEntry(original, translated){
     entries.push({ original, translated, time: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) });
     transcriptEl.querySelector('.live-empty')?.remove();
     const div = document.createElement('div');
@@ -3246,11 +3409,9 @@ function makeLivePanel(prefix){
     // Only the TRANSLATED text is shown on screen — the original is kept in
     // `entries` (above) for PDF/Word export only, never displayed live,
     // per explicit request: "لا يظهر الاثنين معاً".
-    div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans"></div>`;
-    div.querySelector('.trans').textContent = translated;
+    div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans">${translated}</div>`;
     transcriptEl.appendChild(div);
     transcriptEl.scrollTop = transcriptEl.scrollHeight;
-    if(!isFinalCommit) openEntryDiv = div; // keep it open only if more is likely coming
   }
 
   function resetToDefaults(){
@@ -3261,11 +3422,6 @@ function makeLivePanel(prefix){
     outputModeInputs[2].checked = true; // "both" — text + audio, the new default
     audioSourceInputs[0].checked = true;
     entries = [];
-    openEntryDiv = null;
-    recentCommittedSegments.length = 0;
-    committedText = '';
-    lastInterimSnapshot = '';
-    clearTimeout(committedResetTimer);
     transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
     statusEl.textContent = 'جاهز للاستماع';
     setTimeout(() => { statusEl.textContent = ''; }, 1500);
@@ -3334,30 +3490,9 @@ function makeLivePanel(prefix){
     let interimStableTimer = null;
     const wordsOf = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
 
-    let commitQueue = Promise.resolve(); // serializes only the fast text-comparison step below
-    function commitNewPortion(fullText, isFinalCommit){
-      // Chain ONLY the synchronous text-matching/committing step onto this
-      // queue — not the translation or speech, which are slow (network
-      // calls) and must be free to run in parallel so replies stay fast.
-      // This is the root fix for the Samsung repeat/garble bug: previously,
-      // if a "settled" interim result and a real final result arrived close
-      // together, BOTH could start comparing text against committedText
-      // before either had updated it — so the second call would slice from
-      // a stale prefix and either repeat words already spoken or cut the
-      // sentence wrong. Serializing just this quick step closes that gap
-      // completely without making anyone wait for a translation to finish.
-      commitQueue = commitQueue.then(() => claimNewPortion(fullText, isFinalCommit));
-      return commitQueue.then(newPart => {
-        if(newPart == null) return; // nothing new, or a duplicate — already handled
-        return speakNewPortion(newPart, isFinalCommit); // runs freely, not queued
-      });
-    }
-    // Fast, fully synchronous claim step: decide what's new and update
-    // state immediately. No await anywhere in here, so two overlapping
-    // calls can never both read the old committedText.
-    function claimNewPortion(fullText, isFinalCommit){
+    async function commitNewPortion(fullText){
       const trimmed = (fullText || '').trim();
-      if(!trimmed) return null;
+      if(!trimmed) return;
       const allWords = wordsOf(trimmed);
       const committedWords = wordsOf(committedText);
       if(allWords.length <= committedWords.length && committedWords.length > 0){
@@ -3367,7 +3502,7 @@ function makeLivePanel(prefix){
         // capitalization/punctuation) between results, which can also make
         // it briefly SHORTER by a word or two. In that case this is still
         // just a revision of what we already spoke, so it's safe to skip.
-        return null;
+        return;
       }
       // Verify the new text actually starts with what we already committed —
       // word for word, case/punctuation-insensitive. If it doesn't, Android's
@@ -3380,29 +3515,12 @@ function makeLivePanel(prefix){
       const newPart = prefixMatches
         ? allWords.slice(committedWords.length).join(' ')
         : trimmed; // re-segmented by the engine — treat as a new, whole chunk
-      if(!newPart) return null;
-      if(isRecentDuplicate(newPart)){
-        committedText = trimmed;
-        return null;
-      }
+      if(!newPart) return;
       committedText = trimmed;
-      rememberCommitted(newPart);
-      clearTimeout(committedResetTimer);
-      committedResetTimer = setTimeout(() => {
-        committedText = '';
-        lastInterimSnapshot = '';
-      }, IS_ANDROID ? 2400 : 1700);
-      return newPart;
-    }
-    // Slow part (translation + speech) — deliberately OUTSIDE the queue so
-    // it can run concurrently with the next segment's fast claim step,
-    // keeping the app feeling as responsive as it was before this fix.
-    async function speakNewPortion(newPart, isFinalCommit){
-
       statusEl.textContent = '🌐 يترجم...';
       try{
         const translated = await translateText(newPart, speakerLang.code, myLang.code);
-        appendEntry(newPart, translated, isFinalCommit);
+        appendEntry(newPart, translated);
         const mode = getOutputMode();
         if(mode === 'audio' || mode === 'both') queueSpeech(translated, myLang.bcp47);
       }catch(err){ /* skip this segment, keep listening */ }
@@ -3421,22 +3539,21 @@ function makeLivePanel(prefix){
 
       if(finalText.trim()){
         clearTimeout(interimStableTimer);
-        // Do not clear committedText immediately on Samsung. Chrome often
-        // sends the same sentence once as interim and again as final; keeping
-        // the committed prefix briefly lets commitNewPortion reject the repeat.
-        commitNewPortion(finalText.trim(), true);
-        lastInterimSnapshot = '';
+        commitNewPortion(finalText.trim()).then(() => {
+          committedText = ''; // fresh start for the next sentence, only AFTER this one's async work is done
+          lastInterimSnapshot = '';
+        });
         return;
       }
 
       if(interimText.trim()){
         const snapshot = interimText.trim();
-        statusEl.textContent = '🎙️ يستمع الآن…';
+        statusEl.textContent = '🎙️ ' + snapshot.slice(-60);
         if(snapshot !== lastInterimSnapshot){
           lastInterimSnapshot = snapshot;
           clearTimeout(interimStableTimer);
           const stableWait = IS_IOS ? 900 : (IS_ANDROID ? 800 : 600); // iPhone / Android / Desktop
-          interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, stableWait);
+          interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot); }, stableWait);
         }
       }
     };
@@ -3461,7 +3578,6 @@ function makeLivePanel(prefix){
     if(rec){ try{ rec.stop(); }catch(e){} }
     stopWatchdog();
     clearSpeechQueue();
-    openEntryDiv = null; // next start() begins a fresh line instead of extending an old one
   }
   startBtn.addEventListener('click', start);
   stopBtn.addEventListener('click', stop);
@@ -3481,7 +3597,6 @@ function makeLivePanel(prefix){
 
   document.getElementById(prefix + 'ClearBtn').addEventListener('click', () => {
     entries = [];
-    openEntryDiv = null;
     transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
     if(!running) statusEl.textContent = 'جاهز للاستماع';
   });
@@ -4011,7 +4126,7 @@ const SIMPLE_I18N_MAP = {
   voiceLblDesktop:'moreVoice', voiceOptAutoD:'voiceAuto', voiceOptFemaleD:'voiceFemale', voiceOptMaleD:'voiceMale',
   voiceOptAutoStage:'voiceAuto', voiceOptFemaleStage:'voiceFemale', voiceOptMaleStage:'voiceMale',
   moreRefreshLbl:'moreRefresh', forceRefreshBtn:'refreshBtn', forceRefreshBtnDesktop:'refreshBtnDesktop',
-  svcTextSizeLbl:'moreTextSize', svcRefreshLbl:'moreRefresh', svcDeviceLabel:'deviceChoiceLabel',
+  svcTextSizeLbl:'moreTextSize', svcRefreshLbl:'moreRefresh',
   svcDeviceAuto:'svcDeviceAutoTxt', svcDeviceIos:'svcDeviceIosTxt', svcDeviceAndroid:'svcDeviceAndroidTxt', svcDeviceDesktop:'svcDeviceDesktopTxt',
   ocrTitle:'ocrTitle', ocrDesc:'ocrDesc', ocrCaptureText:'ocrCaptureText',
   ocrExtractedLabel:'ocrExtractedLabel', ocrTranslatedLabel:'ocrTranslatedLabel',
