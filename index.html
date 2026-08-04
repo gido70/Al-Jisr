@@ -158,19 +158,19 @@
     to{ opacity:1; transform:translateY(0); }
   }
   @media (max-width:960px){
-    .stage{grid-template-columns:1fr; display:none;}
-    .stage.show{display:grid;}
+    .stage{display:none;}
+    .stage.show{display:flex; flex-direction:column;}
     #stageTopbarMobileOnly{
       display:flex; justify-content:space-between; align-items:center;
-      grid-column:1/-1;
       padding:14px 16px 4px;
     }
     #stageTopbarMobileOnly .icon-btn{ font-size:12.5px; }
-    #stageTopbar2{ flex-wrap:wrap; gap:6px; padding-top:6px; }
+    #stageTopbar2{ flex-wrap:wrap; gap:6px; padding-top:6px; display:flex; }
     #stageTopbar2 select{ font-size:12px; padding:6px 8px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--muted); }
     #stageAutoBtn.active{ background:var(--gold); color:#fff; border-color:var(--gold); }
+    .side{ width:100%; }
+    .bridge-col{ width:100%; }
     .stage-bottombar{
-      grid-column:1/-1;
       display:flex; justify-content:center;
       padding:20px 16px calc(20px + env(safe-area-inset-bottom));
     }
@@ -1561,6 +1561,20 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   .brand-hero{min-height:165px!important;}
   .brand-hero .brand-mark-lg{width:390px!important;}
   .brand-hero .brand-logo-image{max-height:130px!important;}
+}
+/* Safety net: guarantee the live-conversation mic buttons and side panels
+   are always visible and laid out, regardless of any other rule that may
+   have accidentally affected them. Does not change colors, sizes, or any
+   other styling — only ensures display/visibility are never suppressed. */
+.stage.show{ display:flex!important; flex-direction:column!important; }
+.stage.show .side{ display:flex!important; visibility:visible!important; opacity:1!important; }
+.stage.show .mic-row{ display:flex!important; visibility:visible!important; opacity:1!important; }
+.stage.show .mic-btn{ display:flex!important; visibility:visible!important; opacity:1!important; }
+@media(min-width:961px){
+  .stage{ display:grid!important; }
+  .stage .side{ display:flex!important; visibility:visible!important; opacity:1!important; }
+  .stage .mic-row{ display:flex!important; visibility:visible!important; opacity:1!important; }
+  .stage .mic-btn{ display:flex!important; visibility:visible!important; opacity:1!important; }
 }
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
