@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aljisr-v2026-08-04-fix-mic-root-cause-topbar2-moved-out';
+const CACHE_NAME = 'aljisr-v2026-08-05-force-stage-min-height-final';
 const CORE = ['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(CORE.map(u => cache.add(u)))).then(() => self.skipWaiting()));
