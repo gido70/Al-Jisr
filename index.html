@@ -1221,6 +1221,11 @@ body.ios-device .ios-help-note{display:block;}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<style>
+.samsung-profile-note{display:none;margin:8px 0 0;padding:9px 11px;border-radius:10px;background:#eef6ff;border:1px solid #b9d2f5;color:#123b67;font-size:12px;line-height:1.55}
+body.samsung-profile .samsung-profile-note{display:block}
+</style>
 </head>
 <body>
 
@@ -1363,6 +1368,7 @@ body.ios-device .ios-help-note{display:block;}
       <option value="desktop" id="svcDeviceDesktop">💻 لابتوب / كمبيوتر</option>
     </select>
   </div>
+    <div class="samsung-profile-note">وضع سامسونج: يجمع المقاطع الصوتية القصيرة في جملة واحدة، ويوقف الميكروفون مرة واحدة أثناء نطق الترجمة لمنع التكرار وتقليل نغمة النظام.</div>
   <button class="svc-link" id="svcRefresh"><span class="svc-ic">🔄</span><span id="svcRefreshLbl">تحديث</span></button>
 </nav>
 
@@ -2143,12 +2149,14 @@ function setDeviceOverride(val){
     IS_ANDROID = /Android/.test(navigator.userAgent);
   }
   document.body.classList.toggle('ios-device', IS_IOS);
+  document.body.classList.toggle('samsung-profile', IS_ANDROID);
 }
 try{
   const savedOverride = localStorage.getItem('aljisr_device_override') || '';
   if(savedOverride) setDeviceOverride(savedOverride);
 }catch(e){}
 if(IS_IOS) document.body.classList.add('ios-device');
+if(IS_ANDROID) document.body.classList.add('samsung-profile');
 const banner = document.getElementById('banner');
 const statusLine = document.getElementById('statusLine');
 const logWrap = document.getElementById('logWrap');
@@ -3058,38 +3066,59 @@ function makeLivePanel(prefix){
   // yet. This queue speaks one sentence fully, THEN moves to the next.
   let speechQueue = [];
   let speaking = false;
-  let pausedForSpeech = false; // iOS/Android: mic was deliberately paused to let audio play cleanly
+  let pausedForSpeech = false; // iOS/Samsung: mic may be paused while translated audio plays
+  let samsungSpeechBatchTimer = null;
+  let samsungSpeechBatch = [];
   function queueSpeech(text, lang){
+    // Samsung profile: collect nearby translated fragments into one utterance.
+    // This prevents the recognizer from stopping/starting for every short fragment,
+    // greatly reducing the system chime and avoiding the phone hearing its own TTS.
+    if(IS_ANDROID){
+      samsungSpeechBatch.push({ text, lang });
+      clearTimeout(samsungSpeechBatchTimer);
+      samsungSpeechBatchTimer = setTimeout(() => {
+        const batch = samsungSpeechBatch.splice(0);
+        if(!batch.length) return;
+        const merged = batch.map(x => x.text).join(' ').replace(/\s+/g,' ').trim();
+        speechQueue.push({ text: merged, lang: batch[batch.length-1].lang });
+        if(!speaking) playNextInQueue();
+      }, 850);
+      return;
+    }
     speechQueue.push({ text, lang });
     if(!speaking) playNextInQueue();
   }
   function playNextInQueue(){
     if(speechQueue.length === 0){
       speaking = false;
-      // Audio output can be silently blocked (iOS) or picked back up by the
-      // mic as feedback (Android/Samsung) while actively recording — so we
-      // paused listening just before speaking. Now that the whole queue has
-      // finished, resume listening.
+      // iOS: audio output can be silently blocked while the microphone is
+      // actively recording (a real device audio-session restriction) — so
+      // we paused listening just before speaking. Now that the whole queue
+      // has finished, resume listening.
       if((IS_IOS || IS_ANDROID) && pausedForSpeech && running && rec){
         pausedForSpeech = false;
-        try{ rec.start(); }catch(e){}
+        // Samsung gets one delayed restart for the whole spoken batch, not one
+        // restart per sentence. This is the key to reducing the Android chime.
+        const resumeDelay = IS_ANDROID ? 420 : 0;
+        setTimeout(() => {
+          if(!running) return;
+          try{ rec.start(); }catch(e){
+            try{ buildRec(); rec.start(); }catch(e2){}
+          }
+        }, resumeDelay);
       }
       return;
     }
     speaking = true;
-    // Pause the mic right before the FIRST utterance of this batch so the
-    // translated speech doesn't get picked back up by the microphone as if
-    // it were new input (a feedback loop that re-translates its own voice)
-    // and so the device's audio session doesn't fight itself.
-    // iOS needs this because audio output can be silently blocked while the
-    // mic is actively recording. Android/Samsung need it too — despite the
-    // old assumption that they "handle simultaneous mic+speaker fine", in
-    // practice this is exactly what produced the garbled/interrupted sound
-    // and repeat-translation reports on Samsung: the mic hears the TTS
-    // output. Desktop mic/speaker are physically separate (headset/room
-    // setup varies) so it's left alone there to avoid an unnecessary gap.
+    // iOS: pause the mic right before the FIRST utterance of this batch so
+    // the device's audio session is free to actually play sound. We only
+    // do this on iOS — Android/desktop handle simultaneous mic+speaker fine
+    // and pausing there would just add an unnecessary gap.
     if((IS_IOS || IS_ANDROID) && !pausedForSpeech && rec && running){
       pausedForSpeech = true;
+      // On Samsung, leaving recognition active while TTS speaks causes the
+      // microphone to transcribe the translated voice and creates repetition.
+      // Pause once for the entire queue, then resume once after it finishes.
       try{ rec.stop(); }catch(e){}
     }
     const next = speechQueue.shift();
@@ -3111,6 +3140,8 @@ function makeLivePanel(prefix){
   }
   function clearSpeechQueue(){
     speechQueue = [];
+    samsungSpeechBatch = [];
+    clearTimeout(samsungSpeechBatchTimer);
     speaking = false;
     pausedForSpeech = false;
     try{ window.speechSynthesis.cancel(); }catch(e){}
@@ -3154,6 +3185,11 @@ function makeLivePanel(prefix){
   let entries = []; // in-memory only: {original, translated, time}
   let lastActivityAt = 0; // updated on every onstart/onresult — used by the watchdog below
   let watchdogTimer = null;
+  // Samsung/Android strict-final pipeline. Interim hypotheses are NEVER
+  // translated or spoken on Samsung because Chrome repeatedly rewrites them;
+  // processing them was the root cause of cut, repeated and overlapping text.
+  let translationChain = Promise.resolve();
+  let androidTailWords = [];
   // Prevent Samsung/Android from translating the same sentence twice when
   // Chrome first emits it as interim text and then emits the same words again
   // as a final or re-segmented result.
@@ -3178,7 +3214,44 @@ function makeLivePanel(prefix){
     const n = normalizeLiveText(segment);
     if(!n) return;
     recentCommittedSegments.push(n);
-    if(recentCommittedSegments.length > 8) recentCommittedSegments.shift();
+    if(recentCommittedSegments.length > 12) recentCommittedSegments.shift();
+  }
+
+  // Chrome/Samsung may close one final result with words that it repeats at
+  // the beginning of the next final result. Remove the largest suffix/prefix
+  // overlap before translation, while preserving the original word forms.
+  function getNovelAndroidFinal(segment){
+    const originalWords = (segment || '').trim().split(/\s+/).filter(Boolean);
+    const normalizedWords = originalWords.map(w => normalizeLiveText(w)).filter(Boolean);
+    if(!normalizedWords.length) return '';
+    let overlap = 0;
+    const max = Math.min(androidTailWords.length, normalizedWords.length, 24);
+    for(let k=max; k>=1; k--){
+      let same = true;
+      for(let i=0; i<k; i++){
+        if(androidTailWords[androidTailWords.length-k+i] !== normalizedWords[i]){ same=false; break; }
+      }
+      if(same){ overlap = k; break; }
+    }
+    const novelOriginal = originalWords.slice(overlap);
+    const novelNormalized = normalizedWords.slice(overlap);
+    if(!novelNormalized.length) return '';
+    androidTailWords = androidTailWords.concat(novelNormalized).slice(-48);
+    return novelOriginal.join(' ').trim();
+  }
+
+  async function commitAndroidFinal(segment){
+    const novel = getNovelAndroidFinal(segment);
+    if(!novel || isRecentDuplicate(novel)) return;
+    rememberCommitted(novel);
+    statusEl.textContent = '🌐 يترجم...';
+    try{
+      const translated = await translateText(novel, speakerLang.code, myLang.code);
+      appendEntry(novel, translated);
+      const mode = getOutputMode();
+      if(mode === 'audio' || mode === 'both') queueSpeech(translated, myLang.bcp47);
+    }catch(err){ /* keep listening even when one network request fails */ }
+    if(running) statusEl.textContent = '🔎 يستمع...';
   }
 
   // ---- Silent-stall watchdog ----
@@ -3191,9 +3264,9 @@ function makeLivePanel(prefix){
   function startWatchdog(){
     clearInterval(watchdogTimer);
     watchdogTimer = setInterval(() => {
-      if(!running || pausedForSpeech) return;
+      if(!running || pausedForSpeech || speaking || samsungSpeechBatch.length) return;
       const idleFor = Date.now() - lastActivityAt;
-      const stallLimit = IS_ANDROID ? (getAudioSource() === 'broadcast' ? 12000 : 9000) : 6000;
+      const stallLimit = IS_ANDROID ? (getAudioSource() === 'broadcast' ? 24000 : 18000) : 6000;
       if(idleFor > stallLimit){
         try{ rec && rec.stop(); }catch(e){}
         try{ buildRec(); if(running) rec.start(); }catch(e){}
@@ -3227,6 +3300,8 @@ function makeLivePanel(prefix){
     audioSourceInputs[0].checked = true;
     entries = [];
     recentCommittedSegments.length = 0;
+    androidTailWords = [];
+    translationChain = Promise.resolve();
     committedText = '';
     lastInterimSnapshot = '';
     clearTimeout(committedResetTimer);
@@ -3259,7 +3334,7 @@ function makeLivePanel(prefix){
         // (long silence, network hiccup) — not after every sentence — so a
         // short safety-net delay before reconnecting is enough.
         const broadcastMode = getAudioSource() === 'broadcast';
-        const restartDelay = IS_IOS ? (broadcastMode ? 400 : 200) : IS_ANDROID ? (broadcastMode ? 300 : 100) : (broadcastMode ? 200 : 60);
+        const restartDelay = IS_IOS ? (broadcastMode ? 400 : 200) : IS_ANDROID ? (broadcastMode ? 650 : 450) : (broadcastMode ? 200 : 60);
         setTimeout(() => {
           if(!running) return;
           // Only iOS actually needs a brand-new recognizer object here (a
@@ -3298,22 +3373,7 @@ function makeLivePanel(prefix){
     let interimStableTimer = null;
     const wordsOf = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
 
-    let commitQueue = Promise.resolve(); // serializes all commits so two calls can never overlap
     async function commitNewPortion(fullText){
-      // Chain onto the previous commit instead of running in parallel. This
-      // is the root fix for the Samsung repeat/garble bug: previously, if a
-      // "settled" interim result and a real final result arrived close
-      // together, BOTH could start commitNewPortion before the first one
-      // had finished updating committedText (it's an async function that
-      // awaits a translation call) — so the second call would slice from a
-      // stale prefix and either repeat words already spoken or cut the
-      // sentence in the wrong place. Chaining through this queue guarantees
-      // each commit fully finishes (translation included) before the next
-      // one even starts comparing text, no matter how fast results arrive.
-      commitQueue = commitQueue.then(() => doCommit(fullText));
-      return commitQueue;
-    }
-    async function doCommit(fullText){
       const trimmed = (fullText || '').trim();
       if(!trimmed) return;
       const allWords = wordsOf(trimmed);
@@ -3350,7 +3410,6 @@ function makeLivePanel(prefix){
         committedText = '';
         lastInterimSnapshot = '';
       }, IS_ANDROID ? 2400 : 1700);
-
       statusEl.textContent = '🌐 يترجم...';
       try{
         const translated = await translateText(newPart, speakerLang.code, myLang.code);
@@ -3363,6 +3422,29 @@ function makeLivePanel(prefix){
 
     rec.onresult = (event) => {
       lastActivityAt = Date.now();
+
+      // ROOT FIX FOR SAMSUNG: process only browser-confirmed FINAL results.
+      // Samsung Internet/Chrome continuously revises interim text, sometimes
+      // shortening, extending and re-emitting it. Translating those revisions
+      // caused the same words to be queued several times and caused speech to
+      // cut/restart. Each final segment is now serialized and overlap-trimmed.
+      if(IS_ANDROID){
+        let heardInterim = false;
+        for(let i = event.resultIndex; i < event.results.length; i++){
+          const segment = (event.results[i][0].transcript || '').trim();
+          if(!segment) continue;
+          if(event.results[i].isFinal){
+            translationChain = translationChain
+              .then(() => commitAndroidFinal(segment))
+              .catch(() => {});
+          }else{
+            heardInterim = true;
+          }
+        }
+        if(heardInterim && running) statusEl.textContent = '🎙️ يستمع الآن…';
+        return;
+      }
+
       let finalText = '';
       let interimText = '';
       for(let i = event.resultIndex; i < event.results.length; i++){
@@ -3413,6 +3495,9 @@ function makeLivePanel(prefix){
     if(rec){ try{ rec.stop(); }catch(e){} }
     stopWatchdog();
     clearSpeechQueue();
+    androidTailWords = [];
+    recentCommittedSegments.length = 0;
+    translationChain = Promise.resolve();
   }
   startBtn.addEventListener('click', start);
   stopBtn.addEventListener('click', stop);
@@ -3481,7 +3566,12 @@ function makeLivePanel(prefix){
        <p style="margin:0 0 10px;font-size:15px;font-weight:bold;">${en.translated}</p>
        <hr style="border:none;border-top:1px dashed #ccc;margin:0 0 14px;">`
     ).join('');
-    const html = `<html><head><meta charset="utf-8"></head><body dir="rtl" style="font-family:Arial,Tajawal,sans-serif;">${bodyHtml}</body></html>`;
+    const html = `<html><head><meta charset="utf-8">
+<style>
+.samsung-profile-note{display:none;margin:8px 0 0;padding:9px 11px;border-radius:10px;background:#eef6ff;border:1px solid #b9d2f5;color:#123b67;font-size:12px;line-height:1.55}
+body.samsung-profile .samsung-profile-note{display:block}
+</style>
+</head><body dir="rtl" style="font-family:Arial,Tajawal,sans-serif;">${bodyHtml}</body></html>`;
     const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -3919,7 +4009,12 @@ document.getElementById('logWordBtn2').addEventListener('click', () => {
      <p style="margin:0 0 10px;font-size:15px;font-weight:bold;">${en.translated}</p>
      <hr style="border:none;border-top:1px dashed #ccc;margin:0 0 14px;">`
   ).join('');
-  const html = `<html><head><meta charset="utf-8"></head><body dir="rtl" style="font-family:Arial,Tajawal,sans-serif;">${bodyHtml}</body></html>`;
+  const html = `<html><head><meta charset="utf-8">
+<style>
+.samsung-profile-note{display:none;margin:8px 0 0;padding:9px 11px;border-radius:10px;background:#eef6ff;border:1px solid #b9d2f5;color:#123b67;font-size:12px;line-height:1.55}
+body.samsung-profile .samsung-profile-note{display:block}
+</style>
+</head><body dir="rtl" style="font-family:Arial,Tajawal,sans-serif;">${bodyHtml}</body></html>`;
   const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
