@@ -3197,6 +3197,13 @@ async function getOcrWorker(){
       corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
       langPath:'https://tessdata.projectnaptha.com/4.0.0'
     });
+    // Signs, labels, and menus are short scattered text — not a full page
+    // of paragraphs. The default "auto" layout analysis tries to detect a
+    // book-like page structure and often merges unrelated text regions or
+    // misreads short strings as a result, which is exactly the "blurry /
+    // overlapping" behavior reported. SPARSE_TEXT is built for this case:
+    // it looks for text anywhere in the image without assuming a layout.
+    try{ await ocrWorker.setParameters({ tessedit_pageseg_mode: '11' }); }catch(e){}
   }
   return ocrWorker;
 }
@@ -3362,8 +3369,8 @@ async function handleOcrImageChange(e){
 
   try{
     const ocrLang = OCR_LANG_MAP[ocrFrom.code] || 'eng';
-    await ensureTesseract();
-    const { data } = await window.Tesseract.recognize(file, ocrLang);
+    const worker = await getOcrWorker();
+    const { data } = await worker.recognize(file);
     const extracted = (data.text || '').trim();
 
     if(!extracted){
@@ -3421,7 +3428,7 @@ function makeLivePanel(prefix){
   // yet. This queue speaks one sentence fully, THEN moves to the next.
   let speechQueue = [];
   let speaking = false;
-  let pausedForSpeech = false; // iOS-only: mic was deliberately paused to let audio play
+  let pausedForSpeech = false; // iOS/Android: mic was deliberately paused to let audio play cleanly
   function queueSpeech(text, lang){
     speechQueue.push({ text, lang });
     if(!speaking) playNextInQueue();
@@ -3429,22 +3436,27 @@ function makeLivePanel(prefix){
   function playNextInQueue(){
     if(speechQueue.length === 0){
       speaking = false;
-      // iOS: audio output can be silently blocked while the microphone is
-      // actively recording (a real device audio-session restriction) — so
-      // we paused listening just before speaking. Now that the whole queue
-      // has finished, resume listening.
-      if(IS_IOS && pausedForSpeech && running && rec){
+      // Audio output can be silently blocked (iOS) or picked back up by the
+      // mic as feedback (Android/Samsung) while actively recording — so we
+      // paused listening just before speaking. Now that the whole queue has
+      // finished, resume listening.
+      if((IS_IOS || IS_ANDROID) && pausedForSpeech && running && rec){
         pausedForSpeech = false;
         try{ rec.start(); }catch(e){}
       }
       return;
     }
     speaking = true;
-    // iOS: pause the mic right before the FIRST utterance of this batch so
-    // the device's audio session is free to actually play sound. We only
-    // do this on iOS — Android/desktop handle simultaneous mic+speaker fine
-    // and pausing there would just add an unnecessary gap.
-    if(IS_IOS && !pausedForSpeech && rec && running){
+    // Pause the mic right before the FIRST utterance of this batch so the
+    // translated speech doesn't get picked back up by the microphone as if
+    // it were new input (a feedback loop that re-translates its own voice)
+    // and so the device's audio session doesn't fight itself. iOS needs
+    // this because audio output can be silently blocked while the mic is
+    // actively recording. Android/Samsung need it too — this is exactly
+    // what produced the garbled/interrupted sound and repeat-translation
+    // reports on Samsung: the mic hears the TTS output. Desktop mic/speaker
+    // are physically separate so it's left alone there to avoid a gap.
+    if((IS_IOS || IS_ANDROID) && !pausedForSpeech && rec && running){
       pausedForSpeech = true;
       try{ rec.stop(); }catch(e){}
     }
@@ -3531,7 +3543,23 @@ function makeLivePanel(prefix){
   }
   function stopWatchdog(){ clearInterval(watchdogTimer); watchdogTimer = null; }
 
-  function appendEntry(original, translated){
+  let openEntryDiv = null; // the last <div> still being built up (not yet finalized by a real isFinal)
+  function appendEntry(original, translated, isFinalCommit){
+    if(openEntryDiv){
+      // newPart is always an incremental new chunk (never a full corrected
+      // sentence) whether it came from an early interim guess or the real
+      // isFinal result — so we always extend the open line with it. The
+      // only difference is whether we keep the line open for more (still
+      // mid-sentence) or close it now that a real isFinal confirmed the
+      // sentence is complete.
+      const last = entries[entries.length - 1];
+      last.original = (last.original + ' ' + original).trim();
+      last.translated = (last.translated + ' ' + translated).trim();
+      openEntryDiv.querySelector('.trans').textContent = last.translated;
+      transcriptEl.scrollTop = transcriptEl.scrollHeight;
+      if(isFinalCommit) openEntryDiv = null; // next segment starts a fresh line
+      return;
+    }
     entries.push({ original, translated, time: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) });
     transcriptEl.querySelector('.live-empty')?.remove();
     const div = document.createElement('div');
@@ -3541,9 +3569,11 @@ function makeLivePanel(prefix){
     // Only the TRANSLATED text is shown on screen — the original is kept in
     // `entries` (above) for PDF/Word export only, never displayed live,
     // per explicit request: "لا يظهر الاثنين معاً".
-    div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans">${translated}</div>`;
+    div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans"></div>`;
+    div.querySelector('.trans').textContent = translated;
     transcriptEl.appendChild(div);
     transcriptEl.scrollTop = transcriptEl.scrollHeight;
+    if(!isFinalCommit) openEntryDiv = div; // keep it open only if more is likely coming
   }
 
   function resetToDefaults(){
@@ -3554,6 +3584,7 @@ function makeLivePanel(prefix){
     outputModeInputs[2].checked = true; // "both" — text + audio, the new default
     audioSourceInputs[0].checked = true;
     entries = [];
+    openEntryDiv = null;
     transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
     statusEl.textContent = 'جاهز للاستماع';
     setTimeout(() => { statusEl.textContent = ''; }, 1500);
@@ -3621,10 +3652,41 @@ function makeLivePanel(prefix){
     let lastInterimSnapshot = '';
     let interimStableTimer = null;
     const wordsOf = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
+    let recentCommittedSegments = [];
+    let committedResetTimer = null;
+    function isRecentDuplicate(segment){
+      const n = segment.trim().toLowerCase();
+      return recentCommittedSegments.includes(n);
+    }
+    function rememberCommitted(segment){
+      recentCommittedSegments.push(segment.trim().toLowerCase());
+      if(recentCommittedSegments.length > 6) recentCommittedSegments.shift();
+    }
 
-    async function commitNewPortion(fullText){
+    let commitQueue = Promise.resolve(); // serializes only the fast text-comparison step below
+    function commitNewPortion(fullText, isFinalCommit){
+      // Chain ONLY the synchronous text-matching/committing step onto this
+      // queue — not the translation or speech, which are slow (network
+      // calls) and must be free to run in parallel so replies stay fast.
+      // This is the root fix for the Samsung repeat/garble bug: previously,
+      // if a "settled" interim result and a real final result arrived close
+      // together, BOTH could start comparing text against committedText
+      // before either had updated it — so the second call would slice from
+      // a stale prefix and either repeat words already spoken or cut the
+      // sentence wrong. Serializing just this quick step closes that gap
+      // completely without making anyone wait for a translation to finish.
+      commitQueue = commitQueue.then(() => claimNewPortion(fullText, isFinalCommit));
+      return commitQueue.then(newPart => {
+        if(newPart == null) return; // nothing new, or a duplicate — already handled
+        return speakNewPortion(newPart, isFinalCommit); // runs freely, not queued
+      });
+    }
+    // Fast, fully synchronous claim step: decide what's new and update
+    // state immediately. No await anywhere in here, so two overlapping
+    // calls can never both read the old committedText.
+    function claimNewPortion(fullText, isFinalCommit){
       const trimmed = (fullText || '').trim();
-      if(!trimmed) return;
+      if(!trimmed) return null;
       const allWords = wordsOf(trimmed);
       const committedWords = wordsOf(committedText);
       if(allWords.length <= committedWords.length && committedWords.length > 0){
@@ -3634,7 +3696,7 @@ function makeLivePanel(prefix){
         // capitalization/punctuation) between results, which can also make
         // it briefly SHORTER by a word or two. In that case this is still
         // just a revision of what we already spoke, so it's safe to skip.
-        return;
+        return null;
       }
       // Verify the new text actually starts with what we already committed —
       // word for word, case/punctuation-insensitive. If it doesn't, Android's
@@ -3647,17 +3709,34 @@ function makeLivePanel(prefix){
       const newPart = prefixMatches
         ? allWords.slice(committedWords.length).join(' ')
         : trimmed; // re-segmented by the engine — treat as a new, whole chunk
-      if(!newPart) return;
+      if(!newPart) return null;
+      if(isRecentDuplicate(newPart)){
+        committedText = trimmed;
+        return null;
+      }
       committedText = trimmed;
+      rememberCommitted(newPart);
+      clearTimeout(committedResetTimer);
+      committedResetTimer = setTimeout(() => {
+        committedText = '';
+        lastInterimSnapshot = '';
+      }, IS_ANDROID ? 2400 : 1700);
+      return newPart;
+    }
+    // Slow part (translation + speech) — deliberately OUTSIDE the queue so
+    // it can run concurrently with the next segment's fast claim step,
+    // keeping the app feeling as responsive as it was before this fix.
+    async function speakNewPortion(newPart, isFinalCommit){
       statusEl.textContent = '🌐 يترجم...';
       try{
         const translated = await translateText(newPart, speakerLang.code, myLang.code);
-        appendEntry(newPart, translated);
+        appendEntry(newPart, translated, isFinalCommit);
         const mode = getOutputMode();
         if(mode === 'audio' || mode === 'both') queueSpeech(translated, myLang.bcp47);
       }catch(err){ /* skip this segment, keep listening */ }
       if(running) statusEl.textContent = '🔎 يستمع...';
     }
+
 
     rec.onresult = (event) => {
       lastActivityAt = Date.now();
@@ -3671,10 +3750,8 @@ function makeLivePanel(prefix){
 
       if(finalText.trim()){
         clearTimeout(interimStableTimer);
-        commitNewPortion(finalText.trim()).then(() => {
-          committedText = ''; // fresh start for the next sentence, only AFTER this one's async work is done
-          lastInterimSnapshot = '';
-        });
+        commitNewPortion(finalText.trim(), true);
+        lastInterimSnapshot = '';
         return;
       }
 
@@ -3684,8 +3761,8 @@ function makeLivePanel(prefix){
         if(snapshot !== lastInterimSnapshot){
           lastInterimSnapshot = snapshot;
           clearTimeout(interimStableTimer);
-          const stableWait = IS_IOS ? 900 : (IS_ANDROID ? 800 : 600); // iPhone / Android / Desktop
-          interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot); }, stableWait);
+          const stableWait = IS_IOS ? 900 : (IS_ANDROID ? 850 : 600); // iPhone / Android (closer to iPhone per request) / Desktop
+          interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, stableWait);
         }
       }
     };
@@ -3710,6 +3787,7 @@ function makeLivePanel(prefix){
     if(rec){ try{ rec.stop(); }catch(e){} }
     stopWatchdog();
     clearSpeechQueue();
+    openEntryDiv = null; // next start() begins a fresh line instead of extending an old one
   }
   startBtn.addEventListener('click', start);
   stopBtn.addEventListener('click', stop);
@@ -3729,6 +3807,7 @@ function makeLivePanel(prefix){
 
   document.getElementById(prefix + 'ClearBtn').addEventListener('click', () => {
     entries = [];
+    openEntryDiv = null;
     transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
     if(!running) statusEl.textContent = 'جاهز للاستماع';
   });
