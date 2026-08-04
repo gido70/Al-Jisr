@@ -3058,7 +3058,7 @@ function makeLivePanel(prefix){
   // yet. This queue speaks one sentence fully, THEN moves to the next.
   let speechQueue = [];
   let speaking = false;
-  let pausedForSpeech = false; // iOS-only: mic was deliberately paused to let audio play
+  let pausedForSpeech = false; // iOS/Android: mic was deliberately paused to let audio play cleanly
   function queueSpeech(text, lang){
     speechQueue.push({ text, lang });
     if(!speaking) playNextInQueue();
@@ -3066,22 +3066,29 @@ function makeLivePanel(prefix){
   function playNextInQueue(){
     if(speechQueue.length === 0){
       speaking = false;
-      // iOS: audio output can be silently blocked while the microphone is
-      // actively recording (a real device audio-session restriction) — so
-      // we paused listening just before speaking. Now that the whole queue
-      // has finished, resume listening.
-      if(IS_IOS && pausedForSpeech && running && rec){
+      // Audio output can be silently blocked (iOS) or picked back up by the
+      // mic as feedback (Android/Samsung) while actively recording — so we
+      // paused listening just before speaking. Now that the whole queue has
+      // finished, resume listening.
+      if((IS_IOS || IS_ANDROID) && pausedForSpeech && running && rec){
         pausedForSpeech = false;
         try{ rec.start(); }catch(e){}
       }
       return;
     }
     speaking = true;
-    // iOS: pause the mic right before the FIRST utterance of this batch so
-    // the device's audio session is free to actually play sound. We only
-    // do this on iOS — Android/desktop handle simultaneous mic+speaker fine
-    // and pausing there would just add an unnecessary gap.
-    if(IS_IOS && !pausedForSpeech && rec && running){
+    // Pause the mic right before the FIRST utterance of this batch so the
+    // translated speech doesn't get picked back up by the microphone as if
+    // it were new input (a feedback loop that re-translates its own voice)
+    // and so the device's audio session doesn't fight itself.
+    // iOS needs this because audio output can be silently blocked while the
+    // mic is actively recording. Android/Samsung need it too — despite the
+    // old assumption that they "handle simultaneous mic+speaker fine", in
+    // practice this is exactly what produced the garbled/interrupted sound
+    // and repeat-translation reports on Samsung: the mic hears the TTS
+    // output. Desktop mic/speaker are physically separate (headset/room
+    // setup varies) so it's left alone there to avoid an unnecessary gap.
+    if((IS_IOS || IS_ANDROID) && !pausedForSpeech && rec && running){
       pausedForSpeech = true;
       try{ rec.stop(); }catch(e){}
     }
@@ -3291,7 +3298,22 @@ function makeLivePanel(prefix){
     let interimStableTimer = null;
     const wordsOf = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
 
+    let commitQueue = Promise.resolve(); // serializes all commits so two calls can never overlap
     async function commitNewPortion(fullText){
+      // Chain onto the previous commit instead of running in parallel. This
+      // is the root fix for the Samsung repeat/garble bug: previously, if a
+      // "settled" interim result and a real final result arrived close
+      // together, BOTH could start commitNewPortion before the first one
+      // had finished updating committedText (it's an async function that
+      // awaits a translation call) — so the second call would slice from a
+      // stale prefix and either repeat words already spoken or cut the
+      // sentence in the wrong place. Chaining through this queue guarantees
+      // each commit fully finishes (translation included) before the next
+      // one even starts comparing text, no matter how fast results arrive.
+      commitQueue = commitQueue.then(() => doCommit(fullText));
+      return commitQueue;
+    }
+    async function doCommit(fullText){
       const trimmed = (fullText || '').trim();
       if(!trimmed) return;
       const allWords = wordsOf(trimmed);
@@ -3328,6 +3350,7 @@ function makeLivePanel(prefix){
         committedText = '';
         lastInterimSnapshot = '';
       }, IS_ANDROID ? 2400 : 1700);
+
       statusEl.textContent = '🌐 يترجم...';
       try{
         const translated = await translateText(newPart, speakerLang.code, myLang.code);
