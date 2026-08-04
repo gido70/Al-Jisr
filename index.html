@@ -1625,6 +1625,21 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   .stage .mic-btn{ display:flex!important; visibility:visible!important; opacity:1!important; width:60px!important; height:60px!important; flex-shrink:0!important; }
   .stage .transcript{ display:block!important; visibility:visible!important; opacity:1!important; width:100%!important; box-sizing:border-box!important; }
 }
+/* Final, unconditional guarantee: .stage itself must always be a real,
+   visible box with actual height when it has the .show class — regardless
+   of screen size or any other rule. This is the very last rule in the
+   stylesheet so it wins on source order for any tie in specificity. */
+div.stage.show{
+  display:flex!important;
+  flex-direction:column!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  min-height:400px!important;
+  height:auto!important;
+  overflow:visible!important;
+  position:relative!important;
+}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
