@@ -171,7 +171,7 @@
     .side{ width:100%; }
     .bridge-col{ width:100%; }
     .stage-bottombar{
-      display:flex; justify-content:center;
+      display:flex; justify-content:center; flex-wrap:wrap; gap:10px;
       padding:20px 16px calc(20px + env(safe-area-inset-bottom));
     }
     .stage-bottombar .icon-btn{ font-size:13px; padding:12px 24px; }
@@ -1562,15 +1562,20 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   .brand-hero .brand-mark-lg{width:390px!important;}
   .brand-hero .brand-logo-image{max-height:130px!important;}
 }
-/* Safety net: guarantee the live-conversation boxes and mic buttons are
-   always visible with their proper full-width layout, regardless of any
-   other rule that may have accidentally affected them. This forces the
-   complete box model explicitly instead of relying on inherited/default
-   values that another edit may have overridden. */
+/* Live-conversation layout: one clean, final set of rules (replaces
+   several overlapping !important patches from earlier edits that were
+   fighting each other and causing elements to overlap instead of
+   stacking in order). Each side stacks top-to-bottom in this exact order:
+   language tag -> heading -> transcript -> edit/copy/share/clear buttons
+   -> mic. The two sides stack one after another, then the back-to-home
+   button sits below both, per explicit request. */
 .stage.show{
   display:flex!important;
   flex-direction:column!important;
   width:100%!important;
+  min-height:400px!important;
+  height:auto!important;
+  overflow:visible!important;
 }
 .stage.show .side{
   display:flex!important;
@@ -1578,11 +1583,20 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   visibility:visible!important;
   opacity:1!important;
   width:100%!important;
-  min-height:220px!important;
   padding:20px!important;
   box-sizing:border-box!important;
+  position:static!important;
 }
+.stage.show .side > *{ position:static!important; }
+.stage.show .lang-tag{ order:1!important; display:flex!important; }
+.stage.show h2{ order:2!important; display:block!important; }
+.stage.show .transcript{ order:3!important; display:block!important; width:100%!important; box-sizing:border-box!important; }
+.stage.show .side .icon-btn#replayA,
+.stage.show .side .icon-btn#replayB{ order:4!important; }
+.stage.show .btn-row{ order:5!important; flex-wrap:wrap!important; }
+.stage.show .btn-row.show-actions{ display:flex!important; }
 .stage.show .mic-row{
+  order:6!important;
   display:flex!important;
   visibility:visible!important;
   opacity:1!important;
@@ -1600,45 +1614,25 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   height:60px!important;
   flex-shrink:0!important;
 }
-.stage.show .transcript{
-  display:block!important;
-  visibility:visible!important;
-  opacity:1!important;
-  width:100%!important;
-  min-height:60px!important;
-  box-sizing:border-box!important;
-}
-.stage.show .lang-tag,
-.stage.show h2{
-  display:block!important;
-  visibility:visible!important;
-  opacity:1!important;
-}
-@media(min-width:961px){
-  .stage{ display:grid!important; }
-  .stage .side{
-    display:flex!important; flex-direction:column!important;
-    visibility:visible!important; opacity:1!important;
-    width:100%!important; min-height:220px!important; box-sizing:border-box!important;
-  }
-  .stage .mic-row{ display:flex!important; visibility:visible!important; opacity:1!important; align-items:center!important; gap:14px!important; }
-  .stage .mic-btn{ display:flex!important; visibility:visible!important; opacity:1!important; width:60px!important; height:60px!important; flex-shrink:0!important; }
-  .stage .transcript{ display:block!important; visibility:visible!important; opacity:1!important; width:100%!important; box-sizing:border-box!important; }
-}
-/* Final, unconditional guarantee: .stage itself must always be a real,
-   visible box with actual height when it has the .show class — regardless
-   of screen size or any other rule. This is the very last rule in the
-   stylesheet so it wins on source order for any tie in specificity. */
-div.stage.show{
+.stage.show .bridge-col{ order:7!important; }
+.stage.show .side.right{ order:8!important; }
+.stage.show #stageExportRow{
+  order:9!important;
   display:flex!important;
-  flex-direction:column!important;
-  visibility:visible!important;
-  opacity:1!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+  justify-content:center!important;
   width:100%!important;
-  min-height:400px!important;
-  height:auto!important;
-  overflow:visible!important;
-  position:relative!important;
+  padding:16px!important;
+}
+.stage.show .panel-bottombar{
+  order:10!important;
+  display:flex!important;
+  justify-content:center!important;
+  width:100%!important;
+  margin-top:0!important;
+  padding:16px!important;
+  border-top:1px solid var(--line, #e2e8f0)!important;
 }
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -2139,7 +2133,13 @@ div.stage.show{
       <span class="hint" id="hintB">تُترجم وتُنطق للجهة المقابلة</span>
     </div>
   </div>
-  <div class="stage-bottombar">
+  <div class="live-export-row" id="stageExportRow">
+    <button class="icon-btn" id="stageCopyBtn2">📋 نسخ</button>
+    <button class="icon-btn" id="stageShareBtn2">📤 مشاركة</button>
+    <button class="icon-btn" id="stagePdfBtn">📄 PDF</button>
+    <button class="icon-btn" id="stageWordBtn">📝 Word</button>
+  </div>
+  <div class="panel-bottombar">
     <button class="icon-btn" id="stageBackBtnBottom">→ الرجوع للصفحة الرئيسية</button>
   </div>
 </div>
@@ -4335,6 +4335,7 @@ function copyConversation(btn){
 }
 document.getElementById('copyBtn').addEventListener('click', (e) => copyConversation(e.currentTarget));
 document.getElementById('logCopyBtn2').addEventListener('click', (e) => copyConversation(e.currentTarget));
+document.getElementById('stageCopyBtn2').addEventListener('click', (e) => copyConversation(e.currentTarget));
 
 document.getElementById('logShareBtn2').addEventListener('click', async () => {
   const text = log.map(i => `🕒 ${i.t}\n${i.speakerLabel}: ${i.original}\n${i.translated}`).join('\n-------------------\n');
@@ -4346,6 +4347,7 @@ document.getElementById('logShareBtn2').addEventListener('click', async () => {
     showBanner(t('shareFallback'));
   }
 });
+document.getElementById('stageShareBtn2').addEventListener('click', () => document.getElementById('logShareBtn2').click());
 
 document.getElementById('logPdfBtn2').addEventListener('click', () => {
   if(log.length === 0){ showBanner(t('noConvo')); return; }
@@ -4367,6 +4369,7 @@ document.getElementById('logPdfBtn2').addEventListener('click', () => {
     doc.save('aljisr-conversation.pdf');
   }catch(err){ showBanner('تعذر إنشاء PDF. جرّب النسخ بدلاً منه.'); }
 });
+document.getElementById('stagePdfBtn').addEventListener('click', () => document.getElementById('logPdfBtn2').click());
 
 document.getElementById('logWordBtn2').addEventListener('click', () => {
   if(log.length === 0){ showBanner(t('noConvo')); return; }
@@ -4384,6 +4387,7 @@ document.getElementById('logWordBtn2').addEventListener('click', () => {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 });
+document.getElementById('stageWordBtn').addEventListener('click', () => document.getElementById('logWordBtn2').click());
 
 /* ---------------- Usage guide modal ---------------- */
 function openGuide(){ document.getElementById('guideOverlay').classList.add('show'); }
