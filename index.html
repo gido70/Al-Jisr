@@ -1517,7 +1517,7 @@ body.ios-device .ios-help-note{display:block;}
       <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="audio"><span>🎧 صوت فقط</span></label>
       <label class="live-mode-opt"><input type="radio" name="lectureOutputMode" value="both" checked><span>📝🎧 الاثنان معاً</span></label>
     </div>
-    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن أثناء الخطبة — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
+    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن أثناء الخطبة — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة. ملاحظة: مع سماعات البلوتوث (AirPods) قد يخرج الصوت أحياناً من مكبر الهاتف بدل السماعة بسبب تبديل النظام التلقائي بين وضعي البلوتوث أثناء تسجيل الميكروفون — سماعة سلكية (جاك) أكثر ثباتاً في هذا الاستخدام.</p>
   </div>
 
   <div class="live-mode-row">
@@ -1576,7 +1576,7 @@ body.ios-device .ios-help-note{display:block;}
       <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="audio"><span>🎧 صوت فقط</span></label>
       <label class="live-mode-opt"><input type="radio" name="dialogueOutputMode" value="both" checked><span>📝🎧 الاثنان معاً</span></label>
     </div>
-    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة.</p>
+    <p class="live-mode-hint">وضع "صوت فقط" مناسب لسماعة الأذن — النص يبقى محفوظاً بالخلفية للنسخ والتصدير لاحقاً حتى لو ما ظهر على الشاشة. ملاحظة: مع سماعات البلوتوث (AirPods) قد يخرج الصوت أحياناً من مكبر الهاتف بدل السماعة بسبب تبديل النظام التلقائي بين وضعي البلوتوث أثناء تسجيل الميكروفون — سماعة سلكية (جاك) أكثر ثباتاً في هذا الاستخدام.</p>
   </div>
 
   <div class="live-mode-row">
@@ -3334,24 +3334,30 @@ function makeLivePanel(prefix){
     let interimStableTimer = null;
     const wordsOf = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
 
-    let commitQueue = Promise.resolve(); // serializes all commits so two calls can never overlap
-    async function commitNewPortion(fullText, isFinalCommit){
-      // Chain onto the previous commit instead of running in parallel. This
-      // is the root fix for the Samsung repeat/garble bug: previously, if a
-      // "settled" interim result and a real final result arrived close
-      // together, BOTH could start commitNewPortion before the first one
-      // had finished updating committedText (it's an async function that
-      // awaits a translation call) — so the second call would slice from a
-      // stale prefix and either repeat words already spoken or cut the
-      // sentence in the wrong place. Chaining through this queue guarantees
-      // each commit fully finishes (translation included) before the next
-      // one even starts comparing text, no matter how fast results arrive.
-      commitQueue = commitQueue.then(() => doCommit(fullText, isFinalCommit));
-      return commitQueue;
+    let commitQueue = Promise.resolve(); // serializes only the fast text-comparison step below
+    function commitNewPortion(fullText, isFinalCommit){
+      // Chain ONLY the synchronous text-matching/committing step onto this
+      // queue — not the translation or speech, which are slow (network
+      // calls) and must be free to run in parallel so replies stay fast.
+      // This is the root fix for the Samsung repeat/garble bug: previously,
+      // if a "settled" interim result and a real final result arrived close
+      // together, BOTH could start comparing text against committedText
+      // before either had updated it — so the second call would slice from
+      // a stale prefix and either repeat words already spoken or cut the
+      // sentence wrong. Serializing just this quick step closes that gap
+      // completely without making anyone wait for a translation to finish.
+      commitQueue = commitQueue.then(() => claimNewPortion(fullText, isFinalCommit));
+      return commitQueue.then(newPart => {
+        if(newPart == null) return; // nothing new, or a duplicate — already handled
+        return speakNewPortion(newPart, isFinalCommit); // runs freely, not queued
+      });
     }
-    async function doCommit(fullText, isFinalCommit){
+    // Fast, fully synchronous claim step: decide what's new and update
+    // state immediately. No await anywhere in here, so two overlapping
+    // calls can never both read the old committedText.
+    function claimNewPortion(fullText, isFinalCommit){
       const trimmed = (fullText || '').trim();
-      if(!trimmed) return;
+      if(!trimmed) return null;
       const allWords = wordsOf(trimmed);
       const committedWords = wordsOf(committedText);
       if(allWords.length <= committedWords.length && committedWords.length > 0){
@@ -3361,7 +3367,7 @@ function makeLivePanel(prefix){
         // capitalization/punctuation) between results, which can also make
         // it briefly SHORTER by a word or two. In that case this is still
         // just a revision of what we already spoke, so it's safe to skip.
-        return;
+        return null;
       }
       // Verify the new text actually starts with what we already committed —
       // word for word, case/punctuation-insensitive. If it doesn't, Android's
@@ -3374,10 +3380,10 @@ function makeLivePanel(prefix){
       const newPart = prefixMatches
         ? allWords.slice(committedWords.length).join(' ')
         : trimmed; // re-segmented by the engine — treat as a new, whole chunk
-      if(!newPart) return;
+      if(!newPart) return null;
       if(isRecentDuplicate(newPart)){
         committedText = trimmed;
-        return;
+        return null;
       }
       committedText = trimmed;
       rememberCommitted(newPart);
@@ -3386,6 +3392,12 @@ function makeLivePanel(prefix){
         committedText = '';
         lastInterimSnapshot = '';
       }, IS_ANDROID ? 2400 : 1700);
+      return newPart;
+    }
+    // Slow part (translation + speech) — deliberately OUTSIDE the queue so
+    // it can run concurrently with the next segment's fast claim step,
+    // keeping the app feeling as responsive as it was before this fix.
+    async function speakNewPortion(newPart, isFinalCommit){
 
       statusEl.textContent = '🌐 يترجم...';
       try{
