@@ -935,6 +935,7 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 .live-mode-opt input{ accent-color:var(--gold); }
 .live-mode-opt:has(input:checked){ background:var(--gold); border-color:var(--gold); color:#fff; }
 .live-mode-hint{margin:8px 0 0;font-size:11px;color:var(--muted);line-height:1.5;}
+.live-headphone-note{margin-top:10px;padding:10px 12px;border:1px solid #9fc0ff;background:#eef5ff;color:#123e78;border-radius:10px;font-size:12px;line-height:1.6;font-weight:700;}
 .audio-only-entry .orig, .audio-only-entry .trans{ filter:blur(4px); opacity:.4; user-select:none; }
 .audio-only-entry:active .orig, .audio-only-entry:active .trans{ filter:none; opacity:1; }
 .live-controls{margin-top:18px;}
@@ -3195,6 +3196,13 @@ function makeLivePanel(prefix){
   // as a final or re-segmented result.
   const recentCommittedSegments = [];
   let committedResetTimer = null;
+  // Unified phrase buffer for Samsung, iPhone and desktop. Speech engines may
+  // emit one or two words as separate finals; we collect them into a natural
+  // phrase before translating, displaying or speaking.
+  let phraseBuffer = [];
+  let phraseFlushTimer = null;
+  let phraseFirstAt = 0;
+
   const normalizeLiveText = (s) => (s || '')
     .toLocaleLowerCase()
     .replace(/[\u064B-\u065F\u0670]/g,'')
@@ -3240,19 +3248,61 @@ function makeLivePanel(prefix){
     return novelOriginal.join(' ').trim();
   }
 
-  async function commitAndroidFinal(segment){
-    const novel = getNovelAndroidFinal(segment);
-    if(!novel || isRecentDuplicate(novel)) return;
-    rememberCommitted(novel);
+  async function commitPhraseNow(phrase){
+    const clean = (phrase || '').replace(/\s+/g,' ').trim();
+    if(!clean || isRecentDuplicate(clean)) return;
+    rememberCommitted(clean);
     statusEl.textContent = '🌐 يترجم...';
     try{
-      const translated = await translateText(novel, speakerLang.code, myLang.code);
-      appendEntry(novel, translated);
+      const translated = await translateText(clean, speakerLang.code, myLang.code);
+      appendEntry(clean, translated);
       const mode = getOutputMode();
       if(mode === 'audio' || mode === 'both') queueSpeech(translated, myLang.bcp47);
     }catch(err){ /* keep listening even when one network request fails */ }
     if(running) statusEl.textContent = '🔎 يستمع...';
   }
+
+  function flushPhraseBuffer(){
+    clearTimeout(phraseFlushTimer);
+    phraseFlushTimer = null;
+    if(!phraseBuffer.length) return;
+    const merged = phraseBuffer.join(' ').replace(/\s+/g,' ').trim();
+    phraseBuffer = [];
+    phraseFirstAt = 0;
+    if(!merged) return;
+    translationChain = translationChain.then(() => commitPhraseNow(merged)).catch(() => {});
+  }
+
+  function queueRecognizedPhrase(segment, { android = false } = {}){
+    let clean = (segment || '').replace(/\s+/g,' ').trim();
+    if(android) clean = getNovelAndroidFinal(clean);
+    if(!clean || isRecentDuplicate(clean)) return;
+
+    const normalized = normalizeLiveText(clean);
+    const last = phraseBuffer.length ? normalizeLiveText(phraseBuffer[phraseBuffer.length - 1]) : '';
+    // Ignore exact or contained revisions of the latest buffered fragment.
+    if(last && (last === normalized || last.includes(normalized) || normalized.includes(last))){
+      if(normalized.length > last.length) phraseBuffer[phraseBuffer.length - 1] = clean;
+    }else{
+      phraseBuffer.push(clean);
+    }
+    if(!phraseFirstAt) phraseFirstAt = Date.now();
+
+    const all = phraseBuffer.join(' ').replace(/\s+/g,' ').trim();
+    const wordCount = all.split(/\s+/).filter(Boolean).length;
+    const endsSentence = /[.!?؟؛…]$/.test(all);
+    const maxAge = Date.now() - phraseFirstAt;
+
+    clearTimeout(phraseFlushTimer);
+    // Natural phrase: flush on punctuation, enough words, or a short pause.
+    if(endsSentence || wordCount >= 14 || maxAge >= 3200){
+      flushPhraseBuffer();
+      return;
+    }
+    const wait = IS_ANDROID ? 1250 : (IS_IOS ? 1050 : 950);
+    phraseFlushTimer = setTimeout(flushPhraseBuffer, wait);
+  }
+
 
   // ---- Silent-stall watchdog ----
   // On some desktop/laptop Chrome installs, the recognizer can silently stop
@@ -3302,6 +3352,10 @@ function makeLivePanel(prefix){
     recentCommittedSegments.length = 0;
     androidTailWords = [];
     translationChain = Promise.resolve();
+    phraseBuffer = [];
+    phraseFirstAt = 0;
+    clearTimeout(phraseFlushTimer);
+    phraseFlushTimer = null;
     committedText = '';
     lastInterimSnapshot = '';
     clearTimeout(committedResetTimer);
@@ -3410,14 +3464,8 @@ function makeLivePanel(prefix){
         committedText = '';
         lastInterimSnapshot = '';
       }, IS_ANDROID ? 2400 : 1700);
-      statusEl.textContent = '🌐 يترجم...';
-      try{
-        const translated = await translateText(newPart, speakerLang.code, myLang.code);
-        appendEntry(newPart, translated);
-        const mode = getOutputMode();
-        if(mode === 'audio' || mode === 'both') queueSpeech(translated, myLang.bcp47);
-      }catch(err){ /* skip this segment, keep listening */ }
-      if(running) statusEl.textContent = '🔎 يستمع...';
+      queueRecognizedPhrase(newPart, { android:false });
+      if(running) statusEl.textContent = '🎙️ يستمع الآن…';
     }
 
     rec.onresult = (event) => {
@@ -3434,9 +3482,7 @@ function makeLivePanel(prefix){
           const segment = (event.results[i][0].transcript || '').trim();
           if(!segment) continue;
           if(event.results[i].isFinal){
-            translationChain = translationChain
-              .then(() => commitAndroidFinal(segment))
-              .catch(() => {});
+            queueRecognizedPhrase(segment, { android:true });
           }else{
             heardInterim = true;
           }
@@ -3498,6 +3544,10 @@ function makeLivePanel(prefix){
     androidTailWords = [];
     recentCommittedSegments.length = 0;
     translationChain = Promise.resolve();
+    phraseBuffer = [];
+    phraseFirstAt = 0;
+    clearTimeout(phraseFlushTimer);
+    phraseFlushTimer = null;
   }
   startBtn.addEventListener('click', start);
   stopBtn.addEventListener('click', stop);
