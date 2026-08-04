@@ -2247,6 +2247,8 @@ const STRINGS = {
     footerTip:'سماعات = بدون صدى · جمل قصيرة = ترجمة أدق', copyConvoBtn:'نسخ المحادثة',
     logHeading:'📜 سجل المحادثة (محفوظ تلقائياً بجهازك)',
     navHome:'الرئيسية', navCall:'مكالمة', navAuto:'تلقائي', navGuide:'مساعدة', navMore:'المزيد',
+    svcHome:'الرئيسية', svcChat:'محادثة', svcCall:'مكالمات', svcCamera:'كاميرا', svcLecture:'محاضرات', svcDialogue:'حوار', svcGuide:'دليل الاستخدام', svcLanguage:'اللغة',
+    logShow:'📜 عرض سجل المحادثة المحفوظ', logHide:'📜 إخفاء السجل',
     moreUILang:'🗣️ لغة الواجهة', moreLangA:'🌐 اللغة الأولى', moreLangB:'🌐 اللغة الثانية',
     displayLangLbl:'🖥️ لغة العرض', translateLangLbl:'🌐 لغتا الترجمة',
     moreTextSize:'Aa حجم الخط', moreTextSizeBtn:'تكبير', moreCopyAll:'📋 نسخ كل المحادثة', moreCopyBtn:'نسخ',
@@ -2315,6 +2317,8 @@ const STRINGS = {
     footerTip:'Kulaklık = yankı yok · Kısa cümleler = daha doğru çeviri', copyConvoBtn:'Konuşmayı kopyala',
     logHeading:'📜 Konuşma geçmişi (cihazınızda otomatik kaydedilir)',
     navHome:'Ana Sayfa', navCall:'Arama', navAuto:'Otomatik', navGuide:'Yardım', navMore:'Daha Fazla',
+    svcHome:'Ana Sayfa', svcChat:'Konuşma', svcCall:'Aramalar', svcCamera:'Kamera', svcLecture:'Dersler', svcDialogue:'Diyalog', svcGuide:'Kullanım Kılavuzu', svcLanguage:'Dil',
+    logShow:'📜 Kaydedilen konuşma geçmişini göster', logHide:'📜 Geçmişi gizle',
     moreUILang:'🗣️ Arayüz dili', moreLangA:'🌐 Birinci dil', moreLangB:'🌐 İkinci dil',
     displayLangLbl:'🖥️ Arayüz dili', translateLangLbl:'🌐 Çeviri dilleri',
     moreTextSize:'Aa Yazı boyutu', moreTextSizeBtn:'Büyüt', moreCopyAll:'📋 Tüm konuşmayı kopyala', moreCopyBtn:'Kopyala',
@@ -2383,6 +2387,8 @@ const STRINGS = {
     footerTip:'Headphones = no echo · Short sentences = more accurate translation', copyConvoBtn:'Copy conversation',
     logHeading:'📜 Conversation history (auto-saved on this device)',
     navHome:'Home', navCall:'Call', navAuto:'Auto', navGuide:'Help', navMore:'More',
+    svcHome:'Home', svcChat:'Conversation', svcCall:'Calls', svcCamera:'Camera', svcLecture:'Lectures', svcDialogue:'Dialogue', svcGuide:'User Guide', svcLanguage:'Language',
+    logShow:'📜 View saved conversation history', logHide:'📜 Hide history',
     moreUILang:'🗣️ Interface language', moreLangA:'🌐 First language', moreLangB:'🌐 Second language',
     displayLangLbl:'🖥️ Display language', translateLangLbl:'🌐 Translation languages',
     moreTextSize:'Aa Text size', moreTextSizeBtn:'Larger', moreCopyAll:'📋 Copy whole conversation', moreCopyBtn:'Copy',
@@ -4153,7 +4159,7 @@ document.getElementById('logToggleBtn').addEventListener('click', () => {
   const isHidden = logWrapEl.style.display === 'none';
   logWrapEl.style.display = isHidden ? 'block' : 'none';
   logToolbarEl.style.display = isHidden ? 'flex' : 'none';
-  btn.textContent = isHidden ? '📜 إخفاء السجل' : '📜 عرض سجل المحادثة المحفوظ';
+  btn.textContent = isHidden ? t('logHide') : t('logShow');
   if(isHidden) logWrapEl.scrollIntoView({ behavior:'smooth', block:'start' });
 });
 
@@ -4241,6 +4247,8 @@ const SIMPLE_I18N_MAP = {
   hubCameraTitle:'hubCameraTitle', hubCameraSub:'hubCameraSub', hubLectureTitle:'hubLectureTitle', hubLectureSub:'hubLectureSub',
   hubDialogueTitle:'hubDialogueTitle', hubDialogueSub:'hubDialogueSub', hubScrollHint:'hubScrollHint',
   guideBannerTitle:'guideBannerTitle', guideBannerSub:'guideBannerSub',
+  svcHomeLbl:'svcHome', svcChatLbl:'svcChat', svcCallLbl:'svcCall', svcCameraLbl:'svcCamera',
+  svcLectureLbl:'svcLecture', svcDialogueLbl:'svcDialogue', svcGuideLbl:'svcGuide', svcLangLbl:'svcLanguage',
   addrTitle:'addrTitle', addrDesc:'addrDesc', addrSpeak:'addrBtn',
   phrasesTitle:'phrasesTitle', tabSay:'tabSay', tabHear:'tabHear',
   catDelivery:'catDelivery', catAppt:'catAppt', catGeneral:'catGeneral', repeatBtn:'repeatBtn',
@@ -4308,6 +4316,11 @@ function applyUILang(lang){
 
   document.getElementById('uiLangSelect').value = lang;
   document.getElementById('uiLangSelectSheet').value = lang;
+  const logToggleBtn = document.getElementById('logToggleBtn');
+  const logWrapNow = document.getElementById('logWrap');
+  if(logToggleBtn && logWrapNow){
+    logToggleBtn.textContent = logWrapNow.style.display === 'none' ? t('logShow') : t('logHide');
+  }
 }
 
 document.getElementById('uiLangSelect').addEventListener('change', (e) => applyUILang(e.target.value));
