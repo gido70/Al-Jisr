@@ -3197,13 +3197,6 @@ async function getOcrWorker(){
       corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
       langPath:'https://tessdata.projectnaptha.com/4.0.0'
     });
-    // Signs, labels, and menus are short scattered text — not a full page
-    // of paragraphs. The default "auto" layout analysis tries to detect a
-    // book-like page structure and often merges unrelated text regions or
-    // misreads short strings as a result, which is exactly the "blurry /
-    // overlapping" behavior reported. SPARSE_TEXT is built for this case:
-    // it looks for text anywhere in the image without assuming a layout.
-    try{ await ocrWorker.setParameters({ tessedit_pageseg_mode: '11' }); }catch(e){}
   }
   return ocrWorker;
 }
@@ -3428,7 +3421,7 @@ function makeLivePanel(prefix){
   // yet. This queue speaks one sentence fully, THEN moves to the next.
   let speechQueue = [];
   let speaking = false;
-  let pausedForSpeech = false; // iOS/Android: mic was deliberately paused to let audio play cleanly
+  let pausedForSpeech = false; // iOS-only: mic was deliberately paused to let audio play cleanly
   function queueSpeech(text, lang){
     speechQueue.push({ text, lang });
     if(!speaking) playNextInQueue();
@@ -3436,30 +3429,38 @@ function makeLivePanel(prefix){
   function playNextInQueue(){
     if(speechQueue.length === 0){
       speaking = false;
-      // Audio output can be silently blocked (iOS) or picked back up by the
-      // mic as feedback (Android/Samsung) while actively recording — so we
-      // paused listening just before speaking. Now that the whole queue has
-      // finished, resume listening.
-      if((IS_IOS || IS_ANDROID) && pausedForSpeech && running && rec){
+      // iOS: audio output can be silently blocked while the microphone is
+      // actively recording (a real device audio-session restriction) — so
+      // we paused listening just before speaking. Now that the whole queue
+      // has finished, resume listening. Android/Samsung are deliberately
+      // left alone here: pausing/restarting the mic around every single
+      // utterance was tried and made Samsung's cutting-out worse, not
+      // better — Android's recognizer is far less tolerant of being
+      // stopped and restarted repeatedly than iOS is.
+      if(IS_IOS && pausedForSpeech && running && rec){
         pausedForSpeech = false;
         try{ rec.start(); }catch(e){}
       }
       return;
     }
     speaking = true;
-    // Pause the mic right before the FIRST utterance of this batch so the
-    // translated speech doesn't get picked back up by the microphone as if
-    // it were new input (a feedback loop that re-translates its own voice)
-    // and so the device's audio session doesn't fight itself. iOS needs
-    // this because audio output can be silently blocked while the mic is
-    // actively recording. Android/Samsung need it too — this is exactly
-    // what produced the garbled/interrupted sound and repeat-translation
-    // reports on Samsung: the mic hears the TTS output. Desktop mic/speaker
-    // are physically separate so it's left alone there to avoid a gap.
-    if((IS_IOS || IS_ANDROID) && !pausedForSpeech && rec && running){
+    // iOS-only: pause the mic right before the FIRST utterance of this
+    // batch so the device's audio session is free to actually play sound.
+    if(IS_IOS && !pausedForSpeech && rec && running){
       pausedForSpeech = true;
       try{ rec.stop(); }catch(e){}
+      // iOS doesn't release the audio session synchronously when rec.stop()
+      // is called — it happens moments later. Calling speechSynthesis.speak()
+      // immediately can silently collide with that still-active recording
+      // session: the text appears (translation succeeded) but no sound
+      // comes out. A short delay here gives iOS time to actually free the
+      // audio channel before we try to use it.
+      setTimeout(() => speakNext(), 120);
+      return;
     }
+    speakNext();
+  }
+  function speakNext(){
     const next = speechQueue.shift();
     try{
       const utter = new SpeechSynthesisUtterance(next.text);
@@ -3761,7 +3762,7 @@ function makeLivePanel(prefix){
         if(snapshot !== lastInterimSnapshot){
           lastInterimSnapshot = snapshot;
           clearTimeout(interimStableTimer);
-          const stableWait = IS_IOS ? 900 : (IS_ANDROID ? 850 : 600); // iPhone / Android (closer to iPhone per request) / Desktop
+          const stableWait = IS_IOS ? 900 : (IS_ANDROID ? 800 : 600); // iPhone / Android / Desktop
           interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, stableWait);
         }
       }
