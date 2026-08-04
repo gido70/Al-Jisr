@@ -1483,6 +1483,35 @@ footer{margin-top:10px!important;border:1px solid var(--ui-line);border-radius:1
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
 }
 
+
+/* Device selector label — visual-only addition */
+.svc-device-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:center;
+  gap:4px;
+  min-width:132px;
+}
+.svc-device-title{
+  display:none;
+  font-family:'Tajawal',sans-serif;
+  font-size:11px;
+  font-weight:800;
+  color:var(--muted);
+  line-height:1.2;
+  text-align:center;
+  white-space:nowrap;
+}
+html[lang="ar"] .svc-device-title-ar,
+html[lang="tr"] .svc-device-title-tr,
+html[lang="en"] .svc-device-title-en{display:block;}
+.svc-device-wrap .svc-select{width:100%;}
+@media(max-width:960px){
+  .svc-device-wrap{flex:0 0 calc(20% - 7px);min-width:0;}
+  .svc-device-title{font-size:9.5px;white-space:normal;}
+  .svc-device-wrap .svc-select{padding:8px 4px;font-size:10px;border-radius:12px;}
+}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -1619,12 +1648,17 @@ footer{margin-top:10px!important;border:1px solid var(--ui-line);border-radius:1
   <button class="svc-link" id="svcGuide" data-target="guide"><span class="svc-ic">📘</span><span id="svcGuideLbl">دليل الاستخدام</span></button>
   <button class="svc-link svc-lang" id="svcLang" data-target="lang"><span class="svc-ic">🌐</span><span id="svcLangLbl">اللغة</span></button>
   <button class="svc-link" id="svcTextSize"><span class="svc-ic">Aa</span><span id="svcTextSizeLbl">حجم الخط</span></button>
-  <select class="svc-link svc-select" id="svcDeviceSelect" title="نوع جهازك">
-    <option value="" id="svcDeviceAuto">⚙️ تلقائي</option>
-    <option value="ios" id="svcDeviceIos">🍎 آيفون</option>
-    <option value="android" id="svcDeviceAndroid">🤖 أندرويد</option>
-    <option value="desktop" id="svcDeviceDesktop">💻 حاسوب</option>
-  </select>
+  <div class="svc-device-wrap">
+    <span class="svc-device-title svc-device-title-ar">اختر نوع الجهاز</span>
+    <span class="svc-device-title svc-device-title-tr">Cihaz türünü seçin</span>
+    <span class="svc-device-title svc-device-title-en">Choose device type</span>
+    <select class="svc-link svc-select" id="svcDeviceSelect" title="نوع جهازك">
+      <option value="" id="svcDeviceAuto">⚙️ تلقائي</option>
+      <option value="ios" id="svcDeviceIos">🍎 آيفون</option>
+      <option value="android" id="svcDeviceAndroid">🤖 أندرويد</option>
+      <option value="desktop" id="svcDeviceDesktop">💻 حاسوب</option>
+    </select>
+  </div>
   <button class="svc-link" id="svcRefresh"><span class="svc-ic">🔄</span><span id="svcRefreshLbl">تحديث</span></button>
 </nav>
 
