@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aljisr-v2026-08-03-laptop-layout-and-stage-controls-fix';
+const CACHE_NAME = 'aljisr-v2026-08-04-audio-fixes-restored-plus-ocr-psm';
 const CORE = ['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(CORE.map(u => cache.add(u)))).then(() => self.skipWaiting()));
