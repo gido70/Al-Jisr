@@ -2835,7 +2835,7 @@ function speak(text, lang, onDone){
   const doSpeak = () => {
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = lang;
-    utter.rate = IS_IOS ? 0.90 : 0.95;
+    utter.rate = IS_IOS ? 0.90 : 0.85;
     utter.volume = 1;
     const preferred = pickVoiceFor(lang.split('-')[0]);
     if(preferred) utter.voice = preferred;
@@ -3860,6 +3860,74 @@ function makeLivePanel(prefix){
     }
 
 
+    // Non-iOS sentence collector (Samsung + laptop only).
+    // iPhone keeps its existing fast path untouched. Android/desktop engines can
+    // emit one or two words as separate finals and later repeat them. We collect
+    // those finals into one coherent sentence, remove overlap, and translate only
+    // after a natural pause. This also makes PDF/Word output paragraph-like.
+    let nonIosPhraseBuffer = '';
+    let nonIosFlushTimer = null;
+    let nonIosRecentPhrases = [];
+    const normalizePhrase = (text) => (text || '')
+      .toLowerCase()
+      .replace(/[.,!?؛،؟…:;\-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    function mergeWithoutOverlap(base, addition){
+      const a = (base || '').trim();
+      const b = (addition || '').trim();
+      if(!a) return b;
+      if(!b) return a;
+      const aw = a.split(/\s+/);
+      const bw = b.split(/\s+/);
+      const normWord = w => w.toLowerCase().replace(/[.,!?؛،؟…:;]+$/,'');
+      let overlap = 0;
+      const max = Math.min(aw.length, bw.length, 12);
+      for(let n=max; n>=1; n--){
+        let ok = true;
+        for(let i=0;i<n;i++){
+          if(normWord(aw[aw.length-n+i]) !== normWord(bw[i])){ ok=false; break; }
+        }
+        if(ok){ overlap=n; break; }
+      }
+      // If the new result contains the whole current buffer, use the corrected
+      // longer result instead of appending it again.
+      const na = normalizePhrase(a), nb = normalizePhrase(b);
+      if(nb && na && nb.includes(na) && bw.length >= aw.length) return b;
+      if(na && nb && na.includes(nb)) return a;
+      return (a + ' ' + bw.slice(overlap).join(' ')).replace(/\s+/g,' ').trim();
+    }
+    function flushNonIosPhrase(){
+      clearTimeout(nonIosFlushTimer);
+      nonIosFlushTimer = null;
+      const phrase = nonIosPhraseBuffer.trim();
+      nonIosPhraseBuffer = '';
+      if(!phrase) return;
+      const n = normalizePhrase(phrase);
+      if(!n) return;
+      if(nonIosRecentPhrases.includes(n)) return;
+      nonIosRecentPhrases.push(n);
+      if(nonIosRecentPhrases.length > 8) nonIosRecentPhrases.shift();
+      // Reset the interim-claim state so this non-iOS sentence is handled once.
+      committedText = '';
+      lastInterimSnapshot = '';
+      speakNewPortion(phrase, true);
+    }
+    function queueNonIosFinal(text){
+      const chunk = (text || '').trim();
+      if(!chunk) return;
+      nonIosPhraseBuffer = mergeWithoutOverlap(nonIosPhraseBuffer, chunk);
+      clearTimeout(nonIosFlushTimer);
+      const wordCount = nonIosPhraseBuffer.split(/\s+/).filter(Boolean).length;
+      const endsSentence = /[.!?؟…]$/.test(nonIosPhraseBuffer);
+      if(endsSentence || wordCount >= 18){
+        flushNonIosPhrase();
+      }else{
+        // 850 ms: requested balance between speed and full-sentence grouping.
+        nonIosFlushTimer = setTimeout(() => { if(running) flushNonIosPhrase(); }, 850);
+      }
+    }
+
     rec.onresult = (event) => {
       lastActivityAt = Date.now();
       let finalText = '';
@@ -3870,23 +3938,30 @@ function makeLivePanel(prefix){
         else interimText += transcript;
       }
 
-      if(finalText.trim()){
-        clearTimeout(interimStableTimer);
-        commitNewPortion(finalText.trim(), true);
-        lastInterimSnapshot = '';
+      // Preserve the proven iPhone behavior exactly: fast interim commit at 900 ms.
+      if(IS_IOS){
+        if(finalText.trim()){
+          clearTimeout(interimStableTimer);
+          commitNewPortion(finalText.trim(), true);
+          lastInterimSnapshot = '';
+          return;
+        }
+        if(interimText.trim()){
+          const snapshot = interimText.trim();
+          statusEl.textContent = '🎙️ ' + snapshot.slice(-60);
+          if(snapshot !== lastInterimSnapshot){
+            lastInterimSnapshot = snapshot;
+            clearTimeout(interimStableTimer);
+            interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, 900);
+          }
+        }
         return;
       }
 
-      if(interimText.trim()){
-        const snapshot = interimText.trim();
-        statusEl.textContent = '🎙️ ' + snapshot.slice(-60);
-        if(snapshot !== lastInterimSnapshot){
-          lastInterimSnapshot = snapshot;
-          clearTimeout(interimStableTimer);
-          const stableWait = IS_IOS ? 900 : (IS_ANDROID ? 800 : 600); // iPhone / Android / Desktop
-          interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, stableWait);
-        }
-      }
+      // Samsung/laptop: never translate interim guesses. They are the main source
+      // of repeated words. Show them only as a temporary listening hint.
+      if(interimText.trim()) statusEl.textContent = '🎙️ ' + interimText.trim().slice(-60);
+      if(finalText.trim()) queueNonIosFinal(finalText.trim());
     };
   }
 
@@ -3907,6 +3982,7 @@ function makeLivePanel(prefix){
     stopBtn.style.display = 'none';
     statusEl.textContent = '';
     if(rec){ try{ rec.stop(); }catch(e){} }
+    if(!IS_IOS && typeof flushNonIosPhrase === 'function') flushNonIosPhrase();
     stopWatchdog();
     clearSpeechQueue();
     openEntryDiv = null; // next start() begins a fresh line instead of extending an old one
