@@ -1562,74 +1562,55 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   .brand-hero .brand-mark-lg{width:390px!important;}
   .brand-hero .brand-logo-image{max-height:130px!important;}
 }
-/* Live-conversation layout: one clean, final set of rules (replaces
-   several overlapping !important patches from earlier edits that were
-   fighting each other and causing elements to overlap instead of
-   stacking in order). Each side stacks top-to-bottom in this exact order:
-   language tag -> heading -> transcript -> edit/copy/share/clear buttons
-   -> mic. The two sides stack one after another, then the back-to-home
-   button sits below both, per explicit request. */
+/* Live-conversation layout: minimal, safe rules. No `order` is used
+   anywhere here — the DOM's natural top-to-bottom order (language tag,
+   heading, transcript, listen button, edit/copy/share/clear buttons, mic)
+   is already correct and is what actually worked before. Repeated
+   `order`-based patches caused more overlap problems than they solved, so
+   this version only guarantees visibility and reasonable spacing. */
 .stage.show{
   display:flex!important;
   flex-direction:column!important;
   width:100%!important;
-  min-height:400px!important;
-  height:auto!important;
-  overflow:visible!important;
 }
 .stage.show .side{
   display:flex!important;
   flex-direction:column!important;
-  visibility:visible!important;
-  opacity:1!important;
   width:100%!important;
   padding:20px!important;
   box-sizing:border-box!important;
-  position:static!important;
 }
-.stage.show .side > *{ position:static!important; }
-.stage.show .lang-tag{ order:1!important; display:flex!important; }
-.stage.show h2{ order:2!important; display:block!important; }
-.stage.show .transcript{ order:3!important; display:block!important; width:100%!important; box-sizing:border-box!important; }
-.stage.show .side .icon-btn#replayA,
-.stage.show .side .icon-btn#replayB{ order:4!important; }
-.stage.show .btn-row{ order:5!important; flex-wrap:wrap!important; gap:8px!important; margin-bottom:24px!important; padding-bottom:8px!important; width:100%!important; }
-.stage.show .btn-row.show-actions{ display:flex!important; }
+.stage.show .btn-row{
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  margin:12px 0!important;
+  width:100%!important;
+}
 .stage.show .mic-row{
-  order:6!important;
   display:flex!important;
-  visibility:visible!important;
-  opacity:1!important;
   align-items:center!important;
   gap:14px!important;
-  margin-top:28px!important;
-  margin-bottom:24px!important;
+  margin:20px 0!important;
   width:100%!important;
-  padding-top:8px!important;
 }
 .stage.show .mic-btn{
   display:flex!important;
-  visibility:visible!important;
-  opacity:1!important;
   align-items:center!important;
   justify-content:center!important;
   width:60px!important;
   height:60px!important;
   flex-shrink:0!important;
 }
-.stage.show .bridge-col{ order:7!important; }
-.stage.show .side.right{ order:8!important; }
 .stage.show #stageExportRow{
-  order:9!important;
   display:flex!important;
   flex-wrap:wrap!important;
   gap:10px!important;
   justify-content:center!important;
   width:100%!important;
   padding:16px!important;
+  margin-top:12px!important;
 }
 .stage.show .panel-bottombar{
-  order:10!important;
   display:flex!important;
   justify-content:center!important;
   width:100%!important;
