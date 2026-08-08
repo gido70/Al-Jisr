@@ -3802,14 +3802,13 @@ function makeLivePanel(prefix){
     function isRecentDuplicate(segment){
       const n = segment.trim().toLowerCase();
       if(recentCommittedSegments.includes(n)) return true;
-      // Only treat SHORT-ish segments as fuzzy duplicates (a handful of
-      // words) — long segments are extremely unlikely to coincidentally
-      // share 65%+ of their words unless they really are the same speech
-      // re-transcribed, so this stays safe for genuinely new content.
-      if(wordsOf(n).length <= 14){
-        return recentCommittedSegments.some(prev => wordOverlapRatio(n, prev) >= 0.65);
-      }
-      return false;
+      const words = wordsOf(n);
+      if(!words.length) return false;
+      // Short phrases: 65% shared words is enough to call it a repeat.
+      // Longer stretches need a much higher bar (80%) so real, new,
+      // topically-similar content never gets wrongly swallowed.
+      const threshold = words.length <= 14 ? 0.65 : 0.8;
+      return recentCommittedSegments.some(prev => wordOverlapRatio(n, prev) >= threshold);
     }
     function rememberCommitted(segment){
       recentCommittedSegments.push(segment.trim().toLowerCase());
@@ -3859,9 +3858,29 @@ function makeLivePanel(prefix){
       // that happens, treat the whole thing as fresh instead of guessing.
       const norm = (w) => w.toLowerCase().replace(/[.,!?؛،؟…]+$/,'');
       const prefixMatches = committedWords.every((w,i) => norm(allWords[i] || '') === norm(w));
-      const newPart = prefixMatches
-        ? allWords.slice(committedWords.length).join(' ')
-        : trimmed; // re-segmented by the engine — treat as a new, whole chunk
+      let newPart;
+      if(prefixMatches){
+        newPart = allWords.slice(committedWords.length).join(' ');
+      }else{
+        // The engine revised some EARLIER wording instead of purely
+        // extending (common self-correction behavior) — a strict full
+        // prefix match will never succeed here. Resending the whole
+        // candidate would repeat everything we already spoke (and grow
+        // longer every time this happens, which is exactly the runaway
+        // repeat pattern seen in real testing). Instead, find where the
+        // TAIL of what we already committed still lines up with the START
+        // of this new candidate, and only take what comes after that.
+        const max = Math.min(committedWords.length, allWords.length, 15);
+        let overlap = 0;
+        for(let n = max; n >= 1; n--){
+          let ok = true;
+          for(let i = 0; i < n; i++){
+            if(norm(committedWords[committedWords.length - n + i]) !== norm(allWords[i])){ ok = false; break; }
+          }
+          if(ok){ overlap = n; break; }
+        }
+        newPart = overlap > 0 ? allWords.slice(overlap).join(' ') : trimmed;
+      }
       if(!newPart) return null;
       if(isRecentDuplicate(newPart)){
         committedText = trimmed;
@@ -3937,7 +3956,8 @@ function makeLivePanel(prefix){
       const n = normalizePhrase(phrase);
       if(!n) return;
       const nWords = n.split(' ').filter(Boolean);
-      const isFuzzyRepeat = nWords.length <= 14 && nonIosRecentPhrases.some(prev => wordOverlapRatio(n, prev) >= 0.65);
+      const dupThreshold = nWords.length <= 14 ? 0.65 : 0.8;
+      const isFuzzyRepeat = nonIosRecentPhrases.some(prev => wordOverlapRatio(n, prev) >= dupThreshold);
       if(nonIosRecentPhrases.includes(n) || isFuzzyRepeat) return;
       nonIosRecentPhrases.push(n);
       if(nonIosRecentPhrases.length > 8) nonIosRecentPhrases.shift();
