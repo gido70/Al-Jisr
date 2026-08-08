@@ -3656,12 +3656,12 @@ function makeLivePanel(prefix){
     watchdogTimer = setInterval(() => {
       if(!running || pausedForSpeech) return;
       const idleFor = Date.now() - lastActivityAt;
-      if(idleFor > 6000){
+      if(idleFor > 3500){
         try{ rec && rec.stop(); }catch(e){}
         try{ buildRec(); if(running) rec.start(); }catch(e){}
         lastActivityAt = Date.now();
       }
-    }, 3000);
+    }, 1200);
   }
   function stopWatchdog(){ clearInterval(watchdogTimer); watchdogTimer = null; }
 
@@ -3678,7 +3678,10 @@ function makeLivePanel(prefix){
       last.original = (last.original + ' ' + original).trim();
       last.translated = (last.translated + ' ' + translated).trim();
       openEntryDiv.querySelector('.trans').textContent = last.translated;
-      transcriptEl.scrollTop = transcriptEl.scrollHeight;
+      // Newest entry lives at the TOP of the list (see insertBefore below),
+      // so keeping it in view means staying scrolled to the top, not the
+      // bottom — the reader never has to scroll down to catch up.
+      transcriptEl.scrollTop = 0;
       if(isFinalCommit) openEntryDiv = null; // next segment starts a fresh line
       return;
     }
@@ -3693,8 +3696,12 @@ function makeLivePanel(prefix){
     // per explicit request: "لا يظهر الاثنين معاً".
     div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans"></div>`;
     div.querySelector('.trans').textContent = translated;
-    transcriptEl.appendChild(div);
-    transcriptEl.scrollTop = transcriptEl.scrollHeight;
+    // NEWEST FIRST: insert at the top of the list instead of the bottom, so
+    // the line the listener needs to follow right now is always the first
+    // thing visible — no manual scrolling down to "catch up" during a live
+    // khutbah/lecture/dialogue.
+    transcriptEl.insertBefore(div, transcriptEl.firstChild);
+    transcriptEl.scrollTop = 0;
     if(!isFinalCommit) openEntryDiv = div; // keep it open only if more is likely coming
   }
 
