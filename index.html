@@ -951,15 +951,43 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
   overflow-y:auto;
 }
 .live-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 0;}
+
+/* LIVE CAPTION WINDOW — current translated speech always stays visible at top.
+   Completed transcript remains below in normal chronological order. */
+.live-now{
+  position:sticky;
+  top:0;
+  z-index:8;
+  display:none;
+  margin:0 0 12px;
+  padding:13px 14px;
+  border:2px solid #2563eb;
+  border-radius:14px;
+  background:rgba(255,255,255,.98);
+  box-shadow:0 8px 22px rgba(37,99,235,.16);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.live-now.show{display:block;}
+.live-now-label{
+  font-size:11px;
+  font-weight:800;
+  color:#2563eb;
+  margin-bottom:5px;
+}
+.live-now-text{
+  font-size:18px;
+  font-weight:800;
+  line-height:1.65;
+  max-height:5.2em;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+}
+.live-now-text::-webkit-scrollbar{display:none;}
+
 .live-entry{padding:10px 0;border-bottom:1px dashed var(--line);}
 .live-entry:last-child{border-bottom:none;}
-/* Live-follow reading: newest item is inserted first; older transcript remains below. */
-.live-transcript .live-entry:first-child{
-  padding-top:2px;
-  position:relative;
-  z-index:2;
-}
-.live-transcript{scroll-behavior:auto;}
 .live-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);margin-bottom:4px;font-weight:700;}
 .live-entry .orig{font-size:13.5px;color:var(--muted);margin-bottom:3px;}
 .live-entry .trans{font-size:16px;font-weight:700;}
@@ -3672,84 +3700,67 @@ function makeLivePanel(prefix){
   }
   function stopWatchdog(){ clearInterval(watchdogTimer); watchdogTimer = null; }
 
-  let openEntryDiv = null; // the current live sentence card (if still being built)
+  let openEntryDiv = null; // the last <div> still being built up (not yet finalized by a real isFinal)
+  let liveNowEl = null;
 
-  // Merge a growing recognizer/translation result without duplicating text.
-  // Some engines resend the whole sentence with a few extra words; in that
-  // case we replace/extend instead of appending the same sentence again.
-  function mergeGrowingText(existing, incoming){
-    const a = (existing || '').trim();
-    const b = (incoming || '').trim();
-    if(!a) return b;
-    if(!b) return a;
-
-    const norm = s => s.toLowerCase()
-      .replace(/[.,!?؛،؟…:;\-]+/g,' ')
-      .replace(/\s+/g,' ')
-      .trim();
-
-    const na = norm(a), nb = norm(b);
-    if(nb && na && nb.includes(na) && b.length >= a.length) return b;
-    if(na && nb && na.includes(nb)) return a;
-
-    const aw = a.split(/\s+/), bw = b.split(/\s+/);
-    const nw = w => w.toLowerCase().replace(/[.,!?؛،؟…:;]+$/,'');
-    let overlap = 0;
-    const max = Math.min(aw.length, bw.length, 18);
-    for(let n=max; n>=1; n--){
-      let ok = true;
-      for(let i=0;i<n;i++){
-        if(nw(aw[aw.length-n+i]) !== nw(bw[i])){ ok=false; break; }
-      }
-      if(ok){ overlap = n; break; }
-    }
-    return (a + ' ' + bw.slice(overlap).join(' ')).replace(/\s+/g,' ').trim();
+  function ensureLiveNow(){
+    if(liveNowEl && liveNowEl.isConnected) return liveNowEl;
+    liveNowEl = document.createElement('div');
+    liveNowEl.className = 'live-now';
+    liveNowEl.innerHTML = '<div class="live-now-label">● الترجمة الآن</div><div class="live-now-text"></div>';
+    transcriptEl.prepend(liveNowEl);
+    return liveNowEl;
   }
 
-  // Force the newest sentence card to stay physically at the top of the
-  // transcript viewport, regardless of browser DOM/layout quirks.
-  function keepNewestEntryOnTop(){
-    const cards = Array.from(transcriptEl.querySelectorAll('.live-entry'));
-    cards.sort((a,b) => Number(b.dataset.seq || 0) - Number(a.dataset.seq || 0));
-    const frag = document.createDocumentFragment();
-    cards.forEach(card => frag.appendChild(card));
-    transcriptEl.appendChild(frag);
+  function showLiveNow(translated){
+    const mode = getOutputMode();
+    const box = ensureLiveNow();
+    if(mode === 'audio'){
+      box.classList.remove('show');
+      return;
+    }
+    const txt = box.querySelector('.live-now-text');
+    txt.textContent = (translated || '').trim();
+    box.classList.add('show');
+    // If the current piece itself is long, keep its newest words visible.
+    txt.scrollTop = txt.scrollHeight;
+    // Keep the live card pinned to the top; never jump the whole transcript down.
     transcriptEl.scrollTop = 0;
   }
 
   function appendEntry(original, translated, isFinalCommit){
     if(openEntryDiv){
+      // newPart is always an incremental new chunk (never a full corrected
+      // sentence) whether it came from an early interim guess or the real
+      // isFinal result — so we always extend the open line with it. The
+      // only difference is whether we keep the line open for more (still
+      // mid-sentence) or close it now that a real isFinal confirmed the
+      // sentence is complete.
       const last = entries[entries.length - 1];
-      last.original = mergeGrowingText(last.original, original);
-      last.translated = mergeGrowingText(last.translated, translated);
+      last.original = (last.original + ' ' + original).trim();
+      last.translated = (last.translated + ' ' + translated).trim();
       openEntryDiv.querySelector('.trans').textContent = last.translated;
-      keepNewestEntryOnTop();
-      if(isFinalCommit) openEntryDiv = null; // next segment starts a fresh card
+      // Show only the newest translated portion in the fixed live-caption window.
+      showLiveNow(translated);
+      if(isFinalCommit) openEntryDiv = null; // next segment starts a fresh line
       return;
     }
-
-    entries.push({
-      original,
-      translated,
-      time: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})
-    });
-
+    entries.push({ original, translated, time: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) });
     transcriptEl.querySelector('.live-empty')?.remove();
     const div = document.createElement('div');
     div.className = 'live-entry';
-    div.dataset.seq = String(entries.length);
     if(getOutputMode() === 'audio') div.classList.add('audio-only-entry');
-
     const timeLabel = entries[entries.length-1].time;
-    // Live screen: translated text only. `entries` remains chronological,
-    // so Copy / PDF / Word exports keep the natural beginning-to-end order.
+    // Only the TRANSLATED text is shown on screen — the original is kept in
+    // `entries` (above) for PDF/Word export only, never displayed live,
+    // per explicit request: "لا يظهر الاثنين معاً".
     div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans"></div>`;
     div.querySelector('.trans').textContent = translated;
-
     transcriptEl.appendChild(div);
-    keepNewestEntryOnTop();
-
-    if(!isFinalCommit) openEntryDiv = div;
+    // The newest spoken meaning is always visible in the top live-caption window.
+    // The full completed transcript continues below in natural chronological order.
+    showLiveNow(translated);
+    if(!isFinalCommit) openEntryDiv = div; // keep it open only if more is likely coming
   }
 
   function resetToDefaults(){
@@ -3761,6 +3772,7 @@ function makeLivePanel(prefix){
     audioSourceInputs[0].checked = true;
     entries = [];
     openEntryDiv = null;
+    liveNowEl = null;
     transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
     statusEl.textContent = 'جاهز للاستماع';
     setTimeout(() => { statusEl.textContent = ''; }, 1500);
@@ -3974,12 +3986,11 @@ function makeLivePanel(prefix){
       clearTimeout(nonIosFlushTimer);
       const wordCount = nonIosPhraseBuffer.split(/\s+/).filter(Boolean).length;
       const endsSentence = /[.!?؟…]$/.test(nonIosPhraseBuffer);
-      if(endsSentence || wordCount >= 12){
+      if(endsSentence || wordCount >= 18){
         flushNonIosPhrase();
       }else{
-        // Faster lecture/dialogue follow mode on Samsung + laptop:
-        // short natural pause, without changing speech rate or iPhone timing.
-        nonIosFlushTimer = setTimeout(() => { if(running) flushNonIosPhrase(); }, 420);
+        // 850 ms: requested balance between speed and full-sentence grouping.
+        nonIosFlushTimer = setTimeout(() => { if(running) flushNonIosPhrase(); }, 850);
       }
     }
 
