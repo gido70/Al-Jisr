@@ -3783,9 +3783,33 @@ function makeLivePanel(prefix){
     const wordsOf = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
     let recentCommittedSegments = [];
     let committedResetTimer = null;
+    // Fuzzy overlap check: catches near-duplicates where the recognizer
+    // re-transcribed the same stretch of speech with slightly DIFFERENT
+    // wording (not just different case/punctuation) — typically right after
+    // a reconnect/restart, when it re-hears a bit of audio it already
+    // processed and outputs a paraphrase-like re-transcription instead of
+    // an identical repeat. An exact string match misses this entirely,
+    // which is exactly the run-on repetition seen in real khutbah testing.
+    function wordOverlapRatio(a, b){
+      const aw = wordsOf(a).map(w => w.toLowerCase().replace(/[.,!?؛،؟…]+$/,''));
+      const bw = wordsOf(b).map(w => w.toLowerCase().replace(/[.,!?؛،؟…]+$/,''));
+      if(!aw.length || !bw.length) return 0;
+      const bSet = new Set(bw);
+      let shared = 0;
+      aw.forEach(w => { if(bSet.has(w)) shared++; });
+      return shared / Math.min(aw.length, bw.length);
+    }
     function isRecentDuplicate(segment){
       const n = segment.trim().toLowerCase();
-      return recentCommittedSegments.includes(n);
+      if(recentCommittedSegments.includes(n)) return true;
+      // Only treat SHORT-ish segments as fuzzy duplicates (a handful of
+      // words) — long segments are extremely unlikely to coincidentally
+      // share 65%+ of their words unless they really are the same speech
+      // re-transcribed, so this stays safe for genuinely new content.
+      if(wordsOf(n).length <= 14){
+        return recentCommittedSegments.some(prev => wordOverlapRatio(n, prev) >= 0.65);
+      }
+      return false;
     }
     function rememberCommitted(segment){
       recentCommittedSegments.push(segment.trim().toLowerCase());
@@ -3904,7 +3928,7 @@ function makeLivePanel(prefix){
       if(na && nb && na.includes(nb)) return a;
       return (a + ' ' + bw.slice(overlap).join(' ')).replace(/\s+/g,' ').trim();
     }
-    function flushNonIosPhrase(){
+    function flushNonIosPhrase(isFinalCommit = true){
       clearTimeout(nonIosFlushTimer);
       nonIosFlushTimer = null;
       const phrase = nonIosPhraseBuffer.trim();
@@ -3912,13 +3936,15 @@ function makeLivePanel(prefix){
       if(!phrase) return;
       const n = normalizePhrase(phrase);
       if(!n) return;
-      if(nonIosRecentPhrases.includes(n)) return;
+      const nWords = n.split(' ').filter(Boolean);
+      const isFuzzyRepeat = nWords.length <= 14 && nonIosRecentPhrases.some(prev => wordOverlapRatio(n, prev) >= 0.65);
+      if(nonIosRecentPhrases.includes(n) || isFuzzyRepeat) return;
       nonIosRecentPhrases.push(n);
       if(nonIosRecentPhrases.length > 8) nonIosRecentPhrases.shift();
       // Reset the interim-claim state so this non-iOS sentence is handled once.
       committedText = '';
       lastInterimSnapshot = '';
-      speakNewPortion(phrase, true);
+      speakNewPortion(phrase, isFinalCommit);
     }
     function queueNonIosFinal(text){
       const chunk = (text || '').trim();
@@ -3927,11 +3953,16 @@ function makeLivePanel(prefix){
       clearTimeout(nonIosFlushTimer);
       const wordCount = nonIosPhraseBuffer.split(/\s+/).filter(Boolean).length;
       const endsSentence = /[.!?؟…]$/.test(nonIosPhraseBuffer);
-      if(endsSentence || wordCount >= 10){
-        flushNonIosPhrase();
+      if(endsSentence || wordCount >= 18){
+        // Only a real sentence end closes the visible line. A flush forced
+        // purely by the word cap (speaker still mid-sentence, no natural
+        // pause yet) keeps extending the SAME line instead of opening a
+        // new one above it — a continuous, uninterrupted utterance should
+        // never visually split into separate out-of-order entries.
+        flushNonIosPhrase(endsSentence);
       }else{
         // 850 ms: requested balance between speed and full-sentence grouping.
-        nonIosFlushTimer = setTimeout(() => { if(running) flushNonIosPhrase(); }, 500);
+        nonIosFlushTimer = setTimeout(() => { if(running) flushNonIosPhrase(true); }, 850);
       }
     }
 
@@ -3959,7 +3990,7 @@ function makeLivePanel(prefix){
           if(snapshot !== lastInterimSnapshot){
             lastInterimSnapshot = snapshot;
             clearTimeout(interimStableTimer);
-            interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, 600);
+            interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, 900);
           }
         }
         return;
