@@ -3807,6 +3807,7 @@ function makeLivePanel(prefix){
     let committedText = '';
     let lastInterimSnapshot = '';
     let interimStableTimer = null;
+    let lastIosCommitAttemptAt = Date.now();
     const wordsOf = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
     let recentCommittedSegments = [];
     let committedResetTimer = null;
@@ -3834,8 +3835,10 @@ function makeLivePanel(prefix){
       // Short phrases: 65% shared words is enough to call it a repeat.
       // Longer stretches need a much higher bar (80%) so real, new,
       // topically-similar content never gets wrongly swallowed.
-      const threshold = words.length <= 14 ? 0.65 : 0.8;
-      return recentCommittedSegments.some(prev => wordOverlapRatio(n, prev) >= threshold);
+      if(words.length <= 14){
+        return recentCommittedSegments.some(prev => wordOverlapRatio(n, prev) >= 0.65);
+      }
+      return false;
     }
     function rememberCommitted(segment){
       recentCommittedSegments.push(segment.trim().toLowerCase());
@@ -3908,7 +3911,14 @@ function makeLivePanel(prefix){
         }
         newPart = overlap > 0 ? allWords.slice(overlap).join(' ') : trimmed;
       }
-      if(!newPart) return null;
+      if(!newPart){
+        // Nothing new yet, but the wording itself may have been revised —
+        // keep committedText in sync with the latest candidate so the NEXT
+        // comparison starts from an up-to-date baseline instead of a stale
+        // one (which could otherwise stall real progress).
+        committedText = trimmed;
+        return null;
+      }
       if(isRecentDuplicate(newPart)){
         committedText = trimmed;
         return null;
@@ -3983,8 +3993,7 @@ function makeLivePanel(prefix){
       const n = normalizePhrase(phrase);
       if(!n) return;
       const nWords = n.split(' ').filter(Boolean);
-      const dupThreshold = nWords.length <= 14 ? 0.65 : 0.8;
-      const isFuzzyRepeat = nonIosRecentPhrases.some(prev => wordOverlapRatio(n, prev) >= dupThreshold);
+      const isFuzzyRepeat = nWords.length <= 14 && nonIosRecentPhrases.some(prev => wordOverlapRatio(n, prev) >= 0.65);
       if(nonIosRecentPhrases.includes(n) || isFuzzyRepeat) return;
       nonIosRecentPhrases.push(n);
       if(nonIosRecentPhrases.length > 8) nonIosRecentPhrases.shift();
@@ -4029,15 +4038,30 @@ function makeLivePanel(prefix){
           clearTimeout(interimStableTimer);
           commitNewPortion(finalText.trim(), true);
           lastInterimSnapshot = '';
+          lastIosCommitAttemptAt = Date.now();
           return;
         }
         if(interimText.trim()){
           const snapshot = interimText.trim();
           statusEl.textContent = '🎙️ ' + snapshot.slice(-60);
+          const now = Date.now();
           if(snapshot !== lastInterimSnapshot){
             lastInterimSnapshot = snapshot;
             clearTimeout(interimStableTimer);
-            interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, 900);
+            interimStableTimer = setTimeout(() => {
+              if(running){ commitNewPortion(snapshot, false); lastIosCommitAttemptAt = Date.now(); }
+            }, 900);
+          }
+          // Safety valve: continuous fast speech with no natural micro-pause
+          // can keep re-triggering the 900ms debounce above forever, so
+          // nothing ever gets translated even though the speaker never
+          // stopped talking. If too long has passed since our last real
+          // commit attempt, force a checkpoint of the current snapshot now
+          // instead of waiting for a pause that may not come.
+          if(now - lastIosCommitAttemptAt > 4000){
+            clearTimeout(interimStableTimer);
+            lastIosCommitAttemptAt = now;
+            commitNewPortion(snapshot, false);
           }
         }
         return;
