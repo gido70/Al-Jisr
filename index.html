@@ -3728,6 +3728,54 @@ function makeLivePanel(prefix){
     transcriptEl.scrollTop = 0;
   }
 
+  // Robust overlap-aware merge used as a SECOND safety layer for the stored
+  // transcript. Even if a browser/STT engine resends a growing sentence, the
+  // history will keep only the genuinely new tail instead of duplicating text.
+  function mergeTranscriptText(existing, incoming){
+    const a = (existing || '').trim();
+    const b = (incoming || '').trim();
+    if(!a) return b;
+    if(!b) return a;
+
+    const cleanWord = w => w.toLowerCase().replace(/[.,!?؛،؟…:;"'“”‘’()[\]{}\-]+/g,'');
+    const aw = a.split(/\s+/).filter(Boolean);
+    const bw = b.split(/\s+/).filter(Boolean);
+    const an = aw.map(cleanWord), bn = bw.map(cleanWord);
+
+    const A = an.join(' '), B = bn.join(' ');
+    if(B === A || A.includes(B)) return a;
+    if(B.includes(A) && bw.length >= aw.length) return b;
+
+    // Remove the largest repeated prefix of the incoming text that already
+    // appears at the end of the existing text.
+    let overlap = 0;
+    const max = Math.min(an.length, bn.length, 80);
+    for(let n=max; n>=1; n--){
+      let ok = true;
+      for(let i=0;i<n;i++){
+        if(an[an.length-n+i] !== bn[i]){ ok=false; break; }
+      }
+      if(ok){ overlap = n; break; }
+    }
+    if(overlap > 0){
+      return (a + ' ' + bw.slice(overlap).join(' ')).replace(/\s+/g,' ').trim();
+    }
+
+    // Growing STT revisions may repeat a long prefix from anywhere in the
+    // recent paragraph rather than exactly its suffix. If >=4 leading words
+    // of the new chunk already occur contiguously in the existing paragraph,
+    // remove the longest such prefix.
+    const maxPrefix = Math.min(bn.length, 60);
+    for(let n=maxPrefix; n>=4; n--){
+      const needle = bn.slice(0,n).join(' ');
+      if(A.includes(needle)){
+        return (a + ' ' + bw.slice(n).join(' ')).replace(/\s+/g,' ').trim();
+      }
+    }
+
+    return (a + ' ' + b).replace(/\s+/g,' ').trim();
+  }
+
   function appendEntry(original, translated, isFinalCommit){
     if(openEntryDiv){
       // newPart is always an incremental new chunk (never a full corrected
@@ -3737,8 +3785,8 @@ function makeLivePanel(prefix){
       // mid-sentence) or close it now that a real isFinal confirmed the
       // sentence is complete.
       const last = entries[entries.length - 1];
-      last.original = (last.original + ' ' + original).trim();
-      last.translated = (last.translated + ' ' + translated).trim();
+      last.original = mergeTranscriptText(last.original, original);
+      last.translated = mergeTranscriptText(last.translated, translated);
       openEntryDiv.querySelector('.trans').textContent = last.translated;
       // Show only the newest translated portion in the fixed live-caption window.
       showLiveNow(translated);
@@ -3773,6 +3821,7 @@ function makeLivePanel(prefix){
     entries = [];
     openEntryDiv = null;
     liveNowEl = null;
+    // recognition-level dedupe histories are recreated/reset with the listener
     transcriptEl.innerHTML = '<div class="live-empty">سيظهر النص والترجمة هنا أولاً بأول بمجرد ما تضغط "ابدأ"...</div>';
     statusEl.textContent = 'جاهز للاستماع';
     setTimeout(() => { statusEl.textContent = ''; }, 1500);
@@ -3875,40 +3924,96 @@ function makeLivePanel(prefix){
     function claimNewPortion(fullText, isFinalCommit){
       const trimmed = (fullText || '').trim();
       if(!trimmed) return null;
+
+      const cleanWord = w => w.toLowerCase().replace(/[.,!?؛،؟…:;"'“”‘’()[\]{}\-]+/g,'');
       const allWords = wordsOf(trimmed);
       const committedWords = wordsOf(committedText);
-      if(allWords.length <= committedWords.length && committedWords.length > 0){
-        // Not longer than what we already sent — but only trust that if the
-        // new text still starts the same way. Some Android/Samsung engines
-        // silently re-segment the whole running transcript (fixing
-        // capitalization/punctuation) between results, which can also make
-        // it briefly SHORTER by a word or two. In that case this is still
-        // just a revision of what we already spoke, so it's safe to skip.
-        return null;
-      }
-      // Verify the new text actually starts with what we already committed —
-      // word for word, case/punctuation-insensitive. If it doesn't, Android's
-      // engine re-segmented the sentence rather than extending it, so
-      // slicing by word COUNT alone would cut from the wrong place and
-      // either repeat words we already spoke or skip words we didn't. When
-      // that happens, treat the whole thing as fresh instead of guessing.
-      const norm = (w) => w.toLowerCase().replace(/[.,!?؛،؟…]+$/,'');
-      const prefixMatches = committedWords.every((w,i) => norm(allWords[i] || '') === norm(w));
-      const newPart = prefixMatches
-        ? allWords.slice(committedWords.length).join(' ')
-        : trimmed; // re-segmented by the engine — treat as a new, whole chunk
-      if(!newPart) return null;
-      if(isRecentDuplicate(newPart)){
+      const allNorm = allWords.map(cleanWord);
+      const committedNorm = committedWords.map(cleanWord);
+
+      // New recognition sentence/session: nothing committed yet.
+      if(!committedWords.length){
         committedText = trimmed;
+        rememberCommitted(trimmed);
+        // A real final marks the sentence boundary. Clear immediately AFTER
+        // claiming it so the next independent sentence starts cleanly.
+        if(isFinalCommit){
+          committedText = '';
+          lastInterimSnapshot = '';
+        }
+        return trimmed;
+      }
+
+      const A = committedNorm.join(' ');
+      const B = allNorm.join(' ');
+
+      // Same/shorter revision of what was already committed: never resend.
+      if(B === A || A.includes(B)){
+        if(isFinalCommit){
+          committedText = '';
+          lastInterimSnapshot = '';
+        }
         return null;
       }
+
+      let newPart = '';
+
+      // Normal growing hypothesis: previous committed text is the prefix.
+      if(B.startsWith(A + ' ')){
+        newPart = allWords.slice(committedWords.length).join(' ');
+      }else{
+        // Browser re-segmentation/correction: find the largest suffix of the
+        // already committed text matching the prefix of the new hypothesis.
+        let overlap = 0;
+        const max = Math.min(committedNorm.length, allNorm.length, 80);
+        for(let n=max; n>=1; n--){
+          let ok = true;
+          for(let i=0;i<n;i++){
+            if(committedNorm[committedNorm.length-n+i] !== allNorm[i]){
+              ok = false; break;
+            }
+          }
+          if(ok){ overlap = n; break; }
+        }
+
+        if(overlap > 0){
+          newPart = allWords.slice(overlap).join(' ');
+        }else{
+          // Last-resort cumulative revision: if a long leading sequence of
+          // the new result already exists anywhere in what we committed,
+          // discard that repeated prefix and keep only the genuinely new tail.
+          let removed = 0;
+          const maxPrefix = Math.min(allNorm.length, 60);
+          for(let n=maxPrefix; n>=4; n--){
+            const needle = allNorm.slice(0,n).join(' ');
+            if(A.includes(needle)){ removed = n; break; }
+          }
+          newPart = removed ? allWords.slice(removed).join(' ') : trimmed;
+        }
+      }
+
+      newPart = newPart.trim();
+      if(!newPart || isRecentDuplicate(newPart)){
+        committedText = trimmed;
+        if(isFinalCommit){
+          committedText = '';
+          lastInterimSnapshot = '';
+        }
+        return null;
+      }
+
       committedText = trimmed;
       rememberCommitted(newPart);
+
+      // DO NOT use the old 1.7s/2.4s timer to forget committed text mid-sentence.
+      // That timer was a major source of whole-sentence repetition when a lecturer
+      // spoke continuously. A true final result is the only sentence boundary.
       clearTimeout(committedResetTimer);
-      committedResetTimer = setTimeout(() => {
+
+      if(isFinalCommit){
         committedText = '';
         lastInterimSnapshot = '';
-      }, IS_ANDROID ? 2400 : 1700);
+      }
       return newPart;
     }
     // Slow part (translation + speech) — deliberately OUTSIDE the queue so
@@ -3934,6 +4039,7 @@ function makeLivePanel(prefix){
     let nonIosPhraseBuffer = '';
     let nonIosFlushTimer = null;
     let nonIosRecentPhrases = [];
+    let nonIosSourceHistory = ''; // rolling accepted source text, used only to reject STT replays
     const normalizePhrase = (text) => (text || '')
       .toLowerCase()
       .replace(/[.,!?؛،؟…:;\-]+/g, ' ')
@@ -3979,9 +4085,53 @@ function makeLivePanel(prefix){
       lastInterimSnapshot = '';
       speakNewPortion(phrase, true);
     }
-    function queueNonIosFinal(text){
+    function stripPreviouslyAcceptedNonIos(text){
       const chunk = (text || '').trim();
+      if(!chunk) return '';
+
+      const cleanWord = w => w.toLowerCase().replace(/[.,!?؛،؟…:;"'“”‘’()[\]{}\-]+/g,'');
+      const hw = nonIosSourceHistory.split(/\s+/).filter(Boolean);
+      const cw = chunk.split(/\s+/).filter(Boolean);
+      const hn = hw.map(cleanWord), cn = cw.map(cleanWord);
+      const H = hn.join(' '), C = cn.join(' ');
+
+      if(!H) return chunk;
+      if(H.includes(C)) return ''; // exact/short replay already accepted
+
+      // Largest suffix(history) == prefix(new chunk)
+      let overlap = 0;
+      const max = Math.min(hn.length, cn.length, 100);
+      for(let n=max; n>=1; n--){
+        let ok = true;
+        for(let i=0;i<n;i++){
+          if(hn[hn.length-n+i] !== cn[i]){ ok=false; break; }
+        }
+        if(ok){ overlap=n; break; }
+      }
+      if(overlap) return cw.slice(overlap).join(' ').trim();
+
+      // Cumulative replay beginning with an older phrase from recent history.
+      const maxPrefix = Math.min(cn.length, 80);
+      for(let n=maxPrefix; n>=4; n--){
+        if(H.includes(cn.slice(0,n).join(' '))){
+          return cw.slice(n).join(' ').trim();
+        }
+      }
+      return chunk;
+    }
+
+    function rememberNonIosSource(text){
+      const merged = mergeWithoutOverlap(nonIosSourceHistory, text);
+      const words = merged.split(/\s+/).filter(Boolean);
+      // Keep enough recent context to catch long cumulative replays without
+      // letting memory/history grow indefinitely.
+      nonIosSourceHistory = words.slice(-260).join(' ');
+    }
+
+    function queueNonIosFinal(text){
+      let chunk = stripPreviouslyAcceptedNonIos(text);
       if(!chunk) return;
+      rememberNonIosSource(chunk);
       nonIosPhraseBuffer = mergeWithoutOverlap(nonIosPhraseBuffer, chunk);
       clearTimeout(nonIosFlushTimer);
       const wordCount = nonIosPhraseBuffer.split(/\s+/).filter(Boolean).length;
