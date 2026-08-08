@@ -3518,6 +3518,33 @@ document.getElementById('ocrListenBtn').addEventListener('click', () => {
    Shared engine for both panels. IMPORTANT: transcripts here are kept ONLY in
    memory for the current session — never written to localStorage/history —
    per explicit requirement. Only copy/PDF/Word export is offered. */
+// ---- Screen wake lock (shared across both live panels) ----
+// A locked/dimmed screen can suspend the whole page — recognizer, timers,
+// everything — in a way no JS-level reconnect logic can recover from until
+// the user physically unlocks the phone. During a long khutbah/lecture the
+// phone is usually left untouched, so the OS's normal auto-lock timeout
+// (often as little as 30s-2min) is a very likely cause of "it just stops
+// after N minutes." This keeps the screen awake for as long as listening
+// is running, on browsers that support the Wake Lock API (most current
+// Chrome/Android and Safari/iOS 16.4+; unsupported browsers simply skip it
+// silently — everything else keeps working as before).
+let liveWakeLock = null;
+async function acquireLiveWakeLock(){
+  if(!('wakeLock' in navigator)) return;
+  try{ liveWakeLock = await navigator.wakeLock.request('screen'); }catch(e){ liveWakeLock = null; }
+}
+function releaseLiveWakeLock(){
+  if(liveWakeLock){ try{ liveWakeLock.release(); }catch(e){} liveWakeLock = null; }
+}
+// The browser auto-releases the lock when the tab is hidden (e.g. switching
+// apps briefly) — re-acquire it as soon as the user comes back, but only if
+// a panel is still actively listening.
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && liveWakeLock === null && anyLivePanelRunning()) acquireLiveWakeLock();
+});
+let livePanelRunningFlags = {};
+function anyLivePanelRunning(){ return Object.values(livePanelRunningFlags).some(Boolean); }
+
 function makeLivePanel(prefix){
   const speakerSelect = document.getElementById(prefix + 'SpeakerLang');
   const mySelect = document.getElementById(prefix + 'MyLang');
@@ -4026,6 +4053,8 @@ function makeLivePanel(prefix){
   function start(){
     if(!SR){ showBanner(t('noSTT')); return; }
     running = true;
+    livePanelRunningFlags[prefix] = true;
+    acquireLiveWakeLock();
     startBtn.style.display = 'none';
     stopBtn.style.display = 'flex';
     unlockSpeechOnce();
@@ -4036,6 +4065,8 @@ function makeLivePanel(prefix){
   }
   function stop(){
     running = false;
+    livePanelRunningFlags[prefix] = false;
+    if(!anyLivePanelRunning()) releaseLiveWakeLock();
     startBtn.style.display = 'flex';
     stopBtn.style.display = 'none';
     statusEl.textContent = '';
