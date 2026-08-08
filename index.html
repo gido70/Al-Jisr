@@ -954,7 +954,12 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 .live-entry{padding:10px 0;border-bottom:1px dashed var(--line);}
 .live-entry:last-child{border-bottom:none;}
 /* Live-follow reading: newest item is inserted first; older transcript remains below. */
-.live-transcript .live-entry:first-child{padding-top:2px;}
+.live-transcript .live-entry:first-child{
+  padding-top:2px;
+  position:relative;
+  z-index:2;
+}
+.live-transcript{scroll-behavior:auto;}
 .live-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);margin-bottom:4px;font-weight:700;}
 .live-entry .orig{font-size:13.5px;color:var(--muted);margin-bottom:3px;}
 .live-entry .trans{font-size:16px;font-weight:700;}
@@ -3667,40 +3672,84 @@ function makeLivePanel(prefix){
   }
   function stopWatchdog(){ clearInterval(watchdogTimer); watchdogTimer = null; }
 
-  let openEntryDiv = null; // the last <div> still being built up (not yet finalized by a real isFinal)
+  let openEntryDiv = null; // the current live sentence card (if still being built)
+
+  // Merge a growing recognizer/translation result without duplicating text.
+  // Some engines resend the whole sentence with a few extra words; in that
+  // case we replace/extend instead of appending the same sentence again.
+  function mergeGrowingText(existing, incoming){
+    const a = (existing || '').trim();
+    const b = (incoming || '').trim();
+    if(!a) return b;
+    if(!b) return a;
+
+    const norm = s => s.toLowerCase()
+      .replace(/[.,!?؛،؟…:;\-]+/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+
+    const na = norm(a), nb = norm(b);
+    if(nb && na && nb.includes(na) && b.length >= a.length) return b;
+    if(na && nb && na.includes(nb)) return a;
+
+    const aw = a.split(/\s+/), bw = b.split(/\s+/);
+    const nw = w => w.toLowerCase().replace(/[.,!?؛،؟…:;]+$/,'');
+    let overlap = 0;
+    const max = Math.min(aw.length, bw.length, 18);
+    for(let n=max; n>=1; n--){
+      let ok = true;
+      for(let i=0;i<n;i++){
+        if(nw(aw[aw.length-n+i]) !== nw(bw[i])){ ok=false; break; }
+      }
+      if(ok){ overlap = n; break; }
+    }
+    return (a + ' ' + bw.slice(overlap).join(' ')).replace(/\s+/g,' ').trim();
+  }
+
+  // Force the newest sentence card to stay physically at the top of the
+  // transcript viewport, regardless of browser DOM/layout quirks.
+  function keepNewestEntryOnTop(){
+    const cards = Array.from(transcriptEl.querySelectorAll('.live-entry'));
+    cards.sort((a,b) => Number(b.dataset.seq || 0) - Number(a.dataset.seq || 0));
+    const frag = document.createDocumentFragment();
+    cards.forEach(card => frag.appendChild(card));
+    transcriptEl.appendChild(frag);
+    transcriptEl.scrollTop = 0;
+  }
+
   function appendEntry(original, translated, isFinalCommit){
     if(openEntryDiv){
-      // newPart is always an incremental new chunk (never a full corrected
-      // sentence) whether it came from an early interim guess or the real
-      // isFinal result — so we always extend the open line with it. The
-      // only difference is whether we keep the line open for more (still
-      // mid-sentence) or close it now that a real isFinal confirmed the
-      // sentence is complete.
       const last = entries[entries.length - 1];
-      last.original = (last.original + ' ' + original).trim();
-      last.translated = (last.translated + ' ' + translated).trim();
+      last.original = mergeGrowingText(last.original, original);
+      last.translated = mergeGrowingText(last.translated, translated);
       openEntryDiv.querySelector('.trans').textContent = last.translated;
-      // Keep the currently developing/latest translation visible at the top.
-      transcriptEl.scrollTop = 0;
-      if(isFinalCommit) openEntryDiv = null; // next segment starts a fresh line
+      keepNewestEntryOnTop();
+      if(isFinalCommit) openEntryDiv = null; // next segment starts a fresh card
       return;
     }
-    entries.push({ original, translated, time: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) });
+
+    entries.push({
+      original,
+      translated,
+      time: new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})
+    });
+
     transcriptEl.querySelector('.live-empty')?.remove();
     const div = document.createElement('div');
     div.className = 'live-entry';
+    div.dataset.seq = String(entries.length);
     if(getOutputMode() === 'audio') div.classList.add('audio-only-entry');
+
     const timeLabel = entries[entries.length-1].time;
-    // Only the TRANSLATED text is shown on screen — the original is kept in
-    // `entries` (above) for PDF/Word export only, never displayed live,
-    // per explicit request: "لا يظهر الاثنين معاً".
+    // Live screen: translated text only. `entries` remains chronological,
+    // so Copy / PDF / Word exports keep the natural beginning-to-end order.
     div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans"></div>`;
     div.querySelector('.trans').textContent = translated;
-    // LIVE FOLLOW MODE: newest translation stays at the top of the screen,
-    // while `entries` remains chronological for Copy / PDF / Word export.
-    transcriptEl.prepend(div);
-    transcriptEl.scrollTop = 0;
-    if(!isFinalCommit) openEntryDiv = div; // keep it open only if more is likely coming
+
+    transcriptEl.appendChild(div);
+    keepNewestEntryOnTop();
+
+    if(!isFinalCommit) openEntryDiv = div;
   }
 
   function resetToDefaults(){
