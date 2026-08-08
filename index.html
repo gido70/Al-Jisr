@@ -953,6 +953,8 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 .live-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 0;}
 .live-entry{padding:10px 0;border-bottom:1px dashed var(--line);}
 .live-entry:last-child{border-bottom:none;}
+/* Live-follow reading: newest item is inserted first; older transcript remains below. */
+.live-transcript .live-entry:first-child{padding-top:2px;}
 .live-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);margin-bottom:4px;font-weight:700;}
 .live-entry .orig{font-size:13.5px;color:var(--muted);margin-bottom:3px;}
 .live-entry .trans{font-size:16px;font-weight:700;}
@@ -3518,33 +3520,6 @@ document.getElementById('ocrListenBtn').addEventListener('click', () => {
    Shared engine for both panels. IMPORTANT: transcripts here are kept ONLY in
    memory for the current session — never written to localStorage/history —
    per explicit requirement. Only copy/PDF/Word export is offered. */
-// ---- Screen wake lock (shared across both live panels) ----
-// A locked/dimmed screen can suspend the whole page — recognizer, timers,
-// everything — in a way no JS-level reconnect logic can recover from until
-// the user physically unlocks the phone. During a long khutbah/lecture the
-// phone is usually left untouched, so the OS's normal auto-lock timeout
-// (often as little as 30s-2min) is a very likely cause of "it just stops
-// after N minutes." This keeps the screen awake for as long as listening
-// is running, on browsers that support the Wake Lock API (most current
-// Chrome/Android and Safari/iOS 16.4+; unsupported browsers simply skip it
-// silently — everything else keeps working as before).
-let liveWakeLock = null;
-async function acquireLiveWakeLock(){
-  if(!('wakeLock' in navigator)) return;
-  try{ liveWakeLock = await navigator.wakeLock.request('screen'); }catch(e){ liveWakeLock = null; }
-}
-function releaseLiveWakeLock(){
-  if(liveWakeLock){ try{ liveWakeLock.release(); }catch(e){} liveWakeLock = null; }
-}
-// The browser auto-releases the lock when the tab is hidden (e.g. switching
-// apps briefly) — re-acquire it as soon as the user comes back, but only if
-// a panel is still actively listening.
-document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible' && liveWakeLock === null && anyLivePanelRunning()) acquireLiveWakeLock();
-});
-let livePanelRunningFlags = {};
-function anyLivePanelRunning(){ return Object.values(livePanelRunningFlags).some(Boolean); }
-
 function makeLivePanel(prefix){
   const speakerSelect = document.getElementById(prefix + 'SpeakerLang');
   const mySelect = document.getElementById(prefix + 'MyLang');
@@ -3705,9 +3680,7 @@ function makeLivePanel(prefix){
       last.original = (last.original + ' ' + original).trim();
       last.translated = (last.translated + ' ' + translated).trim();
       openEntryDiv.querySelector('.trans').textContent = last.translated;
-      // Newest entry lives at the TOP of the list (see insertBefore below),
-      // so keeping it in view means staying scrolled to the top, not the
-      // bottom — the reader never has to scroll down to catch up.
+      // Keep the currently developing/latest translation visible at the top.
       transcriptEl.scrollTop = 0;
       if(isFinalCommit) openEntryDiv = null; // next segment starts a fresh line
       return;
@@ -3723,11 +3696,9 @@ function makeLivePanel(prefix){
     // per explicit request: "لا يظهر الاثنين معاً".
     div.innerHTML = `<div class="live-time">🕒 ${timeLabel}</div><div class="trans"></div>`;
     div.querySelector('.trans').textContent = translated;
-    // NEWEST FIRST: insert at the top of the list instead of the bottom, so
-    // the line the listener needs to follow right now is always the first
-    // thing visible — no manual scrolling down to "catch up" during a live
-    // khutbah/lecture/dialogue.
-    transcriptEl.insertBefore(div, transcriptEl.firstChild);
+    // LIVE FOLLOW MODE: newest translation stays at the top of the screen,
+    // while `entries` remains chronological for Copy / PDF / Word export.
+    transcriptEl.prepend(div);
     transcriptEl.scrollTop = 0;
     if(!isFinalCommit) openEntryDiv = div; // keep it open only if more is likely coming
   }
@@ -3810,34 +3781,9 @@ function makeLivePanel(prefix){
     const wordsOf = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
     let recentCommittedSegments = [];
     let committedResetTimer = null;
-    // Fuzzy overlap check: catches near-duplicates where the recognizer
-    // re-transcribed the same stretch of speech with slightly DIFFERENT
-    // wording (not just different case/punctuation) — typically right after
-    // a reconnect/restart, when it re-hears a bit of audio it already
-    // processed and outputs a paraphrase-like re-transcription instead of
-    // an identical repeat. An exact string match misses this entirely,
-    // which is exactly the run-on repetition seen in real khutbah testing.
-    function wordOverlapRatio(a, b){
-      const aw = wordsOf(a).map(w => w.toLowerCase().replace(/[.,!?؛،؟…]+$/,''));
-      const bw = wordsOf(b).map(w => w.toLowerCase().replace(/[.,!?؛،؟…]+$/,''));
-      if(!aw.length || !bw.length) return 0;
-      const bSet = new Set(bw);
-      let shared = 0;
-      aw.forEach(w => { if(bSet.has(w)) shared++; });
-      return shared / Math.min(aw.length, bw.length);
-    }
     function isRecentDuplicate(segment){
       const n = segment.trim().toLowerCase();
-      if(recentCommittedSegments.includes(n)) return true;
-      const words = wordsOf(n);
-      if(!words.length) return false;
-      // Short phrases: 65% shared words is enough to call it a repeat.
-      // Longer stretches need a much higher bar (80%) so real, new,
-      // topically-similar content never gets wrongly swallowed.
-      if(words.length <= 14){
-        return recentCommittedSegments.some(prev => wordOverlapRatio(n, prev) >= 0.65);
-      }
-      return false;
+      return recentCommittedSegments.includes(n);
     }
     function rememberCommitted(segment){
       recentCommittedSegments.push(segment.trim().toLowerCase());
@@ -3887,37 +3833,10 @@ function makeLivePanel(prefix){
       // that happens, treat the whole thing as fresh instead of guessing.
       const norm = (w) => w.toLowerCase().replace(/[.,!?؛،؟…]+$/,'');
       const prefixMatches = committedWords.every((w,i) => norm(allWords[i] || '') === norm(w));
-      let newPart;
-      if(prefixMatches){
-        newPart = allWords.slice(committedWords.length).join(' ');
-      }else{
-        // The engine revised some EARLIER wording instead of purely
-        // extending (common self-correction behavior) — a strict full
-        // prefix match will never succeed here. Resending the whole
-        // candidate would repeat everything we already spoke (and grow
-        // longer every time this happens, which is exactly the runaway
-        // repeat pattern seen in real testing). Instead, find where the
-        // TAIL of what we already committed still lines up with the START
-        // of this new candidate, and only take what comes after that.
-        const max = Math.min(committedWords.length, allWords.length, 15);
-        let overlap = 0;
-        for(let n = max; n >= 1; n--){
-          let ok = true;
-          for(let i = 0; i < n; i++){
-            if(norm(committedWords[committedWords.length - n + i]) !== norm(allWords[i])){ ok = false; break; }
-          }
-          if(ok){ overlap = n; break; }
-        }
-        newPart = overlap > 0 ? allWords.slice(overlap).join(' ') : trimmed;
-      }
-      if(!newPart){
-        // Nothing new yet, but the wording itself may have been revised —
-        // keep committedText in sync with the latest candidate so the NEXT
-        // comparison starts from an up-to-date baseline instead of a stale
-        // one (which could otherwise stall real progress).
-        committedText = trimmed;
-        return null;
-      }
+      const newPart = prefixMatches
+        ? allWords.slice(committedWords.length).join(' ')
+        : trimmed; // re-segmented by the engine — treat as a new, whole chunk
+      if(!newPart) return null;
       if(isRecentDuplicate(newPart)){
         committedText = trimmed;
         return null;
@@ -3983,7 +3902,7 @@ function makeLivePanel(prefix){
       if(na && nb && na.includes(nb)) return a;
       return (a + ' ' + bw.slice(overlap).join(' ')).replace(/\s+/g,' ').trim();
     }
-    function flushNonIosPhrase(isFinalCommit = true){
+    function flushNonIosPhrase(){
       clearTimeout(nonIosFlushTimer);
       nonIosFlushTimer = null;
       const phrase = nonIosPhraseBuffer.trim();
@@ -3991,15 +3910,13 @@ function makeLivePanel(prefix){
       if(!phrase) return;
       const n = normalizePhrase(phrase);
       if(!n) return;
-      const nWords = n.split(' ').filter(Boolean);
-      const isFuzzyRepeat = nWords.length <= 14 && nonIosRecentPhrases.some(prev => wordOverlapRatio(n, prev) >= 0.65);
-      if(nonIosRecentPhrases.includes(n) || isFuzzyRepeat) return;
+      if(nonIosRecentPhrases.includes(n)) return;
       nonIosRecentPhrases.push(n);
       if(nonIosRecentPhrases.length > 8) nonIosRecentPhrases.shift();
       // Reset the interim-claim state so this non-iOS sentence is handled once.
       committedText = '';
       lastInterimSnapshot = '';
-      speakNewPortion(phrase, isFinalCommit);
+      speakNewPortion(phrase, true);
     }
     function queueNonIosFinal(text){
       const chunk = (text || '').trim();
@@ -4008,16 +3925,12 @@ function makeLivePanel(prefix){
       clearTimeout(nonIosFlushTimer);
       const wordCount = nonIosPhraseBuffer.split(/\s+/).filter(Boolean).length;
       const endsSentence = /[.!?؟…]$/.test(nonIosPhraseBuffer);
-      if(endsSentence || wordCount >= 18){
-        // Only a real sentence end closes the visible line. A flush forced
-        // purely by the word cap (speaker still mid-sentence, no natural
-        // pause yet) keeps extending the SAME line instead of opening a
-        // new one above it — a continuous, uninterrupted utterance should
-        // never visually split into separate out-of-order entries.
-        flushNonIosPhrase(endsSentence);
+      if(endsSentence || wordCount >= 12){
+        flushNonIosPhrase();
       }else{
-        // 850 ms: requested balance between speed and full-sentence grouping.
-        nonIosFlushTimer = setTimeout(() => { if(running) flushNonIosPhrase(true); }, 850);
+        // Faster lecture/dialogue follow mode on Samsung + laptop:
+        // short natural pause, without changing speech rate or iPhone timing.
+        nonIosFlushTimer = setTimeout(() => { if(running) flushNonIosPhrase(); }, 420);
       }
     }
 
@@ -4061,8 +3974,6 @@ function makeLivePanel(prefix){
   function start(){
     if(!SR){ showBanner(t('noSTT')); return; }
     running = true;
-    livePanelRunningFlags[prefix] = true;
-    acquireLiveWakeLock();
     startBtn.style.display = 'none';
     stopBtn.style.display = 'flex';
     unlockSpeechOnce();
@@ -4073,8 +3984,6 @@ function makeLivePanel(prefix){
   }
   function stop(){
     running = false;
-    livePanelRunningFlags[prefix] = false;
-    if(!anyLivePanelRunning()) releaseLiveWakeLock();
     startBtn.style.display = 'flex';
     stopBtn.style.display = 'none';
     statusEl.textContent = '';
