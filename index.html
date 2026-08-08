@@ -3656,12 +3656,12 @@ function makeLivePanel(prefix){
     watchdogTimer = setInterval(() => {
       if(!running || pausedForSpeech) return;
       const idleFor = Date.now() - lastActivityAt;
-      if(idleFor > 3500){
+      if(idleFor > 6000){
         try{ rec && rec.stop(); }catch(e){}
         try{ buildRec(); if(running) rec.start(); }catch(e){}
         lastActivityAt = Date.now();
       }
-    }, 1200);
+    }, 3000);
   }
   function stopWatchdog(){ clearInterval(watchdogTimer); watchdogTimer = null; }
 
@@ -3927,11 +3927,11 @@ function makeLivePanel(prefix){
       clearTimeout(nonIosFlushTimer);
       const wordCount = nonIosPhraseBuffer.split(/\s+/).filter(Boolean).length;
       const endsSentence = /[.!?؟…]$/.test(nonIosPhraseBuffer);
-      if(endsSentence || wordCount >= 18){
+      if(endsSentence || wordCount >= 10){
         flushNonIosPhrase();
       }else{
         // 850 ms: requested balance between speed and full-sentence grouping.
-        nonIosFlushTimer = setTimeout(() => { if(running) flushNonIosPhrase(); }, 850);
+        nonIosFlushTimer = setTimeout(() => { if(running) flushNonIosPhrase(); }, 500);
       }
     }
 
@@ -3959,7 +3959,7 @@ function makeLivePanel(prefix){
           if(snapshot !== lastInterimSnapshot){
             lastInterimSnapshot = snapshot;
             clearTimeout(interimStableTimer);
-            interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, 900);
+            interimStableTimer = setTimeout(() => { if(running) commitNewPortion(snapshot, false); }, 600);
           }
         }
         return;
