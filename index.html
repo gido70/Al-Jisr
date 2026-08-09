@@ -3773,7 +3773,8 @@ function makeLivePanel(prefix){
     watchdogTimer = setInterval(() => {
       if(!running || pausedForSpeech) return;
       const idleFor = Date.now() - lastActivityAt;
-      if(idleFor > 6000){
+      const stallLimit = isDialogue && !IS_IOS ? 3800 : 6000;
+      if(idleFor > stallLimit){
         try{ rec && rec.stop(); }catch(e){}
         try{ buildRec(); if(running) rec.start(); }catch(e){}
         lastActivityAt = Date.now();
@@ -4232,10 +4233,9 @@ function makeLivePanel(prefix){
       let interimText = '';
       for(let i = event.resultIndex; i < event.results.length; i++){
         const transcript = event.results[i][0].transcript;
-        if(isDialogue){
-          const nativeSpeaker = extractNativeSpeakerId(event.results[i]);
-          if(nativeSpeaker) dialogueSpeakerId = nativeSpeaker;
-        }
+        // Dialogue speaker numbering intentionally disabled in this stable-speed
+        // path. The browser Web Speech API does not reliably expose real speaker
+        // diarization on iPhone/Samsung/desktop, so we do not guess labels.
         if(event.results[i].isFinal) finalText += transcript;
         else interimText += transcript;
       }
@@ -4260,8 +4260,35 @@ function makeLivePanel(prefix){
         return;
       }
 
-      // Samsung/laptop: never translate interim guesses. They are the main source
-      // of repeated words. Show them only as a temporary listening hint.
+      // Samsung/laptop.
+      // Keep lecture/sermon behaviour exactly as before. Dialogue gets its own
+      // faster path so natural conversation does not sit in "listening" while
+      // several spoken phrases pass by.
+      if(isDialogue){
+        if(finalText.trim()){
+          clearTimeout(interimStableTimer);
+          commitNewPortion(finalText.trim(), true);
+          lastInterimSnapshot = '';
+          return;
+        }
+        if(interimText.trim()){
+          const snapshot = interimText.trim();
+          statusEl.textContent = '🎙️ ' + snapshot.slice(-60);
+          if(snapshot !== lastInterimSnapshot){
+            lastInterimSnapshot = snapshot;
+            clearTimeout(interimStableTimer);
+            // Short settled-interim window for Chrome/Samsung dialogue only.
+            // iPhone remains on its untouched 900 ms path above.
+            interimStableTimer = setTimeout(() => {
+              if(running) commitNewPortion(snapshot, false);
+            }, 500);
+          }
+        }
+        return;
+      }
+
+      // Lecture/sermon on Samsung/laptop remains exactly on the established
+      // final-result grouping path.
       if(interimText.trim()) statusEl.textContent = '🎙️ ' + interimText.trim().slice(-60);
       if(finalText.trim()) queueNonIosFinal(finalText.trim());
     };
