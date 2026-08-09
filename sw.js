@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aljisr-v2026-08-05-radical-simplify-remove-order-rules';
+const CACHE_NAME = 'aljisr-v2026-08-09-dialogue-samsung-fast-v1';
 const CORE = ['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(CORE.map(u => cache.add(u)))).then(() => self.skipWaiting()));
