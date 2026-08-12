@@ -938,6 +938,19 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 }
 .signlens-translation{font-size:22px;font-weight:900;line-height:1.55;margin-top:8px}
 .signlens-original{font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px}
+#ocrResults,.signlens-result{box-shadow:0 10px 28px rgba(18,59,143,.08)}
+#ocrExtractedText,#ocrTranslatedText,#signLensOriginal,#signLensTranslated{
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
+}
+#ocrExtractedText,#signLensOriginal{
+  font-family:'Tajawal',sans-serif;font-size:14px;line-height:1.65;color:var(--muted);
+  background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
+}
+#ocrTranslatedText,#signLensTranslated{
+  font-family:'Tajawal',sans-serif;font-size:20px;line-height:1.7;font-weight:900;color:var(--ink);
+  background:#fff;border:1px solid #d7e3f5;border-radius:12px;padding:12px 14px;
+}
+
 
 
 /* live listening panels (lecture/dialogue) */
@@ -2029,10 +2042,10 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   <div class="ocr-status" id="ocrStatus" style="display:none;"></div>
 
   <div id="ocrResults" style="display:none;margin-top:18px;">
-    <h4 id="ocrExtractedLabel">📝 النص المستخرج</h4>
+    <h4 id="ocrTranslatedLabel">🌐 الترجمة</h4>
+    <div class="quick-result" id="ocrTranslatedText"></div>
+    <h4 id="ocrExtractedLabel" style="margin-top:14px;">📝 النص المقروء</h4>
     <div class="quick-result" id="ocrExtractedText">…</div>
-    <h4 id="ocrTranslatedLabel" style="margin-top:14px;">🌐 الترجمة</h4>
-    <div class="quick-result" id="ocrTranslatedText" style="font-weight:700;font-size:17px;"></div>
     <button class="icon-btn" id="ocrListenBtn" style="margin-top:10px;">🔊 استمع</button>
   </div>
   <div class="panel-bottombar">
@@ -3511,10 +3524,15 @@ async function readSignLens(){
     const im=ctx.getImageData(0,0,c.width,c.height),d=im.data;
     for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2];const x=Math.max(0,Math.min(255,(g-128)*1.9+128));d[i]=d[i+1]=d[i+2]=x}
     ctx.putImageData(im,0,0);
-    const worker=await getOcrWorker();const {data}=await worker.recognize(c);const original=(data.text||'').replace(/\s+/g,' ').trim();
+    const worker=await getOcrWorker();
+    const {data}=await worker.recognize(c);
+    const original=compactOcrForTranslation(data.text||'');
     if(!original){status.textContent=signLensTxt('noText');return}
-    const translated=await translateText(original,ocrFrom.code,ocrTo.code);signLensLastTranslated=translated;
-    document.getElementById('signLensOriginal').textContent=original;document.getElementById('signLensTranslated').textContent=translated;
+    const translatedRaw=await translateText(original,ocrFrom.code,ocrTo.code);
+    const translated=cleanTranslatedOcr(translatedRaw);
+    signLensLastTranslated=translated;
+    document.getElementById('signLensOriginal').textContent=original;
+    document.getElementById('signLensTranslated').textContent=translated;
     document.getElementById('signLensResult').style.display='block';status.style.display='none';
   }catch(e){status.textContent=t('ocrFail')}
 }
@@ -3621,6 +3639,75 @@ document.getElementById('ocrSwapBtn').addEventListener('click', () => {
   syncOcrLangUI();
   if(ocrWorker) restartOcrWorker();
 });
+
+
+/* ---- OCR cleanup helpers: shared by both camera lenses ---- */
+function normalizeOcrLines(raw){
+  if(!raw) return '';
+  let text=String(raw)
+    .replace(/\u0000/g,'')
+    .replace(/\r/g,'\n')
+    .replace(/[|¦]{2,}/g,' ')
+    .replace(/[{}\[\]<>]{2,}/g,' ')
+    .replace(/[_=~^`]{2,}/g,' ')
+    .replace(/[ \t]+/g,' ')
+    .replace(/\n[ \t]+/g,'\n')
+    .replace(/[ \t]+\n/g,'\n');
+
+  const lines=text.split('\n')
+    .map(x=>x.trim())
+    .filter(Boolean)
+    .map(line=>{
+      const useful=[...line].filter(ch=>/[\p{L}\p{N}\p{M}\s.,:;!?%+\-\/()'"’“”&@#°₺$€£¥₽₹]/u.test(ch)).join('');
+      return useful.replace(/\s{2,}/g,' ').trim();
+    })
+    .filter(line=>{
+      if(line.length<2) return false;
+      const alnum=(line.match(/[\p{L}\p{N}]/gu)||[]).length;
+      const weird=line.length-alnum-(line.match(/\s/g)||[]).length;
+      return alnum>=2 && weird<=Math.max(8,Math.floor(line.length*.45));
+    });
+
+  const out=[];
+  for(const line of lines){
+    const key=line.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+    const prev=out.length?out[out.length-1].toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim():'';
+    if(key && key===prev) continue;
+    if(key.length>8 && prev && (key.includes(prev)||prev.includes(key))){
+      if(key.length>prev.length) out[out.length-1]=line;
+      continue;
+    }
+    out.push(line);
+  }
+  return out.slice(0,12).join('\n').trim();
+}
+function compactOcrForTranslation(raw){
+  const cleaned=normalizeOcrLines(raw);
+  if(!cleaned) return '';
+  return cleaned.split('\n').slice(0,8).map(x=>x.slice(0,180)).join('\n');
+}
+function cleanTranslatedOcr(raw){
+  if(!raw) return '';
+  let t=String(raw)
+    .replace(/```[\s\S]*?```/g,' ')
+    .replace(/`+/g,'')
+    .replace(/https?:\/\/\S+/gi,'')
+    .replace(/<[^>]+>/g,' ')
+    .replace(/[ \t]+/g,' ')
+    .replace(/\n[ \t]+/g,'\n')
+    .trim();
+  if((t.startsWith('{')&&t.endsWith('}'))||(t.startsWith('[')&&t.endsWith(']'))){
+    try{
+      const j=JSON.parse(t);
+      if(typeof j==='string') t=j;
+      else if(j&&typeof j==='object'){
+        const found=[j.translation,j.translatedText,j.text,j.result,j.output].find(x=>typeof x==='string');
+        if(found) t=found;
+      }
+    }catch(e){}
+  }
+  return t.replace(/[{}[\]<>]/g,' ').replace(/\s{2,}/g,' ').trim();
+}
 
 /* ---- Live camera mode: continuously reads the video feed and shows a translated overlay ---- */
 let ocrStream = null;
@@ -3759,12 +3846,13 @@ async function captureAndTranslateFrame(){
     liveStatus.textContent = t('ocrLiveScanning');
     const worker = await getOcrWorker();
     const { data } = await worker.recognize(canvas);
-    const extracted = (data.text || '').trim();
+    const extracted = compactOcrForTranslation(data.text || '');
 
     if(extracted && extracted !== ocrLastSeenText){
       ocrLastSeenText = extracted;
       liveStatus.textContent = t('ocrTranslating');
-      const translated = await translateText(extracted, ocrFrom.code, ocrTo.code);
+      const translatedRaw = await translateText(extracted, ocrFrom.code, ocrTo.code);
+      const translated = cleanTranslatedOcr(translatedRaw);
       overlay.textContent = translated;
       ocrLastTranslated = translated;
       liveStatus.textContent = t('ocrLiveScanning');
@@ -3808,7 +3896,7 @@ async function handleOcrImageChange(e){
     const ocrLang = OCR_LANG_MAP[ocrFrom.code] || 'eng';
     const worker = await getOcrWorker();
     const { data } = await worker.recognize(file);
-    const extracted = (data.text || '').trim();
+    const extracted = compactOcrForTranslation(data.text || '');
 
     if(!extracted){
       statusEl.textContent = t('ocrNoText');
@@ -3819,7 +3907,8 @@ async function handleOcrImageChange(e){
     extractedEl.textContent = extracted;
     statusEl.textContent = t('ocrTranslating');
 
-    const translated = await translateText(extracted, ocrFrom.code, ocrTo.code);
+    const translatedRaw = await translateText(extracted, ocrFrom.code, ocrTo.code);
+    const translated = cleanTranslatedOcr(translatedRaw);
     translatedEl.textContent = translated;
     ocrLastTranslated = translated;
 
