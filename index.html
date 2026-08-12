@@ -951,6 +951,71 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
   background:#fff;border:1px solid #d7e3f5;border-radius:12px;padding:12px 14px;
 }
 
+/* ===== In-frame translation: phone-first lens experience ===== */
+.ocr-preview-wrap{
+  position:relative;
+  margin-top:16px;
+  border-radius:16px;
+  overflow:hidden;
+  background:#06152f;
+  box-shadow:0 14px 34px rgba(0,0,0,.20);
+}
+#ocrPreview{
+  display:block;
+  width:100%;
+  max-width:100%;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+}
+.ocr-preview-translation,
+.signlens-live-translation{
+  position:absolute;
+  left:10px; right:10px; bottom:12px;
+  z-index:7;
+  max-height:44%;
+  overflow:auto;
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(5,18,48,.90);
+  color:#fff;
+  font-family:'Tajawal',sans-serif;
+  font-size:clamp(17px,4.8vw,24px);
+  font-weight:900;
+  line-height:1.55;
+  text-align:start;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  backdrop-filter:blur(8px);
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+}
+.ocr-preview-translation:empty,
+.signlens-live-translation:empty{display:none}
+.signlens-live-translation{
+  bottom:14px;
+  max-height:42%;
+}
+#ocrResults{
+  /* Keep only controls if needed; text results are now displayed inside image. */
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+}
+#ocrResults #ocrTranslatedLabel,
+#ocrResults #ocrTranslatedText,
+#ocrResults #ocrExtractedLabel,
+#ocrResults #ocrExtractedText{display:none!important}
+#signLensResult{display:none!important}
+@media(max-width:640px){
+  .ocr-preview-translation,.signlens-live-translation{
+    left:8px;right:8px;bottom:8px;
+    max-height:46%;
+    font-size:18px;
+    padding:10px 12px;
+  }
+}
+
 
 
 /* live listening panels (lecture/dialogue) */
@@ -1699,6 +1764,14 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   padding:16px!important;
   border-top:1px solid var(--line, #e2e8f0)!important;
 }
+
+.lens-ar-layer{position:absolute;inset:0;z-index:12;pointer-events:none;overflow:hidden}
+.lens-ar-box{position:absolute;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.94);color:#071a38;box-shadow:0 2px 10px rgba(0,0,0,.18);font-family:'Tajawal',sans-serif;font-weight:900;line-height:1.2;text-align:start;overflow:hidden}
+#ocrPreviewTranslation,.signlens-live-translation{display:none!important}
+#signLensResult{display:none!important}
+
+#ocrVideo{position:relative;z-index:1}
+#ocrVideo:not(:defined){position:relative}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -2031,13 +2104,18 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
 
   <div class="ocr-video-wrap" id="ocrVideoWrap" style="display:none;">
     <video id="ocrVideo" autoplay playsinline muted></video>
+    <div class="lens-ar-layer" id="ocrLiveArLayer"></div>
     <div class="ocr-live-overlay" id="ocrLiveOverlay"></div>
     <div class="ocr-live-status" id="ocrLiveStatus"></div>
     <button class="big-btn" id="ocrReadNowBtn" style="position:absolute;left:12px;right:12px;bottom:12px;z-index:4;background:linear-gradient(135deg,#0b5ed7,#c62828);">📖 اقرأ الآن</button>
   </div>
   <canvas id="ocrCanvas" style="display:none;"></canvas>
 
-  <img id="ocrPreview" style="display:none;max-width:100%;border-radius:12px;margin-top:16px;border:1px solid var(--line);">
+  <div class="ocr-preview-wrap" id="ocrPreviewWrap" style="display:none;">
+    <img id="ocrPreview" style="display:block;">
+    <div class="lens-ar-layer" id="ocrPreviewArLayer"></div>
+    <div class="ocr-preview-translation" id="ocrPreviewTranslation"></div>
+  </div>
 
   <div class="ocr-status" id="ocrStatus" style="display:none;"></div>
 
@@ -2071,6 +2149,8 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   <div class="signlens-video-wrap" id="signLensVideoWrap" style="display:none;">
     <video id="signLensVideo" autoplay playsinline muted></video>
     <div class="signlens-reticle"></div>
+    <div class="lens-ar-layer" id="signLensArLayer"></div>
+    <div class="signlens-live-translation" id="signLensOverlay"></div>
   </div>
   <div class="signlens-zoom-row" id="signLensZoomRow" style="display:none;">
     <button class="icon-btn" id="signLensZoomOutBtn" type="button">−</button>
@@ -3502,6 +3582,8 @@ function clearSignLensResult(){
   if(result) result.style.display='none';
   if(original) original.textContent='';
   if(translated) translated.textContent='';
+  const overlay=document.getElementById('signLensOverlay'); if(overlay) overlay.textContent='';
+  clearArLayer('signLensArLayer');
   if(status){status.textContent='';status.style.display='none';}
 }
 
@@ -3527,13 +3609,16 @@ async function readSignLens(){
     const worker=await getOcrWorker();
     const {data}=await worker.recognize(c);
     const original=compactOcrForTranslation(data.text||'');
+    clearArLayer('signLensArLayer');
+    const signArCount=await lensRender(data,'signLensArLayer',c.width,c.height,.78);
     if(!original){status.textContent=signLensTxt('noText');return}
     const translatedRaw=await translateText(original,ocrFrom.code,ocrTo.code);
     const translated=cleanTranslatedOcr(translatedRaw);
     signLensLastTranslated=translated;
     document.getElementById('signLensOriginal').textContent=original;
     document.getElementById('signLensTranslated').textContent=translated;
-    document.getElementById('signLensResult').style.display='block';status.style.display='none';
+    document.getElementById('signLensOverlay').textContent='';
+    status.style.display='none';
   }catch(e){status.textContent=t('ocrFail')}
 }
 document.getElementById('hubTileSignLens').addEventListener('click',openSignLens);
@@ -3564,6 +3649,8 @@ function openOcrPanel(){
 }
 function closeOcrPanel(){
   stopLiveOcr();
+  const pw=document.getElementById('ocrPreviewWrap'); if(pw) pw.style.display='none';
+  const po=document.getElementById('ocrPreviewTranslation'); if(po) po.textContent='';
   document.getElementById('ocrPanel').classList.remove('show');
   if(!document.getElementById('callPanel').classList.contains('show')){
     document.getElementById('topQuickBar').style.display = '';
@@ -3640,6 +3727,35 @@ document.getElementById('ocrSwapBtn').addEventListener('click', () => {
   if(ocrWorker) restartOcrWorker();
 });
 
+
+
+/* ---- Lens Engine V2: translate only detected OCR lines and keep their positions ---- */
+function clearArLayer(id){const e=document.getElementById(id);if(e)e.innerHTML=''}
+function lensLines(data){
+  const lines=Array.isArray(data?.lines)?data.lines:[];
+  return lines.map(l=>({text:normalizeOcrLines(l.text||'').replace(/\n+/g,' ').trim(),bbox:l.bbox||{},conf:Number(l.confidence??l.conf??0)}))
+    .filter(x=>{
+      if(!x.text||x.text.length<2)return false;
+      if((x.text.match(/[\p{L}\p{N}]/gu)||[]).length<2)return false;
+      return !Number.isFinite(x.conf)||x.conf===0||x.conf>=55;
+    }).slice(0,12);
+}
+async function lensTranslateLine(text){
+  try{return cleanTranslatedOcr(await translateText(compactOcrForTranslation(text),ocrFrom.code,ocrTo.code))}catch(e){return ''}
+}
+function lensBox(layer,text,b,sw,sh,scale=.82){
+  if(!layer||!text||!sw||!sh)return;
+  const x0=Number(b.x0??b.left??0),y0=Number(b.y0??b.top??0),x1=Number(b.x1??b.right??x0),y1=Number(b.y1??b.bottom??y0);
+  if(x1<=x0||y1<=y0)return;
+  const d=document.createElement('div');d.className='lens-ar-box';d.textContent=text;
+  const left=Math.max(0,Math.min(96,x0/sw*100)),top=Math.max(0,Math.min(96,y0/sh*100)),width=Math.max(8,Math.min(96-left,(x1-x0)/sw*100));
+  d.style.left=left+'%';d.style.top=top+'%';d.style.width=width+'%';d.style.fontSize=Math.max(12,Math.min(27,(y1-y0)*scale))+'px';layer.appendChild(d);
+}
+async function lensRender(data,id,sw,sh,scale=.82){
+  const layer=document.getElementById(id);if(!layer)return 0;layer.innerHTML='';
+  let n=0;for(const l of lensLines(data)){const tr=await lensTranslateLine(l.text);if(tr){lensBox(layer,tr,l.bbox,sw,sh,scale);n++}}
+  return n;
+}
 
 /* ---- OCR cleanup helpers: shared by both camera lenses ---- */
 function normalizeOcrLines(raw){
@@ -3737,7 +3853,8 @@ async function startLiveOcr(){
   const video = document.getElementById('ocrVideo');
   const liveStatus = document.getElementById('ocrLiveStatus');
   document.getElementById('ocrResults').style.display = 'none';
-  document.getElementById('ocrPreview').style.display = 'none';
+  document.getElementById('ocrPreviewWrap').style.display = 'none';
+  document.getElementById('ocrPreviewTranslation').textContent = '';
   document.getElementById('ocrStatus').style.display = 'none';
 
   try{
@@ -3847,13 +3964,15 @@ async function captureAndTranslateFrame(){
     const worker = await getOcrWorker();
     const { data } = await worker.recognize(canvas);
     const extracted = compactOcrForTranslation(data.text || '');
+    clearArLayer('ocrLiveArLayer');
+    await lensRender(data,'ocrLiveArLayer',canvas.width,canvas.height,.78);
 
     if(extracted && extracted !== ocrLastSeenText){
       ocrLastSeenText = extracted;
       liveStatus.textContent = t('ocrTranslating');
       const translatedRaw = await translateText(extracted, ocrFrom.code, ocrTo.code);
       const translated = cleanTranslatedOcr(translatedRaw);
-      overlay.textContent = translated;
+      overlay.textContent = '';
       ocrLastTranslated = translated;
       liveStatus.textContent = t('ocrLiveScanning');
     }
@@ -3886,8 +4005,11 @@ async function handleOcrImageChange(e){
   // clear any previous result immediately so nothing stale stays on screen
   extractedEl.textContent = '';
   translatedEl.textContent = '';
+  document.getElementById('ocrPreviewTranslation').textContent = '';
+  clearArLayer('ocrPreviewArLayer');
   preview.src = URL.createObjectURL(file);
-  preview.style.display = 'block';
+  document.getElementById('ocrPreviewWrap').style.display = 'block';
+  document.getElementById('ocrPreviewTranslation').textContent = '';
   resultsEl.style.display = 'none';
   statusEl.style.display = 'block';
   statusEl.textContent = t('ocrReading');
@@ -3897,6 +4019,8 @@ async function handleOcrImageChange(e){
     const worker = await getOcrWorker();
     const { data } = await worker.recognize(file);
     const extracted = compactOcrForTranslation(data.text || '');
+    clearArLayer('ocrPreviewArLayer');
+    const previewArCount=await lensRender(data,'ocrPreviewArLayer',data.imageSize?.width||preview.naturalWidth||1,data.imageSize?.height||preview.naturalHeight||1,.82);
 
     if(!extracted){
       statusEl.textContent = t('ocrNoText');
@@ -3910,6 +4034,7 @@ async function handleOcrImageChange(e){
     const translatedRaw = await translateText(extracted, ocrFrom.code, ocrTo.code);
     const translated = cleanTranslatedOcr(translatedRaw);
     translatedEl.textContent = translated;
+    document.getElementById('ocrPreviewTranslation').textContent = '';
     ocrLastTranslated = translated;
 
     statusEl.style.display = 'none';
