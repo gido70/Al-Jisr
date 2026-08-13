@@ -938,84 +938,6 @@ header select,header .icon-btn,header .ctrl-group{background:rgba(255,255,255,.9
 }
 .signlens-translation{font-size:22px;font-weight:900;line-height:1.55;margin-top:8px}
 .signlens-original{font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px}
-#ocrResults,.signlens-result{box-shadow:0 10px 28px rgba(18,59,143,.08)}
-#ocrExtractedText,#ocrTranslatedText,#signLensOriginal,#signLensTranslated{
-  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
-}
-#ocrExtractedText,#signLensOriginal{
-  font-family:'Tajawal',sans-serif;font-size:14px;line-height:1.65;color:var(--muted);
-  background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
-}
-#ocrTranslatedText,#signLensTranslated{
-  font-family:'Tajawal',sans-serif;font-size:20px;line-height:1.7;font-weight:900;color:var(--ink);
-  background:#fff;border:1px solid #d7e3f5;border-radius:12px;padding:12px 14px;
-}
-
-/* ===== In-frame translation: phone-first lens experience ===== */
-.ocr-preview-wrap{
-  position:relative;
-  margin-top:16px;
-  border-radius:16px;
-  overflow:hidden;
-  background:#06152f;
-  box-shadow:0 14px 34px rgba(0,0,0,.20);
-}
-#ocrPreview{
-  display:block;
-  width:100%;
-  max-width:100%;
-  margin:0!important;
-  border:0!important;
-  border-radius:0!important;
-}
-.ocr-preview-translation,
-.signlens-live-translation{
-  position:absolute;
-  left:10px; right:10px; bottom:12px;
-  z-index:7;
-  max-height:44%;
-  overflow:auto;
-  padding:12px 14px;
-  border-radius:14px;
-  background:rgba(5,18,48,.90);
-  color:#fff;
-  font-family:'Tajawal',sans-serif;
-  font-size:clamp(17px,4.8vw,24px);
-  font-weight:900;
-  line-height:1.55;
-  text-align:start;
-  white-space:pre-wrap;
-  overflow-wrap:anywhere;
-  backdrop-filter:blur(8px);
-  box-shadow:0 8px 24px rgba(0,0,0,.22);
-}
-.ocr-preview-translation:empty,
-.signlens-live-translation:empty{display:none}
-.signlens-live-translation{
-  bottom:14px;
-  max-height:42%;
-}
-#ocrResults{
-  /* Keep only controls if needed; text results are now displayed inside image. */
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  padding:0!important;
-}
-#ocrResults #ocrTranslatedLabel,
-#ocrResults #ocrTranslatedText,
-#ocrResults #ocrExtractedLabel,
-#ocrResults #ocrExtractedText{display:none!important}
-#signLensResult{display:none!important}
-@media(max-width:640px){
-  .ocr-preview-translation,.signlens-live-translation{
-    left:8px;right:8px;bottom:8px;
-    max-height:46%;
-    font-size:18px;
-    padding:10px 12px;
-  }
-}
-
 
 
 /* live listening panels (lecture/dialogue) */
@@ -1765,13 +1687,21 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   border-top:1px solid var(--line, #e2e8f0)!important;
 }
 
-.lens-ar-layer{position:absolute;inset:0;z-index:12;pointer-events:none;overflow:hidden}
-.lens-ar-box{position:absolute;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.94);color:#071a38;box-shadow:0 2px 10px rgba(0,0,0,.18);font-family:'Tajawal',sans-serif;font-weight:900;line-height:1.2;text-align:start;overflow:hidden}
-#ocrPreviewTranslation,.signlens-live-translation{display:none!important}
+/* ===== Lens Google-style visual replacement: isolated to the two camera lenses ===== */
+.lens-render-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+.ocr-live-overlay{display:none!important}
+#ocrPreview{display:none!important}
+.ocr-preview-wrap{position:relative;margin-top:16px;border-radius:16px;overflow:hidden;background:#07152f;border:1px solid var(--line)}
+#ocrPreviewCanvas{width:100%;height:auto;display:block;max-height:68vh;object-fit:contain;background:#fff}
+#ocrResults{display:none!important}
+.lens-mini-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.lens-mini-actions .icon-btn{flex:1;justify-content:center}
+#signLensFrozenCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:4;display:none;object-fit:cover;background:#06152f}
+#signLensRenderCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
 #signLensResult{display:none!important}
+.signlens-reticle{z-index:2}
+@media(max-width:640px){.ocr-video-wrap{max-height:72vh}.ocr-preview-wrap{border-radius:12px}}
 
-#ocrVideo{position:relative;z-index:1}
-#ocrVideo:not(:defined){position:relative}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -2104,26 +2034,29 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
 
   <div class="ocr-video-wrap" id="ocrVideoWrap" style="display:none;">
     <video id="ocrVideo" autoplay playsinline muted></video>
-    <div class="lens-ar-layer" id="ocrLiveArLayer"></div>
     <div class="ocr-live-overlay" id="ocrLiveOverlay"></div>
+    <canvas class="lens-render-canvas" id="ocrLiveRender"></canvas>
     <div class="ocr-live-status" id="ocrLiveStatus"></div>
     <button class="big-btn" id="ocrReadNowBtn" style="position:absolute;left:12px;right:12px;bottom:12px;z-index:4;background:linear-gradient(135deg,#0b5ed7,#c62828);">📖 اقرأ الآن</button>
   </div>
   <canvas id="ocrCanvas" style="display:none;"></canvas>
 
+  <img id="ocrPreview" style="display:none;max-width:100%;border-radius:12px;margin-top:16px;border:1px solid var(--line);">
   <div class="ocr-preview-wrap" id="ocrPreviewWrap" style="display:none;">
-    <img id="ocrPreview" style="display:block;">
-    <div class="lens-ar-layer" id="ocrPreviewArLayer"></div>
-    <div class="ocr-preview-translation" id="ocrPreviewTranslation"></div>
+    <canvas id="ocrPreviewCanvas"></canvas>
+  </div>
+  <div class="lens-mini-actions" id="ocrPreviewActions" style="display:none;">
+    <button class="icon-btn" id="ocrListenInlineBtn">🔊 استمع</button>
+    <button class="icon-btn" id="ocrClearInlineBtn">🗑️ مسح / صورة جديدة</button>
   </div>
 
   <div class="ocr-status" id="ocrStatus" style="display:none;"></div>
 
   <div id="ocrResults" style="display:none;margin-top:18px;">
-    <h4 id="ocrTranslatedLabel">🌐 الترجمة</h4>
-    <div class="quick-result" id="ocrTranslatedText"></div>
-    <h4 id="ocrExtractedLabel" style="margin-top:14px;">📝 النص المقروء</h4>
+    <h4 id="ocrExtractedLabel">📝 النص المستخرج</h4>
     <div class="quick-result" id="ocrExtractedText">…</div>
+    <h4 id="ocrTranslatedLabel" style="margin-top:14px;">🌐 الترجمة</h4>
+    <div class="quick-result" id="ocrTranslatedText" style="font-weight:700;font-size:17px;"></div>
     <button class="icon-btn" id="ocrListenBtn" style="margin-top:10px;">🔊 استمع</button>
   </div>
   <div class="panel-bottombar">
@@ -2148,9 +2081,9 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
   </div>
   <div class="signlens-video-wrap" id="signLensVideoWrap" style="display:none;">
     <video id="signLensVideo" autoplay playsinline muted></video>
+    <canvas id="signLensFrozenCanvas"></canvas>
+    <canvas id="signLensRenderCanvas"></canvas>
     <div class="signlens-reticle"></div>
-    <div class="lens-ar-layer" id="signLensArLayer"></div>
-    <div class="signlens-live-translation" id="signLensOverlay"></div>
   </div>
   <div class="signlens-zoom-row" id="signLensZoomRow" style="display:none;">
     <button class="icon-btn" id="signLensZoomOutBtn" type="button">−</button>
@@ -3473,583 +3406,106 @@ document.getElementById('quickTypeCopy').addEventListener('click', async ()=>{
 });
 
 /* ---------------- Camera OCR translation ---------------- */
-
-/* ---------------- Sign Lens: isolated from the existing OCR lens ---------------- */
-let signLensStream=null, signLensZoom=1, signLensLastTranslated='';
-function signLensTxt(k){const d=SIGN_LENS_I18N[UI_LANG]||SIGN_LENS_I18N.en;return d[k]||SIGN_LENS_I18N.en[k]||k}
-function applySignLensLanguage(){
-  const ids={hubTitle:'hubSignLensTitle',hubSub:'hubSignLensSub',title:'signLensTitle',desc:'signLensDesc',safety:'signLensSafety',back:'signLensBackBtn',listen:'signLensListenBtn'};
-  Object.entries(ids).forEach(([k,id])=>{const e=document.getElementById(id);if(e)e.textContent=signLensTxt(k)});
-  document.getElementById('signLensBackBtnBottom').textContent=signLensTxt('back');
-  document.getElementById('signLensStartText').textContent=signLensTxt('start');
-  document.getElementById('signLensStopText').textContent=signLensTxt('stop');
-  document.getElementById('signLensReadBtn').textContent=signLensTxt('read');
-  document.getElementById('signLensClearBtn').textContent=signLensTxt('clear');
-  const zr=document.getElementById('signLensZoom'); if(zr) zr.setAttribute('aria-label',signLensTxt('zoom'));
-}
-function syncSignLensLangUI(){
-  const a=document.getElementById('signLensFromLang'),b=document.getElementById('signLensToLang');
-  if(!a.options.length){LANGS.forEach((l,i)=>{a.add(new Option(l.label,i));b.add(new Option(l.label,i))})}
-  a.value=LANGS.findIndex(l=>l.code===ocrFrom.code);b.value=LANGS.findIndex(l=>l.code===ocrTo.code);
-}
-function openSignLens(){
-  closeCallMode();closeLecturePanel();closeDialoguePanel();closeOcrPanel();
-  document.getElementById('stage')?.classList.remove('show');
-  document.getElementById('signLensPanel').classList.add('show');
-  document.getElementById('topQuickBar').style.display='none';
-  clearSignLensResult();
-  applySignLensLanguage();syncSignLensLangUI();
-}
-function closeSignLens(){
-  stopSignLens();
-  document.getElementById('signLensPanel').classList.remove('show');
-  document.getElementById('hubSection').style.display='';
-  document.getElementById('topQuickBar').style.display='';
-}
-async function startSignLens(){
-  const status=document.getElementById('signLensStatus');status.style.display='block';status.textContent=signLensTxt('opening');
-  try{
-    signLensStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}},audio:false});
-  }catch(e){try{signLensStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false})}catch(err){status.textContent=t('ocrCameraDenied');return}}
-  const v=document.getElementById('signLensVideo');v.srcObject=signLensStream;await v.play().catch(()=>{});
-  document.getElementById('signLensVideoWrap').style.display='block';document.getElementById('signLensZoomRow').style.display='flex';
-  document.getElementById('signLensReadBtn').style.display='flex';document.getElementById('signLensStartBtn').style.display='none';document.getElementById('signLensStopBtn').style.display='flex';
-  status.style.display='none';
-  const track=signLensStream.getVideoTracks()[0];const caps=track?.getCapabilities?.()||{};
-  // Continuous focus/exposure whenever supported: important for small distant signs.
-  try{
-    const advanced=[];
-    if(caps.focusMode?.includes?.('continuous')) advanced.push({focusMode:'continuous'});
-    if(caps.exposureMode?.includes?.('continuous')) advanced.push({exposureMode:'continuous'});
-    if(advanced.length) await track.applyConstraints({advanced});
-  }catch(e){}
-  const z=document.getElementById('signLensZoom');
-  if(caps.zoom){
-    z.min=caps.zoom.min; z.max=caps.zoom.max; z.step=caps.zoom.step||.1;
-    z.value=Math.max(caps.zoom.min,Math.min(caps.zoom.max,1));
-    signLensZoom=Number(z.value)||1;
-  }else{
-    // Digital fallback only when the browser does not expose hardware camera zoom.
-    z.min=1; z.max=6; z.step=.1; z.value=1; signLensZoom=1;
-  }
-  document.getElementById('signLensZoomPresets').style.display='flex';
-  document.getElementById('signLensClearBtn').style.display='flex';
-  updateSignLensZoomUI();
-}
-function stopSignLens(){
-  if(signLensStream){signLensStream.getTracks().forEach(t=>t.stop());signLensStream=null}
-  const v=document.getElementById('signLensVideo');if(v)v.srcObject=null;
-  ['signLensVideoWrap','signLensZoomRow','signLensZoomPresets','signLensReadBtn','signLensClearBtn','signLensStopBtn'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});
-  document.getElementById('signLensStartBtn').style.display='flex';
-  signLensZoom=1;
-  const vv=document.getElementById('signLensVideo'); if(vv) vv.style.transform='scale(1)';
-  clearSignLensResult();
-}
-function updateSignLensZoomUI(){
-  const z=document.getElementById('signLensZoom');
-  const value=Number(z?.value||signLensZoom||1);
-  document.getElementById('signLensZoomValue').textContent=value.toFixed(1)+'×';
-}
-async function applySignLensZoom(val){
-  const z=document.getElementById('signLensZoom');
-  let requested=Number(val)||1;
-  if(z){ requested=Math.max(Number(z.min)||1,Math.min(Number(z.max)||6,requested)); z.value=requested; }
-  signLensZoom=requested;
-  const track=signLensStream?.getVideoTracks?.()[0];
-  const caps=track?.getCapabilities?.()||{};
-  const video=document.getElementById('signLensVideo');
-  if(caps.zoom){
-    try{
-      const real=Math.max(caps.zoom.min,Math.min(caps.zoom.max,requested));
-      await track.applyConstraints({advanced:[{zoom:real}]});
-      signLensZoom=real;
-      if(z) z.value=real;
-      if(video) video.style.transform='scale(1)';
-    }catch(e){}
-  }else{
-    // Visible digital zoom fallback so the camera behaves like a zoom lens even
-    // when Safari/Chrome does not expose hardware zoom controls.
-    if(video) video.style.transform=`scale(${requested})`;
-  }
-  updateSignLensZoomUI();
-}
-function clearSignLensResult(){
-  signLensLastTranslated='';
-  const result=document.getElementById('signLensResult');
-  const original=document.getElementById('signLensOriginal');
-  const translated=document.getElementById('signLensTranslated');
-  const status=document.getElementById('signLensStatus');
-  if(result) result.style.display='none';
-  if(original) original.textContent='';
-  if(translated) translated.textContent='';
-  const overlay=document.getElementById('signLensOverlay'); if(overlay) overlay.textContent='';
-  clearArLayer('signLensArLayer');
-  if(status){status.textContent='';status.style.display='none';}
-}
-
-async function readSignLens(){
-  if(!signLensStream)return;
-  clearSignLensResult();
-  const v=document.getElementById('signLensVideo'),c=document.getElementById('signLensCanvas'),status=document.getElementById('signLensStatus');
-  status.style.display='block';status.textContent=signLensTxt('reading');
-  const vw=v.videoWidth,vh=v.videoHeight;if(!vw||!vh)return;
-  // If hardware zoom exists, the camera frame is already zoomed. Otherwise
-  // mirror the visible digital zoom by cropping the center before OCR.
-  const track=signLensStream?.getVideoTracks?.()[0];
-  const caps=track?.getCapabilities?.()||{};
-  const digitalFactor=caps.zoom?1:Math.max(1,signLensZoom);
-  const cropW=vw*.90/digitalFactor,cropH=vh*.62/digitalFactor,sx=(vw-cropW)/2,sy=(vh-cropH)/2;
-  const maxW=2200,scale=Math.min(1,maxW/cropW);c.width=Math.max(1,Math.round(cropW*scale));c.height=Math.max(1,Math.round(cropH*scale));
-  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(v,sx,sy,cropW,cropH,0,0,c.width,c.height);
-  try{
-    // grayscale + contrast improves distant sign lettering without altering the original lens
-    const im=ctx.getImageData(0,0,c.width,c.height),d=im.data;
-    for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2];const x=Math.max(0,Math.min(255,(g-128)*1.9+128));d[i]=d[i+1]=d[i+2]=x}
-    ctx.putImageData(im,0,0);
-    const worker=await getOcrWorker();
-    const {data}=await worker.recognize(c);
-    const original=compactOcrForTranslation(data.text||'');
-    clearArLayer('signLensArLayer');
-    const signArCount=await lensRender(data,'signLensArLayer',c.width,c.height,.78);
-    if(!original){status.textContent=signLensTxt('noText');return}
-    const translatedRaw=await translateText(original,ocrFrom.code,ocrTo.code);
-    const translated=cleanTranslatedOcr(translatedRaw);
-    signLensLastTranslated=translated;
-    document.getElementById('signLensOriginal').textContent=original;
-    document.getElementById('signLensTranslated').textContent=translated;
-    document.getElementById('signLensOverlay').textContent='';
-    status.style.display='none';
-  }catch(e){status.textContent=t('ocrFail')}
-}
-document.getElementById('hubTileSignLens').addEventListener('click',openSignLens);
-document.getElementById('signLensBackBtn').addEventListener('click',closeSignLens);
-document.getElementById('signLensBackBtnBottom').addEventListener('click',closeSignLens);
-document.getElementById('signLensStartBtn').addEventListener('click',startSignLens);
-document.getElementById('signLensStopBtn').addEventListener('click',stopSignLens);
-document.getElementById('signLensReadBtn').addEventListener('click',readSignLens);
-document.getElementById('signLensClearBtn').addEventListener('click',clearSignLensResult);
-document.getElementById('signLensZoom').addEventListener('input',e=>applySignLensZoom(e.target.value));
-document.getElementById('signLensZoomInBtn').addEventListener('click',()=>{const z=document.getElementById('signLensZoom');applySignLensZoom(Number(z.value)+(Number(z.step)||.1))});
-document.getElementById('signLensZoomOutBtn').addEventListener('click',()=>{const z=document.getElementById('signLensZoom');applySignLensZoom(Number(z.value)-(Number(z.step)||.1))});
-document.querySelectorAll('[data-signzoom]').forEach(btn=>btn.addEventListener('click',()=>applySignLensZoom(Number(btn.dataset.signzoom))));
-document.getElementById('signLensListenBtn').addEventListener('click',()=>{if(signLensLastTranslated)speak(signLensLastTranslated,ocrTo.bcp47)});
-document.getElementById('signLensFromLang').addEventListener('change',e=>{ocrFrom=LANGS[Number(e.target.value)];syncSignLensLangUI();syncOcrLangUI();restartOcrWorker()});
-document.getElementById('signLensToLang').addEventListener('change',e=>{ocrTo=LANGS[Number(e.target.value)];syncSignLensLangUI();syncOcrLangUI()});
-document.getElementById('signLensSwapBtn').addEventListener('click',()=>{const x=ocrFrom;ocrFrom=ocrTo;ocrTo=x;syncSignLensLangUI();syncOcrLangUI();restartOcrWorker()});
-
+/* Lens engine rebuilt only for Camera Translation + Sign Lens.
+   Other speech, microphone, lecture/dialogue and device-speed code is untouched. */
 function openOcrPanel(){
   if(typeof closeSignLens==='function') closeSignLens();
-  closeCallMode();
-  closeLecturePanel();
-  closeDialoguePanel();
+  closeCallMode(); closeLecturePanel(); closeDialoguePanel();
   document.getElementById('stage')?.classList.remove('show');
-  document.getElementById('hubSection').style.display = '';
+  document.getElementById('hubSection').style.display='';
   document.getElementById('ocrPanel').classList.add('show');
-  document.getElementById('topQuickBar').style.display = 'none';
+  document.getElementById('topQuickBar').style.display='none';
 }
 function closeOcrPanel(){
-  stopLiveOcr();
-  const pw=document.getElementById('ocrPreviewWrap'); if(pw) pw.style.display='none';
-  const po=document.getElementById('ocrPreviewTranslation'); if(po) po.textContent='';
+  stopLiveOcr(); clearOcrInline();
   document.getElementById('ocrPanel').classList.remove('show');
-  if(!document.getElementById('callPanel').classList.contains('show')){
-    document.getElementById('topQuickBar').style.display = '';
-  }
-  if(!document.getElementById('callPanel')?.classList.contains('show') && !document.getElementById('lecturePanel')?.classList.contains('show') && !document.getElementById('dialoguePanel')?.classList.contains('show')){
-    document.getElementById('hubSection').style.display = '';
-    setActiveSvc('svcHome');
-  }
+  if(!document.getElementById('callPanel').classList.contains('show')) document.getElementById('topQuickBar').style.display='';
+  if(!document.getElementById('callPanel')?.classList.contains('show')&&!document.getElementById('lecturePanel')?.classList.contains('show')&&!document.getElementById('dialoguePanel')?.classList.contains('show')){document.getElementById('hubSection').style.display='';setActiveSvc('svcHome')}
 }
-document.getElementById('ocrOpenBtn').addEventListener('click', openOcrPanel);
-document.getElementById('topQuickCamera').addEventListener('click', () => { openOcrPanel(); closeMoreSheet(); closeLangSheet(); setActiveTopQuick('topQuickCamera'); });
-document.getElementById('ocrBackBtn').addEventListener('click', closeOcrPanel);
-document.getElementById('ocrBackBtnBottom').addEventListener('click', closeOcrPanel);
+document.getElementById('ocrOpenBtn').addEventListener('click',openOcrPanel);
+document.getElementById('topQuickCamera').addEventListener('click',()=>{openOcrPanel();closeMoreSheet();closeLangSheet();setActiveTopQuick('topQuickCamera')});
+document.getElementById('ocrBackBtn').addEventListener('click',closeOcrPanel);
+document.getElementById('ocrBackBtnBottom').addEventListener('click',closeOcrPanel);
 
-// Load the OCR engine with multiple CDN fallbacks. Safari sometimes blocks a worker from one CDN.
-let tesseractLoadPromise = null;
+let tesseractLoadPromise=null;
 function ensureTesseract(){
-  if(window.Tesseract) return Promise.resolve(window.Tesseract);
-  if(tesseractLoadPromise) return tesseractLoadPromise;
-  const sources = [
-    'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
-    'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js'
-  ];
-  tesseractLoadPromise = new Promise((resolve,reject)=>{
-    let i=0;
-    const tryNext=()=>{
-      if(window.Tesseract) return resolve(window.Tesseract);
-      if(i>=sources.length) return reject(new Error('OCR engine unavailable'));
-      const sc=document.createElement('script');
-      sc.src=sources[i++]; sc.async=true;
-      sc.onload=()=>window.Tesseract?resolve(window.Tesseract):tryNext();
-      sc.onerror=tryNext; document.head.appendChild(sc);
-    };
-    tryNext();
-  });
-  return tesseractLoadPromise;
+  if(window.Tesseract)return Promise.resolve(window.Tesseract); if(tesseractLoadPromise)return tesseractLoadPromise;
+  const sources=['https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js','https://unpkg.com/tesseract.js@5/dist/tesseract.min.js','https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js'];
+  tesseractLoadPromise=new Promise((resolve,reject)=>{let i=0;const next=()=>{if(window.Tesseract)return resolve(window.Tesseract);if(i>=sources.length)return reject(new Error('OCR engine unavailable'));const sc=document.createElement('script');sc.src=sources[i++];sc.async=true;sc.onload=()=>window.Tesseract?resolve(window.Tesseract):next();sc.onerror=next;document.head.appendChild(sc)};next()});return tesseractLoadPromise;
 }
+const OCR_LANG_MAP={ar:'ara',tr:'tur',en:'eng',fr:'fra',ru:'rus','zh-CN':'chi_sim',es:'spa',it:'ita',hi:'hin',ja:'jpn',ko:'kor',de:'deu',fa:'fas'};
+let ocrFrom=LANGS.find(l=>l.code==='tr')||LANGS[1],ocrTo=LANGS.find(l=>l.code==='ar')||LANGS[0],ocrLastTranslated='';
+const ocrFromSelect=document.getElementById('ocrFromLang'),ocrToSelect=document.getElementById('ocrToLang');
+LANGS.forEach((l,i)=>{ocrFromSelect.add(new Option(l.label,i));ocrToSelect.add(new Option(l.label,i))});
+function syncOcrLangUI(){ocrFromSelect.value=LANGS.indexOf(ocrFrom);ocrToSelect.value=LANGS.indexOf(ocrTo)} syncOcrLangUI();
+ocrFromSelect.addEventListener('change',e=>{const c=LANGS[Number(e.target.value)];if(c.code===ocrTo.code)ocrTo=ocrFrom;ocrFrom=c;syncOcrLangUI();if(ocrWorker)restartOcrWorker();syncSignLensLangUI()});
+ocrToSelect.addEventListener('change',e=>{const c=LANGS[Number(e.target.value)];if(c.code===ocrFrom.code)ocrFrom=ocrTo;ocrTo=c;syncOcrLangUI();syncSignLensLangUI()});
+document.getElementById('ocrSwapBtn').addEventListener('click',()=>{const x=ocrFrom;ocrFrom=ocrTo;ocrTo=x;syncOcrLangUI();syncSignLensLangUI();if(ocrWorker)restartOcrWorker()});
 
-// maps our language codes to Tesseract.js's traineddata language codes
-const OCR_LANG_MAP = { ar:'ara', tr:'tur', en:'eng', fr:'fra', ru:'rus', 'zh-CN':'chi_sim', es:'spa', it:'ita', hi:'hin', ja:'jpn', ko:'kor', de:'deu', fa:'fas' };
-
-let ocrFrom = LANGS.find(l => l.code === 'tr') || LANGS[1];
-let ocrTo = LANGS.find(l => l.code === 'ar') || LANGS[0];
-let ocrLastTranslated = '';
-
-const ocrFromSelect = document.getElementById('ocrFromLang');
-const ocrToSelect = document.getElementById('ocrToLang');
-LANGS.forEach((l,i) => {
-  const o1 = document.createElement('option'); o1.value = i; o1.textContent = l.label;
-  ocrFromSelect.appendChild(o1);
-  const o2 = document.createElement('option'); o2.value = i; o2.textContent = l.label;
-  ocrToSelect.appendChild(o2);
-});
-function syncOcrLangUI(){
-  ocrFromSelect.value = LANGS.indexOf(ocrFrom);
-  ocrToSelect.value = LANGS.indexOf(ocrTo);
+let ocrWorker=null,ocrStream=null,ocrLiveTimer=null,ocrBusy=false,ocrLastSignature='';
+async function restartOcrWorker(){if(ocrWorker){try{await ocrWorker.terminate()}catch(e){}ocrWorker=null}}
+async function getOcrWorker(){await ensureTesseract();if(!ocrWorker)ocrWorker=await window.Tesseract.createWorker(OCR_LANG_MAP[ocrFrom.code]||'eng',1,{workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',langPath:'https://tessdata.projectnaptha.com/4.0.0'});return ocrWorker}
+function cleanLensText(raw){
+  return String(raw||'').replace(/\u0000/g,' ').replace(/[|¦]{2,}/g,' ').replace(/[_=~^`]{2,}/g,' ').replace(/\s+/g,' ').trim();
 }
-syncOcrLangUI();
-ocrFromSelect.addEventListener('change', (e) => {
-  const chosen = LANGS[Number(e.target.value)];
-  if(chosen.code === ocrTo.code) ocrTo = ocrFrom;
-  ocrFrom = chosen; syncOcrLangUI();
-  if(ocrWorker) restartOcrWorker();
-});
-ocrToSelect.addEventListener('change', (e) => {
-  const chosen = LANGS[Number(e.target.value)];
-  if(chosen.code === ocrFrom.code) ocrFrom = ocrTo;
-  ocrTo = chosen; syncOcrLangUI();
-});
-document.getElementById('ocrSwapBtn').addEventListener('click', () => {
-  const old = ocrFrom; ocrFrom = ocrTo; ocrTo = old;
-  syncOcrLangUI();
-  if(ocrWorker) restartOcrWorker();
-});
-
-
-
-/* ---- Lens Engine V2: translate only detected OCR lines and keep their positions ---- */
-function clearArLayer(id){const e=document.getElementById(id);if(e)e.innerHTML=''}
-function lensLines(data){
-  const lines=Array.isArray(data?.lines)?data.lines:[];
-  return lines.map(l=>({text:normalizeOcrLines(l.text||'').replace(/\n+/g,' ').trim(),bbox:l.bbox||{},conf:Number(l.confidence??l.conf??0)}))
-    .filter(x=>{
-      if(!x.text||x.text.length<2)return false;
-      if((x.text.match(/[\p{L}\p{N}]/gu)||[]).length<2)return false;
-      return !Number.isFinite(x.conf)||x.conf===0||x.conf>=55;
-    }).slice(0,12);
-}
-async function lensTranslateLine(text){
-  try{return cleanTranslatedOcr(await translateText(compactOcrForTranslation(text),ocrFrom.code,ocrTo.code))}catch(e){return ''}
-}
-function lensBox(layer,text,b,sw,sh,scale=.82){
-  if(!layer||!text||!sw||!sh)return;
-  const x0=Number(b.x0??b.left??0),y0=Number(b.y0??b.top??0),x1=Number(b.x1??b.right??x0),y1=Number(b.y1??b.bottom??y0);
-  if(x1<=x0||y1<=y0)return;
-  const d=document.createElement('div');d.className='lens-ar-box';d.textContent=text;
-  const left=Math.max(0,Math.min(96,x0/sw*100)),top=Math.max(0,Math.min(96,y0/sh*100)),width=Math.max(8,Math.min(96-left,(x1-x0)/sw*100));
-  d.style.left=left+'%';d.style.top=top+'%';d.style.width=width+'%';d.style.fontSize=Math.max(12,Math.min(27,(y1-y0)*scale))+'px';layer.appendChild(d);
-}
-async function lensRender(data,id,sw,sh,scale=.82){
-  const layer=document.getElementById(id);if(!layer)return 0;layer.innerHTML='';
-  let n=0;for(const l of lensLines(data)){const tr=await lensTranslateLine(l.text);if(tr){lensBox(layer,tr,l.bbox,sw,sh,scale);n++}}
-  return n;
-}
-
-/* ---- OCR cleanup helpers: shared by both camera lenses ---- */
-function normalizeOcrLines(raw){
-  if(!raw) return '';
-  let text=String(raw)
-    .replace(/\u0000/g,'')
-    .replace(/\r/g,'\n')
-    .replace(/[|¦]{2,}/g,' ')
-    .replace(/[{}\[\]<>]{2,}/g,' ')
-    .replace(/[_=~^`]{2,}/g,' ')
-    .replace(/[ \t]+/g,' ')
-    .replace(/\n[ \t]+/g,'\n')
-    .replace(/[ \t]+\n/g,'\n');
-
-  const lines=text.split('\n')
-    .map(x=>x.trim())
-    .filter(Boolean)
-    .map(line=>{
-      const useful=[...line].filter(ch=>/[\p{L}\p{N}\p{M}\s.,:;!?%+\-\/()'"’“”&@#°₺$€£¥₽₹]/u.test(ch)).join('');
-      return useful.replace(/\s{2,}/g,' ').trim();
-    })
-    .filter(line=>{
-      if(line.length<2) return false;
-      const alnum=(line.match(/[\p{L}\p{N}]/gu)||[]).length;
-      const weird=line.length-alnum-(line.match(/\s/g)||[]).length;
-      return alnum>=2 && weird<=Math.max(8,Math.floor(line.length*.45));
-    });
-
-  const out=[];
-  for(const line of lines){
-    const key=line.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
-    const prev=out.length?out[out.length-1].toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim():'';
-    if(key && key===prev) continue;
-    if(key.length>8 && prev && (key.includes(prev)||prev.includes(key))){
-      if(key.length>prev.length) out[out.length-1]=line;
-      continue;
-    }
-    out.push(line);
+function textLooksReal(x){const t=cleanLensText(x);if(t.length<2)return false;const a=(t.match(/[\p{L}\p{N}]/gu)||[]).length;return a>=2&&a/Math.max(1,t.length)>.42}
+function flattenOcrLines(data){
+  const out=[]; const add=(text,bbox,conf)=>{text=cleanLensText(text);if(!textLooksReal(text))return;const c=Number(conf??0);if(c&&c<45)return;if(!bbox)return;out.push({text,bbox,conf:c})};
+  if(Array.isArray(data?.lines))data.lines.forEach(l=>add(l.text,l.bbox,l.confidence??l.conf));
+  const blocks=Array.isArray(data?.blocks)?data.blocks:[];
+  for(const b of blocks)for(const p of (b.paragraphs||[]))for(const l of (p.lines||[]))add(l.text,l.bbox,l.confidence??l.conf);
+  if(!out.length&&Array.isArray(data?.words)){
+    const words=data.words.filter(w=>textLooksReal(w.text)&&(!w.confidence||w.confidence>=45));
+    words.sort((a,b)=>(a.bbox?.y0||0)-(b.bbox?.y0||0)||(a.bbox?.x0||0)-(b.bbox?.x0||0));
+    const groups=[];for(const w of words){const bb=w.bbox||{};const cy=((bb.y0||0)+(bb.y1||0))/2;let g=groups.find(q=>Math.abs(q.cy-cy)<Math.max(10,q.h*.55));if(!g){g={cy,h:Math.max(12,(bb.y1||0)-(bb.y0||0)),words:[]};groups.push(g)}g.words.push(w)}
+    for(const g of groups){g.words.sort((a,b)=>(a.bbox?.x0||0)-(b.bbox?.x0||0));const b0=g.words[0].bbox,b1=g.words[g.words.length-1].bbox;add(g.words.map(w=>w.text).join(' '),{x0:b0.x0,y0:Math.min(...g.words.map(w=>w.bbox.y0)),x1:b1.x1,y1:Math.max(...g.words.map(w=>w.bbox.y1))},Math.min(...g.words.map(w=>Number(w.confidence||100))))}
   }
-  return out.slice(0,12).join('\n').trim();
+  const seen=new Set();return out.filter(l=>{const k=l.text.toLowerCase();if(seen.has(k))return false;seen.add(k);return true}).slice(0,14);
 }
-function compactOcrForTranslation(raw){
-  const cleaned=normalizeOcrLines(raw);
-  if(!cleaned) return '';
-  return cleaned.split('\n').slice(0,8).map(x=>x.slice(0,180)).join('\n');
+const lensTranslationCache=new Map();
+async function translateLensLine(text){const key=ocrFrom.code+'>'+ocrTo.code+'|'+text;if(lensTranslationCache.has(key))return lensTranslationCache.get(key);let r='';try{r=cleanLensText(await translateText(text,ocrFrom.code,ocrTo.code))}catch(e){}if(r)lensTranslationCache.set(key,r);return r}
+function sampleBg(ctx,b){try{const x=Math.max(0,Math.floor(b.x0)),y=Math.max(0,Math.floor(b.y0)),w=Math.max(1,Math.min(20,ctx.canvas.width-x)),h=Math.max(1,Math.min(20,ctx.canvas.height-y));const d=ctx.getImageData(x,y,w,h).data;let r=0,g=0,bl=0,n=0;for(let i=0;i<d.length;i+=16){r+=d[i];g+=d[i+1];bl+=d[i+2];n++}return [Math.round(r/n),Math.round(g/n),Math.round(bl/n)]}catch(e){return [245,245,245]}}
+function drawFittedText(ctx,text,b,sourceCtx){
+  const x=Math.max(0,b.x0-3),y=Math.max(0,b.y0-3),w=Math.max(24,b.x1-b.x0+6),h=Math.max(18,b.y1-b.y0+6);const bg=sampleBg(sourceCtx||ctx,b);const lum=.299*bg[0]+.587*bg[1]+.114*bg[2];
+  ctx.save();ctx.fillStyle=`rgba(${bg[0]},${bg[1]},${bg[2]},.96)`;ctx.fillRect(x,y,w,h);ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+  let fs=Math.max(12,Math.min(42,h*.82));ctx.font=`800 ${fs}px system-ui,-apple-system,"Noto Sans",Arial,sans-serif`;while(fs>10&&ctx.measureText(text).width>w-6){fs-=1;ctx.font=`800 ${fs}px system-ui,-apple-system,"Noto Sans",Arial,sans-serif`}
+  ctx.fillStyle=lum>145?'#111827':'#ffffff';ctx.textBaseline='middle';ctx.direction=['ar','fa'].includes(ocrTo.code)?'rtl':'ltr';ctx.textAlign=ctx.direction==='rtl'?'right':'left';ctx.fillText(text,ctx.direction==='rtl'?x+w-3:x+3,y+h/2);ctx.restore();
 }
-function cleanTranslatedOcr(raw){
-  if(!raw) return '';
-  let t=String(raw)
-    .replace(/```[\s\S]*?```/g,' ')
-    .replace(/`+/g,'')
-    .replace(/https?:\/\/\S+/gi,'')
-    .replace(/<[^>]+>/g,' ')
-    .replace(/[ \t]+/g,' ')
-    .replace(/\n[ \t]+/g,'\n')
-    .trim();
-  if((t.startsWith('{')&&t.endsWith('}'))||(t.startsWith('[')&&t.endsWith(']'))){
-    try{
-      const j=JSON.parse(t);
-      if(typeof j==='string') t=j;
-      else if(j&&typeof j==='object'){
-        const found=[j.translation,j.translatedText,j.text,j.result,j.output].find(x=>typeof x==='string');
-        if(found) t=found;
-      }
-    }catch(e){}
-  }
-  return t.replace(/[{}[\]<>]/g,' ').replace(/\s{2,}/g,' ').trim();
+async function renderTranslatedLines(data,renderCanvas,sourceCanvas,offset={x:0,y:0,scaleX:1,scaleY:1}){
+  const lines=flattenOcrLines(data);if(!lines.length)return 0;renderCanvas.width=sourceCanvas.width;renderCanvas.height=sourceCanvas.height;const rctx=renderCanvas.getContext('2d');rctx.clearRect(0,0,renderCanvas.width,renderCanvas.height);const sctx=sourceCanvas.getContext('2d');
+  let n=0;for(const line of lines){const tr=await translateLensLine(line.text);if(!tr)continue;const b={x0:offset.x+line.bbox.x0*offset.scaleX,y0:offset.y+line.bbox.y0*offset.scaleY,x1:offset.x+line.bbox.x1*offset.scaleX,y1:offset.y+line.bbox.y1*offset.scaleY};drawFittedText(rctx,tr,b,sctx);n++;ocrLastTranslated+=(ocrLastTranslated?'\n':'')+tr}return n;
 }
-
-/* ---- Live camera mode: continuously reads the video feed and shows a translated overlay ---- */
-let ocrStream = null;
-let ocrWorker = null;
-let ocrLiveTimer = null;
-let ocrBusy = false;
-let ocrLastSeenText = '';
-
-async function restartOcrWorker(){
-  if(ocrWorker){ try{ await ocrWorker.terminate(); }catch(e){} ocrWorker = null; }
-}
-
-async function getOcrWorker(){
-  await ensureTesseract();
-  if(!ocrWorker){
-    ocrWorker = await window.Tesseract.createWorker(OCR_LANG_MAP[ocrFrom.code] || 'eng', 1, {
-      workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-      corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
-      langPath:'https://tessdata.projectnaptha.com/4.0.0'
-    });
-  }
-  return ocrWorker;
-}
+async function recognizeCanvas(canvas){const w=await getOcrWorker();return (await w.recognize(canvas,{}, {text:true,blocks:true})).data}
 
 async function startLiveOcr(){
-  const videoWrap = document.getElementById('ocrVideoWrap');
-  const video = document.getElementById('ocrVideo');
-  const liveStatus = document.getElementById('ocrLiveStatus');
-  document.getElementById('ocrResults').style.display = 'none';
-  document.getElementById('ocrPreviewWrap').style.display = 'none';
-  document.getElementById('ocrPreviewTranslation').textContent = '';
-  document.getElementById('ocrStatus').style.display = 'none';
-
-  try{
-    if(!window.isSecureContext) throw new Error('secure context required');
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('camera unsupported');
-    if(ocrStream){ ocrStream.getTracks().forEach(t=>t.stop()); ocrStream = null; }
-    const constraints = IS_IOS
-      ? { video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:24,max:30} }, audio:false }
-      : { video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:24,max:30} }, audio:false };
-    try{
-      ocrStream = await navigator.mediaDevices.getUserMedia(constraints);
-    }catch(firstErr){
-      // Some iPhones reject facingMode; retry with the simplest camera request.
-      ocrStream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
-    }
-  }catch(err){
-    const extra = IS_IOS ? ' افتح الموقع في Safari العادي، ثم الإعدادات > Safari > الكاميرا > سماح.' : '';
-    showBanner(t('ocrCameraDenied') + extra);
-    return;
-  }
-  video.setAttribute('playsinline','');
-  video.setAttribute('webkit-playsinline','');
-  video.muted = true;
-  video.srcObject = ocrStream;
-  videoWrap.style.display = 'block';
-  document.getElementById('ocrStartLiveBtn').style.display = 'none';
-  document.getElementById('ocrStopLiveBtn').style.display = 'flex';
-  document.getElementById('ocrUploadLabel').style.display = 'none';
-  document.getElementById('ocrCaptureLabel').style.display = 'none';
-  liveStatus.textContent = 'جارٍ تشغيل الكاميرا…';
-
-  try{
-    await new Promise((resolve,reject)=>{
-      const timer=setTimeout(()=>reject(new Error('video timeout')),7000);
-      const ready=()=>{ if(video.videoWidth>0){ clearTimeout(timer); resolve(); } };
-      video.addEventListener('loadedmetadata', ready, {once:true});
-      video.addEventListener('canplay', ready, {once:true});
-      video.play().then(ready).catch(()=>{});
-    });
-  }catch(e){
-    showBanner('تعذر بدء معاينة الكاميرا على الآيفون. جرّب فتح الموقع من Safari وليس من داخل واتساب أو أي متصفح داخلي.');
-    stopLiveOcr();
-    return;
-  }
-
-  try{
-    const track = ocrStream.getVideoTracks()[0];
-    const caps = track?.getCapabilities?.() || {};
-    const advanced = [];
-    if(caps.focusMode?.includes?.('continuous')) advanced.push({focusMode:'continuous'});
-    if(caps.exposureMode?.includes?.('continuous')) advanced.push({exposureMode:'continuous'});
-    if(advanced.length) await track.applyConstraints({advanced});
-  }catch(e){}
-  liveStatus.textContent = t('ocrLoadingEngine');
-  try{
-    await getOcrWorker();
-  }catch(err){
-    showBanner(t('ocrEngineFail'));
-    stopLiveOcr();
-    return;
-  }
-  liveStatus.textContent = t('ocrLiveScanning');
-  const interval = IS_IOS ? 3800 : 2600;
-  ocrLiveTimer = setInterval(captureAndTranslateFrame, interval);
-  setTimeout(captureAndTranslateFrame, IS_IOS ? 1200 : 250);
+  const wrap=document.getElementById('ocrVideoWrap'),video=document.getElementById('ocrVideo'),status=document.getElementById('ocrLiveStatus');clearOcrInline();
+  try{ocrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:24,max:30}},audio:false})}catch(e){try{ocrStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false})}catch(err){showBanner(t('ocrCameraDenied'));return}}
+  video.srcObject=ocrStream;video.setAttribute('playsinline','');video.muted=true;wrap.style.display='block';document.getElementById('ocrStartLiveBtn').style.display='none';document.getElementById('ocrStopLiveBtn').style.display='flex';document.getElementById('ocrUploadLabel').style.display='none';document.getElementById('ocrCaptureLabel').style.display='none';status.textContent=t('ocrLoadingEngine');
+  try{await video.play();await getOcrWorker()}catch(e){showBanner(t('ocrEngineFail'));stopLiveOcr();return}status.textContent=t('ocrLiveScanning');ocrLiveTimer=setInterval(captureAndTranslateFrame,IS_IOS?4200:3300);setTimeout(captureAndTranslateFrame,600)
 }
-function stopLiveOcr(){
-  if(ocrLiveTimer){ clearInterval(ocrLiveTimer); ocrLiveTimer = null; }
-  if(ocrStream){ ocrStream.getTracks().forEach(tr => tr.stop()); ocrStream = null; }
-  restartOcrWorker();
-  document.getElementById('ocrVideoWrap').style.display = 'none';
-  document.getElementById('ocrLiveOverlay').textContent = '';
-  document.getElementById('ocrStartLiveBtn').style.display = 'flex';
-  document.getElementById('ocrStopLiveBtn').style.display = 'none';
-  document.getElementById('ocrUploadLabel').style.display = 'flex';
-  document.getElementById('ocrCaptureLabel').style.display = 'flex';
-}
+function stopLiveOcr(){if(ocrLiveTimer){clearInterval(ocrLiveTimer);ocrLiveTimer=null}if(ocrStream){ocrStream.getTracks().forEach(t=>t.stop());ocrStream=null}restartOcrWorker();document.getElementById('ocrVideoWrap').style.display='none';document.getElementById('ocrStartLiveBtn').style.display='flex';document.getElementById('ocrStopLiveBtn').style.display='none';document.getElementById('ocrUploadLabel').style.display='flex';document.getElementById('ocrCaptureLabel').style.display='flex';const c=document.getElementById('ocrLiveRender');c.getContext('2d').clearRect(0,0,c.width,c.height)}
+async function captureAndTranslateFrame(){if(ocrBusy||!ocrStream)return;ocrBusy=true;const v=document.getElementById('ocrVideo'),c=document.getElementById('ocrCanvas'),r=document.getElementById('ocrLiveRender'),status=document.getElementById('ocrLiveStatus');try{if(!v.videoWidth)return;const maxW=1100,sc=Math.min(1,maxW/v.videoWidth);c.width=Math.round(v.videoWidth*sc);c.height=Math.round(v.videoHeight*sc);c.getContext('2d').drawImage(v,0,0,c.width,c.height);status.textContent=t('ocrLiveScanning');const data=await recognizeCanvas(c);const lines=flattenOcrLines(data);const sig=lines.map(x=>x.text).join('|');if(!sig||sig===ocrLastSignature)return;ocrLastSignature=sig;status.textContent=t('ocrTranslating');ocrLastTranslated='';await renderTranslatedLines(data,r,c);status.textContent=t('ocrLiveScanning')}catch(e){}finally{ocrBusy=false}}
+document.getElementById('ocrStartLiveBtn').addEventListener('click',startLiveOcr);document.getElementById('ocrStopLiveBtn').addEventListener('click',stopLiveOcr);document.getElementById('ocrReadNowBtn').addEventListener('click',captureAndTranslateFrame);
 
-async function captureAndTranslateFrame(){
-  if(ocrBusy || !ocrStream) return;
-  ocrBusy = true;
-  const video = document.getElementById('ocrVideo');
-  const canvas = document.getElementById('ocrCanvas');
-  const overlay = document.getElementById('ocrLiveOverlay');
-  const liveStatus = document.getElementById('ocrLiveStatus');
-  try{
-    if(video.videoWidth === 0){ ocrBusy = false; return; }
-    const maxW = IS_IOS ? 960 : 1280;
-    const scale = Math.min(1, maxW / video.videoWidth);
-    canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
-    canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
-    const ctx = canvas.getContext('2d', { willReadFrequently:true });
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    // Raise contrast and sharpen text for iPhone camera frames.
-    try{
-      const img = ctx.getImageData(0,0,canvas.width,canvas.height);
-      const d = img.data;
-      for(let i=0;i<d.length;i+=4){
-        const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
-        const v = Math.max(0, Math.min(255, (gray-128)*1.65+128));
-        d[i]=d[i+1]=d[i+2]=v;
-      }
-      ctx.putImageData(img,0,0);
-    }catch(e){}
+async function handleOcrImageChange(e){const file=e.target.files[0];if(!file)return;stopLiveOcr();const wrap=document.getElementById('ocrPreviewWrap'),pc=document.getElementById('ocrPreviewCanvas'),status=document.getElementById('ocrStatus');wrap.style.display='block';document.getElementById('ocrPreviewActions').style.display='flex';status.style.display='block';status.textContent=t('ocrReading');try{const bmp=await createImageBitmap(file);const maxW=1600,sc=Math.min(1,maxW/bmp.width);pc.width=Math.round(bmp.width*sc);pc.height=Math.round(bmp.height*sc);const ctx=pc.getContext('2d');ctx.drawImage(bmp,0,0,pc.width,pc.height);const work=document.getElementById('ocrCanvas');work.width=pc.width;work.height=pc.height;work.getContext('2d').drawImage(pc,0,0);const data=await recognizeCanvas(work);const lines=flattenOcrLines(data);if(!lines.length){status.textContent=t('ocrNoText');return}status.textContent=t('ocrTranslating');ocrLastTranslated='';const overlay=document.createElement('canvas');overlay.width=pc.width;overlay.height=pc.height;await renderTranslatedLines(data,overlay,work);ctx.drawImage(overlay,0,0);status.style.display='none'}catch(err){status.textContent=t('ocrFail')}finally{e.target.value=''}}
+document.getElementById('ocrCameraInput').addEventListener('change',handleOcrImageChange);document.getElementById('ocrCaptureInput').addEventListener('change',handleOcrImageChange);
+function clearOcrInline(){ocrLastTranslated='';document.getElementById('ocrPreviewWrap').style.display='none';document.getElementById('ocrPreviewActions').style.display='none';const pc=document.getElementById('ocrPreviewCanvas');pc.getContext('2d').clearRect(0,0,pc.width,pc.height);document.getElementById('ocrStatus').style.display='none'}
+document.getElementById('ocrClearInlineBtn').addEventListener('click',clearOcrInline);document.getElementById('ocrListenInlineBtn').addEventListener('click',()=>{if(ocrLastTranslated)speak(ocrLastTranslated,ocrTo.bcp47)});document.getElementById('ocrListenBtn').addEventListener('click',()=>{if(ocrLastTranslated)speak(ocrLastTranslated,ocrTo.bcp47)});
 
-    liveStatus.textContent = t('ocrLiveScanning');
-    const worker = await getOcrWorker();
-    const { data } = await worker.recognize(canvas);
-    const extracted = compactOcrForTranslation(data.text || '');
-    clearArLayer('ocrLiveArLayer');
-    await lensRender(data,'ocrLiveArLayer',canvas.width,canvas.height,.78);
-
-    if(extracted && extracted !== ocrLastSeenText){
-      ocrLastSeenText = extracted;
-      liveStatus.textContent = t('ocrTranslating');
-      const translatedRaw = await translateText(extracted, ocrFrom.code, ocrTo.code);
-      const translated = cleanTranslatedOcr(translatedRaw);
-      overlay.textContent = '';
-      ocrLastTranslated = translated;
-      liveStatus.textContent = t('ocrLiveScanning');
-    }
-  }catch(err){
-    // stay silent on a single failed frame — just retry on the next cycle
-  }
-  ocrBusy = false;
-}
-
-document.getElementById('ocrStartLiveBtn').addEventListener('click', startLiveOcr);
-document.getElementById('ocrStopLiveBtn').addEventListener('click', stopLiveOcr);
-document.getElementById('ocrReadNowBtn').addEventListener('click', async () => {
-  if(!ocrStream){ await startLiveOcr(); return; }
-  const btn=document.getElementById('ocrReadNowBtn');
-  const old=btn.textContent; btn.disabled=true; btn.textContent='⏳ جارٍ القراءة…';
-  try{ await captureAndTranslateFrame(); } finally { btn.disabled=false; btn.textContent=old; }
-});
-
-/* ---- Single-photo upload mode (fallback: gallery photo, screenshot, etc.) ---- */
-async function handleOcrImageChange(e){
-  const file = e.target.files[0];
-  if(!file){ e.target.value = ''; return; }
-
-  const preview = document.getElementById('ocrPreview');
-  const statusEl = document.getElementById('ocrStatus');
-  const resultsEl = document.getElementById('ocrResults');
-  const extractedEl = document.getElementById('ocrExtractedText');
-  const translatedEl = document.getElementById('ocrTranslatedText');
-
-  // clear any previous result immediately so nothing stale stays on screen
-  extractedEl.textContent = '';
-  translatedEl.textContent = '';
-  document.getElementById('ocrPreviewTranslation').textContent = '';
-  clearArLayer('ocrPreviewArLayer');
-  preview.src = URL.createObjectURL(file);
-  document.getElementById('ocrPreviewWrap').style.display = 'block';
-  document.getElementById('ocrPreviewTranslation').textContent = '';
-  resultsEl.style.display = 'none';
-  statusEl.style.display = 'block';
-  statusEl.textContent = t('ocrReading');
-
-  try{
-    const ocrLang = OCR_LANG_MAP[ocrFrom.code] || 'eng';
-    const worker = await getOcrWorker();
-    const { data } = await worker.recognize(file);
-    const extracted = compactOcrForTranslation(data.text || '');
-    clearArLayer('ocrPreviewArLayer');
-    const previewArCount=await lensRender(data,'ocrPreviewArLayer',data.imageSize?.width||preview.naturalWidth||1,data.imageSize?.height||preview.naturalHeight||1,.82);
-
-    if(!extracted){
-      statusEl.textContent = t('ocrNoText');
-      e.target.value = '';
-      return;
-    }
-
-    extractedEl.textContent = extracted;
-    statusEl.textContent = t('ocrTranslating');
-
-    const translatedRaw = await translateText(extracted, ocrFrom.code, ocrTo.code);
-    const translated = cleanTranslatedOcr(translatedRaw);
-    translatedEl.textContent = translated;
-    document.getElementById('ocrPreviewTranslation').textContent = '';
-    ocrLastTranslated = translated;
-
-    statusEl.style.display = 'none';
-    resultsEl.style.display = 'block';
-  }catch(err){
-    statusEl.textContent = t('ocrFail');
-  }
-  e.target.value = ''; // reset so the next photo (even same file) always fires 'change'
-}
-document.getElementById('ocrCameraInput').addEventListener('change', handleOcrImageChange);
-document.getElementById('ocrCaptureInput').addEventListener('change', handleOcrImageChange);
-
-document.getElementById('ocrListenBtn').addEventListener('click', () => {
-  if(ocrLastTranslated) speak(ocrLastTranslated, ocrTo.bcp47);
-});
+/* ---------------- Sign Lens: same in-frame translation principle + zoom ---------------- */
+let signLensStream=null,signLensZoom=1,signLensLastTranslated='';
+function signLensTxt(k){const d=SIGN_LENS_I18N[UI_LANG]||SIGN_LENS_I18N.en;return d[k]||SIGN_LENS_I18N.en[k]||k}
+function applySignLensLanguage(){const ids={hubTitle:'hubSignLensTitle',hubSub:'hubSignLensSub',title:'signLensTitle',desc:'signLensDesc',safety:'signLensSafety',back:'signLensBackBtn',listen:'signLensListenBtn'};Object.entries(ids).forEach(([k,id])=>{const e=document.getElementById(id);if(e)e.textContent=signLensTxt(k)});document.getElementById('signLensBackBtnBottom').textContent=signLensTxt('back');document.getElementById('signLensStartText').textContent=signLensTxt('start');document.getElementById('signLensStopText').textContent=signLensTxt('stop');document.getElementById('signLensReadBtn').textContent=signLensTxt('read');document.getElementById('signLensClearBtn').textContent=signLensTxt('clear')}
+function syncSignLensLangUI(){const a=document.getElementById('signLensFromLang'),b=document.getElementById('signLensToLang');if(!a.options.length)LANGS.forEach((l,i)=>{a.add(new Option(l.label,i));b.add(new Option(l.label,i))});a.value=LANGS.findIndex(l=>l.code===ocrFrom.code);b.value=LANGS.findIndex(l=>l.code===ocrTo.code)}
+function openSignLens(){closeCallMode();closeLecturePanel();closeDialoguePanel();closeOcrPanel();document.getElementById('stage')?.classList.remove('show');document.getElementById('signLensPanel').classList.add('show');document.getElementById('topQuickBar').style.display='none';clearSignLensResult();applySignLensLanguage();syncSignLensLangUI()}
+function closeSignLens(){stopSignLens();document.getElementById('signLensPanel').classList.remove('show');document.getElementById('hubSection').style.display='';document.getElementById('topQuickBar').style.display=''}
+async function startSignLens(){const st=document.getElementById('signLensStatus');st.style.display='block';st.textContent=signLensTxt('opening');try{signLensStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}},audio:false})}catch(e){try{signLensStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false})}catch(err){st.textContent=t('ocrCameraDenied');return}}const v=document.getElementById('signLensVideo');v.srcObject=signLensStream;await v.play().catch(()=>{});['signLensVideoWrap','signLensZoomRow','signLensZoomPresets','signLensReadBtn','signLensClearBtn','signLensStopBtn'].forEach(id=>document.getElementById(id).style.display=id==='signLensVideoWrap'?'block':'flex');document.getElementById('signLensStartBtn').style.display='none';st.style.display='none';const track=signLensStream.getVideoTracks()[0],caps=track?.getCapabilities?.()||{};try{const adv=[];if(caps.focusMode?.includes?.('continuous'))adv.push({focusMode:'continuous'});if(caps.exposureMode?.includes?.('continuous'))adv.push({exposureMode:'continuous'});if(adv.length)await track.applyConstraints({advanced:adv})}catch(e){}const z=document.getElementById('signLensZoom');if(caps.zoom){z.min=caps.zoom.min;z.max=caps.zoom.max;z.step=caps.zoom.step||.1}else{z.min=1;z.max=6;z.step=.1}z.value=Math.max(Number(z.min)||1,1);signLensZoom=Number(z.value);updateSignLensZoomUI()}
+function stopSignLens(){if(signLensStream){signLensStream.getTracks().forEach(t=>t.stop());signLensStream=null}const v=document.getElementById('signLensVideo');if(v){v.srcObject=null;v.style.transform='scale(1)'}['signLensVideoWrap','signLensZoomRow','signLensZoomPresets','signLensReadBtn','signLensClearBtn','signLensStopBtn'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});document.getElementById('signLensStartBtn').style.display='flex';clearSignLensResult()}
+function updateSignLensZoomUI(){document.getElementById('signLensZoomValue').textContent=(Number(document.getElementById('signLensZoom').value)||1).toFixed(1)+'×'}
+async function applySignLensZoom(val){const z=document.getElementById('signLensZoom');let q=Math.max(Number(z.min)||1,Math.min(Number(z.max)||6,Number(val)||1));z.value=q;signLensZoom=q;const track=signLensStream?.getVideoTracks?.()[0],caps=track?.getCapabilities?.()||{},v=document.getElementById('signLensVideo');if(caps.zoom){try{await track.applyConstraints({advanced:[{zoom:q}]});v.style.transform='scale(1)'}catch(e){}}else v.style.transform=`scale(${q})`;updateSignLensZoomUI()}
+function clearSignLensResult(){signLensLastTranslated='';const f=document.getElementById('signLensFrozenCanvas'),r=document.getElementById('signLensRenderCanvas');if(f){f.style.display='none';f.getContext('2d').clearRect(0,0,f.width,f.height)}if(r)r.getContext('2d').clearRect(0,0,r.width,r.height);const st=document.getElementById('signLensStatus');if(st){st.style.display='none';st.textContent=''}}
+async function readSignLens(){if(!signLensStream)return;clearSignLensResult();const v=document.getElementById('signLensVideo'),f=document.getElementById('signLensFrozenCanvas'),r=document.getElementById('signLensRenderCanvas'),work=document.getElementById('signLensCanvas'),st=document.getElementById('signLensStatus');st.style.display='block';st.textContent=signLensTxt('reading');try{const vw=v.videoWidth,vh=v.videoHeight;if(!vw||!vh)return;const track=signLensStream.getVideoTracks()[0],caps=track?.getCapabilities?.()||{},factor=caps.zoom?1:Math.max(1,signLensZoom);const cropW=vw*.90/factor,cropH=vh*.64/factor,sx=(vw-cropW)/2,sy=(vh-cropH)/2,maxW=1800,sc=Math.min(1,maxW/cropW);work.width=Math.round(cropW*sc);work.height=Math.round(cropH*sc);work.getContext('2d').drawImage(v,sx,sy,cropW,cropH,0,0,work.width,work.height);f.width=work.width;f.height=work.height;f.getContext('2d').drawImage(work,0,0);f.style.display='block';const data=await recognizeCanvas(work);if(!flattenOcrLines(data).length){st.textContent=signLensTxt('noText');return}ocrLastTranslated='';await renderTranslatedLines(data,r,work);signLensLastTranslated=ocrLastTranslated;st.style.display='none'}catch(e){st.textContent=t('ocrFail')}}
+document.getElementById('hubTileSignLens').addEventListener('click',openSignLens);document.getElementById('signLensBackBtn').addEventListener('click',closeSignLens);document.getElementById('signLensBackBtnBottom').addEventListener('click',closeSignLens);document.getElementById('signLensStartBtn').addEventListener('click',startSignLens);document.getElementById('signLensStopBtn').addEventListener('click',stopSignLens);document.getElementById('signLensReadBtn').addEventListener('click',readSignLens);document.getElementById('signLensClearBtn').addEventListener('click',clearSignLensResult);document.getElementById('signLensZoom').addEventListener('input',e=>applySignLensZoom(e.target.value));document.getElementById('signLensZoomInBtn').addEventListener('click',()=>{const z=document.getElementById('signLensZoom');applySignLensZoom(Number(z.value)+(Number(z.step)||.1))});document.getElementById('signLensZoomOutBtn').addEventListener('click',()=>{const z=document.getElementById('signLensZoom');applySignLensZoom(Number(z.value)-(Number(z.step)||.1))});document.querySelectorAll('[data-signzoom]').forEach(b=>b.addEventListener('click',()=>applySignLensZoom(Number(b.dataset.signzoom))));document.getElementById('signLensListenBtn').addEventListener('click',()=>{if(signLensLastTranslated)speak(signLensLastTranslated,ocrTo.bcp47)});document.getElementById('signLensFromLang').addEventListener('change',e=>{ocrFrom=LANGS[Number(e.target.value)];syncSignLensLangUI();syncOcrLangUI();restartOcrWorker()});document.getElementById('signLensToLang').addEventListener('change',e=>{ocrTo=LANGS[Number(e.target.value)];syncSignLensLangUI();syncOcrLangUI()});document.getElementById('signLensSwapBtn').addEventListener('click',()=>{const x=ocrFrom;ocrFrom=ocrTo;ocrTo=x;syncSignLensLangUI();syncOcrLangUI();restartOcrWorker()});
 
 /* ---------------- Live continuous listening (Lecture/Sermon & Dialogue) ----------------
    Shared engine for both panels. IMPORTANT: transcripts here are kept ONLY in
