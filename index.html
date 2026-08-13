@@ -2108,14 +2108,12 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
     <select id="ocrToLang"></select>
   </div>
 
-  <div class="ios-help-note">على الآيفون: افتح المنصة من Safari مباشرة، واسمح للكاميرا. ثبّت الهاتف لحظة أمام النص؛ زر «اقرأ الآن» يلتقط إطاراً واضحاً إذا تأخرت القراءة المباشرة.</div>
   <div class="ocr-mode-buttons">
-    <button class="big-btn" id="ocrStartLiveBtn">▶️ <span id="ocrStartLiveText">ابدأ الترجمة المباشرة</span></button>
     <button class="big-btn" id="ocrStopLiveBtn" style="display:none;background:var(--danger);">⏹ <span id="ocrStopLiveText">إيقاف</span></button>
-    <label class="icon-btn ocr-capture-btn" id="ocrCaptureLabel" for="ocrCaptureInput">📸 <span>التقط صورة</span></label>
-    <input type="file" id="ocrCaptureInput" accept="image/*" capture="environment" style="display:none;">
-    <label class="icon-btn ocr-upload-btn" id="ocrUploadLabel" for="ocrCameraInput">🖼️ <span id="ocrUploadText">اختر صورة</span></label>
+    <button class="big-btn" id="ocrStartLiveBtn" style="display:none;">▶️ <span id="ocrStartLiveText">إعادة تشغيل</span></button>
+    <label class="icon-btn ocr-upload-btn" id="ocrUploadLabel" for="ocrCameraInput">🖼️ <span id="ocrUploadText">صورة من المعرض</span></label>
     <input type="file" id="ocrCameraInput" accept="image/*" style="display:none;">
+    <input type="file" id="ocrCaptureInput" accept="image/*" capture="environment" style="display:none;">
   </div>
 
   <div class="ocr-video-wrap" id="ocrVideoWrap" style="display:none;">
@@ -2123,7 +2121,6 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
     <div class="lens-ar-layer" id="ocrLiveArLayer"></div>
     <div class="ocr-live-overlay" id="ocrLiveOverlay"></div>
     <div class="ocr-live-status" id="ocrLiveStatus"></div>
-    <button class="big-btn" id="ocrReadNowBtn" style="position:absolute;left:12px;right:12px;bottom:12px;z-index:4;background:linear-gradient(135deg,#0b5ed7,#c62828);">📖 اقرأ الآن</button>
   </div>
   <canvas id="ocrCanvas" style="display:none;"></canvas>
 
@@ -4020,7 +4017,6 @@ async function startLiveOcr(){
   document.getElementById('ocrStartLiveBtn').style.display = 'none';
   document.getElementById('ocrStopLiveBtn').style.display = 'flex';
   document.getElementById('ocrUploadLabel').style.display = 'none';
-  document.getElementById('ocrCaptureLabel').style.display = 'none';
   liveStatus.textContent = 'جارٍ تشغيل الكاميرا…';
 
   try{
@@ -4067,7 +4063,6 @@ function stopLiveOcr(){
   document.getElementById('ocrStartLiveBtn').style.display = 'flex';
   document.getElementById('ocrStopLiveBtn').style.display = 'none';
   document.getElementById('ocrUploadLabel').style.display = 'flex';
-  document.getElementById('ocrCaptureLabel').style.display = 'flex';
 }
 
 async function captureAndTranslateFrame(){
@@ -4120,12 +4115,6 @@ async function captureAndTranslateFrame(){
 
 document.getElementById('ocrStartLiveBtn').addEventListener('click', startLiveOcr);
 document.getElementById('ocrStopLiveBtn').addEventListener('click', stopLiveOcr);
-document.getElementById('ocrReadNowBtn').addEventListener('click', async () => {
-  if(!ocrStream){ await startLiveOcr(); return; }
-  const btn=document.getElementById('ocrReadNowBtn');
-  const old=btn.textContent; btn.disabled=true; btn.textContent='⏳ جارٍ القراءة…';
-  try{ await captureAndTranslateFrame(); } finally { btn.disabled=false; btn.textContent=old; }
-});
 
 /* ---- Single-photo upload mode (fallback: gallery photo, screenshot, etc.) ---- */
 async function handleOcrImageChange(e){
