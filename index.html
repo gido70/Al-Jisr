@@ -1770,17 +1770,19 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
 #ocrPreviewTranslation,.signlens-live-translation{display:none}
 #ocrPreviewTranslation{
   position:absolute;
-  bottom:0; left:0; right:0;
-  background:linear-gradient(transparent, rgba(5,18,48,.92));
+  inset:0;
+  background:rgba(5,18,48,.82);
   color:#fff;
-  padding:18px 14px 14px;
+  padding:16px;
   font-family:'Tajawal',sans-serif;
-  font-size:16px;
-  font-weight:800;
-  line-height:1.5;
-  border-radius:0 0 12px 12px;
+  font-size:15px;
+  font-weight:700;
+  line-height:1.7;
+  white-space:pre-line;
+  overflow-y:auto;
   z-index:10;
-  backdrop-filter:blur(2px);
+  direction:rtl;
+  text-align:right;
 }
 #signLensResult{display:none!important}
 
@@ -3988,14 +3990,13 @@ async function captureAndTranslateFrame(){
     const { data } = await worker.recognize(canvas);
     const extracted = compactOcrForTranslation(data.text || '');
     clearArLayer('ocrLiveArLayer');
-    await lensRender(data,'ocrLiveArLayer',canvas.width,canvas.height,.78);
 
     if(extracted && extracted !== ocrLastSeenText){
       ocrLastSeenText = extracted;
       liveStatus.textContent = t('ocrTranslating');
       const translatedRaw = await translateText(extracted, ocrFrom.code, ocrTo.code);
       const translated = cleanTranslatedOcr(translatedRaw);
-      overlay.textContent = '';
+      overlay.textContent = translated;
       ocrLastTranslated = translated;
       liveStatus.textContent = t('ocrLiveScanning');
     }
@@ -4019,72 +4020,74 @@ async function handleOcrImageChange(e){
   const file = e.target.files[0];
   if(!file){ e.target.value = ''; return; }
 
-  const preview = document.getElementById('ocrPreview');
-  const statusEl = document.getElementById('ocrStatus');
-  const resultsEl = document.getElementById('ocrResults');
-  const extractedEl = document.getElementById('ocrExtractedText');
+  const preview    = document.getElementById('ocrPreview');
+  const statusEl   = document.getElementById('ocrStatus');
+  const resultsEl  = document.getElementById('ocrResults');
   const translatedEl = document.getElementById('ocrTranslatedText');
+  const extractedEl  = document.getElementById('ocrExtractedText');
+  const previewWrap  = document.getElementById('ocrPreviewWrap');
+  const overlayEl    = document.getElementById('ocrPreviewTranslation');
 
-  // clear any previous result immediately so nothing stale stays on screen
+  // Reset everything
   extractedEl.textContent = '';
   translatedEl.textContent = '';
-  document.getElementById('ocrPreviewTranslation').textContent = '';
+  if(overlayEl){ overlayEl.textContent = ''; overlayEl.style.display = 'none'; }
   clearArLayer('ocrPreviewArLayer');
-  preview.src = URL.createObjectURL(file);
-  document.getElementById('ocrPreviewWrap').style.display = 'block';
-  document.getElementById('ocrPreviewTranslation').textContent = '';
   resultsEl.style.display = 'none';
+  previewWrap.style.display = 'none';
+
   statusEl.style.display = 'block';
   statusEl.textContent = t('ocrReading');
 
+  // Show the image immediately while OCR runs
+  preview.src = URL.createObjectURL(file);
+  previewWrap.style.display = 'block';
+
   try{
-    const ocrLang = OCR_LANG_MAP[ocrFrom.code] || 'eng';
     const worker = await getOcrWorker();
     const { data } = await worker.recognize(file);
-    const extracted = compactOcrForTranslation(data.text || '');
-    clearArLayer('ocrPreviewArLayer');
-    // Wait for the preview image to load so naturalWidth/Height are correct
-    await new Promise(res => {
-      if(preview.complete && preview.naturalWidth) res();
-      else { preview.onload = res; setTimeout(res, 1000); }
-    });
-    const imgW = preview.naturalWidth || data.imageSize?.width || 1;
-    const imgH = preview.naturalHeight || data.imageSize?.height || 1;
-    const previewArCount = await lensRender(data, 'ocrPreviewArLayer', imgW, imgH, .82);
 
-    if(!extracted){
+    // Build translation preserving line structure
+    const rawLines = (data.text || '').split('\n').map(l => l.trim()).filter(Boolean);
+    if(!rawLines.length){
       statusEl.textContent = t('ocrNoText');
       e.target.value = '';
       return;
     }
 
-    extractedEl.textContent = extracted;
     statusEl.textContent = t('ocrTranslating');
 
-    const translatedRaw = await translateText(extracted, ocrFrom.code, ocrTo.code);
-    const translated = cleanTranslatedOcr(translatedRaw);
-    translatedEl.textContent = translated;
-    document.getElementById('ocrPreviewTranslation').textContent = '';
-    ocrLastTranslated = translated;
+    // Translate line-by-line to preserve layout
+    const translatedLines = await Promise.all(
+      rawLines.map(async line => {
+        try{
+          const r = await translateText(line, ocrFrom.code, ocrTo.code);
+          return cleanTranslatedOcr(r) || line;
+        }catch(err){ return line; }
+      })
+    );
 
-    // Fallback: if no AR boxes were placed (e.g. bbox data was unreliable),
-    // show the translation as a clean semi-transparent overlay at the bottom
-    // of the preview image — much better than showing garbled boxes or nothing.
-    if(previewArCount === 0 && translated){
-      const overlayEl = document.getElementById('ocrPreviewTranslation');
-      if(overlayEl){
-        overlayEl.textContent = translated;
-        overlayEl.style.display = 'block';
-      }
+    const translatedText = translatedLines.join('\n');
+    ocrLastTranslated = translatedText;
+
+    // Show clean translation overlay at the bottom of the image
+    if(overlayEl){
+      overlayEl.textContent = translatedText;
+      overlayEl.style.display = 'block';
     }
 
-    statusEl.style.display = 'none';
-    resultsEl.style.display = 'block';
+    // Also populate the results section (for listen/copy)
+    translatedEl.textContent = translatedText;
+    extractedEl.textContent  = rawLines.join('\n');
+    resultsEl.style.display  = 'block';
+    statusEl.style.display   = 'none';
+
   }catch(err){
     statusEl.textContent = t('ocrFail');
   }
-  e.target.value = ''; // reset so the next photo (even same file) always fires 'change'
+  e.target.value = '';
 }
+
 document.getElementById('ocrCameraInput').addEventListener('change', handleOcrImageChange);
 document.getElementById('ocrCaptureInput').addEventListener('change', handleOcrImageChange);
 
