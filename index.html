@@ -1767,7 +1767,7 @@ html[dir="ltr"] #brandHeroTitle{font-family:Inter,'Tajawal',sans-serif!important
 
 .lens-ar-layer{position:absolute;inset:0;z-index:12;pointer-events:none;overflow:hidden}
 .lens-ar-box{position:absolute;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.94);color:#071a38;box-shadow:0 2px 10px rgba(0,0,0,.18);font-family:'Tajawal',sans-serif;font-weight:900;line-height:1.2;text-align:start;overflow:hidden}
-#ocrPreviewTranslation,.signlens-live-translation{display:none}
+#ocrPreviewTranslation{display:none}
 #ocrPreviewTranslation{
   position:absolute;
   inset:0;
@@ -3529,8 +3529,12 @@ async function startSignLens(){
   }catch(e){try{signLensStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false})}catch(err){status.textContent=t('ocrCameraDenied');return}}
   const v=document.getElementById('signLensVideo');v.srcObject=signLensStream;await v.play().catch(()=>{});
   document.getElementById('signLensVideoWrap').style.display='block';document.getElementById('signLensZoomRow').style.display='flex';
-  document.getElementById('signLensReadBtn').style.display='flex';document.getElementById('signLensStartBtn').style.display='none';document.getElementById('signLensStopBtn').style.display='flex';
+  document.getElementById('signLensReadBtn').style.display='none'; // replaced by auto-read
+  document.getElementById('signLensStartBtn').style.display='none';
+  document.getElementById('signLensStopBtn').style.display='flex';
   status.style.display='none';
+  // Start automatic continuous reading immediately
+  setTimeout(startSignLensAuto, 800);
   const track=signLensStream.getVideoTracks()[0];const caps=track?.getCapabilities?.()||{};
   // Continuous focus/exposure whenever supported: important for small distant signs.
   try{
@@ -3553,6 +3557,7 @@ async function startSignLens(){
   updateSignLensZoomUI();
 }
 function stopSignLens(){
+  stopSignLensAuto();
   if(signLensStream){signLensStream.getTracks().forEach(t=>t.stop());signLensStream=null}
   const v=document.getElementById('signLensVideo');if(v)v.srcObject=null;
   ['signLensVideoWrap','signLensZoomRow','signLensZoomPresets','signLensReadBtn','signLensClearBtn','signLensStopBtn'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});
@@ -3603,39 +3608,86 @@ function clearSignLensResult(){
   if(status){status.textContent='';status.style.display='none';}
 }
 
+// Auto-read timer for sign lens
+let signLensAutoTimer = null;
+
 async function readSignLens(){
-  if(!signLensStream)return;
-  clearSignLensResult();
-  const v=document.getElementById('signLensVideo'),c=document.getElementById('signLensCanvas'),status=document.getElementById('signLensStatus');
-  status.style.display='block';status.textContent=signLensTxt('reading');
-  const vw=v.videoWidth,vh=v.videoHeight;if(!vw||!vh)return;
-  // If hardware zoom exists, the camera frame is already zoomed. Otherwise
-  // mirror the visible digital zoom by cropping the center before OCR.
-  const track=signLensStream?.getVideoTracks?.()[0];
-  const caps=track?.getCapabilities?.()||{};
-  const digitalFactor=caps.zoom?1:Math.max(1,signLensZoom);
-  const cropW=vw*.90/digitalFactor,cropH=vh*.62/digitalFactor,sx=(vw-cropW)/2,sy=(vh-cropH)/2;
-  const maxW=2200,scale=Math.min(1,maxW/cropW);c.width=Math.max(1,Math.round(cropW*scale));c.height=Math.max(1,Math.round(cropH*scale));
-  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(v,sx,sy,cropW,cropH,0,0,c.width,c.height);
+  if(!signLensStream) return;
+  const v   = document.getElementById('signLensVideo');
+  const c   = document.getElementById('signLensCanvas');
+  const status = document.getElementById('signLensStatus');
+  const overlay = document.getElementById('signLensOverlay');
+
+  if(!v.videoWidth || !v.videoHeight) return;
+
+  status.style.display = 'block';
+  status.textContent = signLensTxt('reading');
+
+  const track = signLensStream?.getVideoTracks?.()[0];
+  const caps  = track?.getCapabilities?.() || {};
+  const digitalFactor = caps.zoom ? 1 : Math.max(1, signLensZoom);
+  const vw = v.videoWidth, vh = v.videoHeight;
+  const cropW = vw * .90 / digitalFactor, cropH = vh * .62 / digitalFactor;
+  const sx = (vw - cropW) / 2, sy = (vh - cropH) / 2;
+  const maxW = 2200, scale = Math.min(1, maxW / cropW);
+  c.width  = Math.max(1, Math.round(cropW * scale));
+  c.height = Math.max(1, Math.round(cropH * scale));
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(v, sx, sy, cropW, cropH, 0, 0, c.width, c.height);
+
   try{
-    // grayscale + contrast improves distant sign lettering without altering the original lens
-    const im=ctx.getImageData(0,0,c.width,c.height),d=im.data;
-    for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2];const x=Math.max(0,Math.min(255,(g-128)*1.9+128));d[i]=d[i+1]=d[i+2]=x}
-    ctx.putImageData(im,0,0);
-    const worker=await getOcrWorker();
-    const {data}=await worker.recognize(c);
-    const original=compactOcrForTranslation(data.text||'');
-    clearArLayer('signLensArLayer');
-    const signArCount=await lensRender(data,'signLensArLayer',c.width,c.height,.78);
-    if(!original){status.textContent=signLensTxt('noText');return}
-    const translatedRaw=await translateText(original,ocrFrom.code,ocrTo.code);
-    const translated=cleanTranslatedOcr(translatedRaw);
-    signLensLastTranslated=translated;
-    document.getElementById('signLensOriginal').textContent=original;
-    document.getElementById('signLensTranslated').textContent=translated;
-    document.getElementById('signLensOverlay').textContent='';
-    status.style.display='none';
-  }catch(e){status.textContent=t('ocrFail')}
+    // Grayscale + contrast for distant sign lettering
+    const im = ctx.getImageData(0, 0, c.width, c.height), d = im.data;
+    for(let i = 0; i < d.length; i += 4){
+      const g = .299*d[i] + .587*d[i+1] + .114*d[i+2];
+      const x = Math.max(0, Math.min(255, (g-128)*1.9+128));
+      d[i] = d[i+1] = d[i+2] = x;
+    }
+    ctx.putImageData(im, 0, 0);
+
+    const worker = await getOcrWorker();
+    const { data } = await worker.recognize(c);
+    const rawLines = (data.text || '').split('\n').map(l => l.trim()).filter(Boolean);
+
+    if(!rawLines.length){
+      status.textContent = signLensTxt('noText');
+      return;
+    }
+
+    status.textContent = '🌐';
+
+    // Translate line-by-line preserving layout
+    const translatedLines = await Promise.all(
+      rawLines.map(async line => {
+        try{
+          const r = await translateText(line, ocrFrom.code, ocrTo.code);
+          return cleanTranslatedOcr(r) || line;
+        }catch(e){ return line; }
+      })
+    );
+
+    const translatedText = translatedLines.join('\n');
+    signLensLastTranslated = translatedText;
+
+    // Show clean overlay — large readable text, no boxes, no clutter
+    overlay.textContent = translatedText;
+    overlay.style.display = 'block';
+    document.getElementById('signLensOriginal').textContent  = rawLines.join('\n');
+    document.getElementById('signLensTranslated').textContent = translatedText;
+
+    status.style.display = 'none';
+  }catch(e){
+    status.textContent = t('ocrFail');
+  }
+}
+
+function startSignLensAuto(){
+  readSignLens();
+  signLensAutoTimer = setInterval(readSignLens, 2200);
+}
+function stopSignLensAuto(){
+  clearInterval(signLensAutoTimer);
+  signLensAutoTimer = null;
 }
 document.getElementById('hubTileSignLens').addEventListener('click',openSignLens);
 document.getElementById('signLensBackBtn').addEventListener('click',closeSignLens);
