@@ -3654,11 +3654,24 @@ async function readSignLens(){
       return;
     }
 
+    // Filter: keep only lines that contain characters from the selected source language.
+    // If the user set Turkish as source but the camera sees English text → show nothing.
+    const sourceLang = ocrFrom.code;
+    const filteredLines = rawLines.filter(line => textMatchesSourceLang(line, sourceLang));
+
+    if(!filteredLines.length){
+      // Text is visible but not in the selected source language — clear overlay silently
+      overlay.style.display = 'none';
+      overlay.textContent = '';
+      status.style.display = 'none';
+      return;
+    }
+
     status.textContent = '🌐';
 
     // Translate line-by-line preserving layout
     const translatedLines = await Promise.all(
-      rawLines.map(async line => {
+      filteredLines.map(async line => {
         try{
           const r = await translateText(line, ocrFrom.code, ocrTo.code);
           return cleanTranslatedOcr(r) || line;
@@ -3672,7 +3685,7 @@ async function readSignLens(){
     // Show clean overlay — large readable text, no boxes, no clutter
     overlay.textContent = translatedText;
     overlay.style.display = 'block';
-    document.getElementById('signLensOriginal').textContent  = rawLines.join('\n');
+    document.getElementById('signLensOriginal').textContent  = filteredLines.join('\n');
     document.getElementById('signLensTranslated').textContent = translatedText;
 
     status.style.display = 'none';
@@ -3714,6 +3727,10 @@ function openOcrPanel(){
   document.getElementById('hubSection').style.display = '';
   document.getElementById('ocrPanel').classList.add('show');
   document.getElementById('topQuickBar').style.display = 'none';
+  // Auto-start live translation immediately — no button press needed
+  setTimeout(() => {
+    if(!ocrStream) startLiveOcr();
+  }, 300);
 }
 function closeOcrPanel(){
   stopLiveOcr();
@@ -3878,6 +3895,49 @@ function compactOcrForTranslation(raw){
   const cleaned=normalizeOcrLines(raw);
   if(!cleaned) return '';
   return cleaned.split('\n').slice(0,8).map(x=>x.slice(0,180)).join('\n');
+}
+
+// Language script detection — returns true only if the text contains
+// a meaningful proportion of characters from the expected source script.
+// Prevents the lens from "translating" noise, symbols, or text in a
+// different language than the one the user selected as source.
+function textMatchesSourceLang(text, langCode){
+  if(!text || text.length < 3) return false;
+  const letters = (text.match(/[\p{L}]/gu) || []);
+  if(letters.length < 2) return false;
+
+  const SCRIPT_PATTERNS = {
+    ar:  /[\u0600-\u06FF]/,   // Arabic
+    tr:  /[a-zA-ZğüşıöçĞÜŞİÖÇ]/, // Latin (Turkish uses Latin)
+    en:  /[a-zA-Z]/,
+    ru:  /[\u0400-\u04FF]/,   // Cyrillic
+    'zh-CN': /[\u4E00-\u9FFF]/,
+    ja:  /[\u3040-\u30FF\u4E00-\u9FFF]/,
+    ko:  /[\uAC00-\uD7AF]/,
+    hi:  /[\u0900-\u097F]/,   // Devanagari
+    fa:  /[\u0600-\u06FF]/,
+    fr:  /[a-zA-Zàâçéèêëîïôùûüÿœæ]/,
+    es:  /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/,
+    it:  /[a-zA-ZàèéìîòóùÀÈÉÌÎÒÓÙ]/,
+    de:  /[a-zA-ZäöüÄÖÜß]/,
+  };
+
+  // For languages that share Latin script (tr/en/fr/es/it/de),
+  // accept any Latin text — can't distinguish reliably at this level.
+  const latinLangs = new Set(['tr','en','fr','es','it','de']);
+  const pattern = SCRIPT_PATTERNS[langCode];
+  if(!pattern) return true; // unknown language — don't filter
+
+  if(latinLangs.has(langCode)){
+    // Accept if at least 40% of letters are Latin
+    const latinCount = letters.filter(c => /[a-zA-ZÀ-öø-ÿĀ-žǀ-ɏ]/u.test(c)).length;
+    return latinCount / letters.length >= 0.40;
+  }
+
+  // For script-distinct languages (Arabic, Russian, Chinese…)
+  // accept if at least 35% of letters match the expected script
+  const matchCount = letters.filter(c => pattern.test(c)).length;
+  return matchCount / letters.length >= 0.35;
 }
 function cleanTranslatedOcr(raw){
   if(!raw) return '';
@@ -4107,11 +4167,19 @@ async function handleOcrImageChange(e){
       return;
     }
 
+    // Keep only lines that match the selected source language script
+    const filteredLines = rawLines.filter(line => textMatchesSourceLang(line, ocrFrom.code));
+    if(!filteredLines.length){
+      statusEl.textContent = t('ocrNoText');
+      e.target.value = '';
+      return;
+    }
+
     statusEl.textContent = t('ocrTranslating');
 
     // Translate line-by-line to preserve layout
     const translatedLines = await Promise.all(
-      rawLines.map(async line => {
+      filteredLines.map(async line => {
         try{
           const r = await translateText(line, ocrFrom.code, ocrTo.code);
           return cleanTranslatedOcr(r) || line;
@@ -4130,7 +4198,7 @@ async function handleOcrImageChange(e){
 
     // Also populate the results section (for listen/copy)
     translatedEl.textContent = translatedText;
-    extractedEl.textContent  = rawLines.join('\n');
+    extractedEl.textContent  = filteredLines.join('\n');
     resultsEl.style.display  = 'block';
     statusEl.style.display   = 'none';
 
